@@ -3,13 +3,15 @@
 package com.sakethh.jetspacer.screens.home
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BookmarkAdd
+import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.SavedStateHandle
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.localDB.DBImplementation
+import com.sakethh.jetspacer.localDB.DBUtils
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODFetching
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.IPGeolocationFetching
@@ -25,18 +27,23 @@ import java.util.Calendar
 class HomeScreenViewModel(
     private val ipGeolocationFetching: IPGeolocationFetching = IPGeolocationFetching(),
     private val issLocationFetching: ISSLocationFetching = ISSLocationFetching(),
-    private val apodFetching: APODFetching = APODFetching()
+    private val apodFetching: APODFetching = APODFetching(),
+    val dbUtils: DBUtils = DBUtils()
 ) : ViewModel() {
+    val dbImplementation = DBImplementation()
     var currentPhaseOfDay: String = ""
     private val coroutineExceptionalHandler =
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
     val geolocationDTODataFromAPI = mutableStateOf(IPGeoLocationDTO())
-    val astronomicalDataFromAPIFlow = mutableStateOf<Flow<IPGeoLocationDTO>>(emptyFlow())
-    val issLocationFromAPIFlow = mutableStateOf<Flow<ISSLocationDTO>>(emptyFlow())
+    private val _astronomicalDataFromAPIFlow = MutableStateFlow(IPGeoLocationDTO())
+    val astronomicalDataFromAPIFlow = _astronomicalDataFromAPIFlow.asStateFlow()
+    private val _issLocationFromAPIFlow =
+        MutableStateFlow(ISSLocationDTO(IssPosition("", ""), "", 0))
+    val issLocationFromAPIFlow = _issLocationFromAPIFlow.asStateFlow()
     val apodDataFromAPI = mutableStateOf(APOD_DTO("", "", "", "", "", "", ""))
-    private val _moonAltitude = MutableStateFlow(IPGeoLocationDTO())
-    val moonAltitude = _moonAltitude.asStateFlow()
-
+    val doesAPODExistsInDB = mutableStateOf(false)
+    val bookMarkIcons = mutableStateOf<ImageVector>(Icons.Outlined.BookmarkAdd)
+    val bookMarkText = mutableStateOf("")
     init {
         this.viewModelScope.launch(Dispatchers.Default + coroutineExceptionalHandler) {
             when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
@@ -61,17 +68,47 @@ class HomeScreenViewModel(
             }
         }
         this.viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
+            awaitAll(
+                async { ipGeolocationFetching.getGeoLocationData() },
+                async { issLocationFetching.getISSLatitudeAndLongitude() },
+                async { apodFetching.getAPOD() }
+            )
             val geoLocationData = async { ipGeolocationFetching.getGeoLocationData() }
             val issLocationData = async { issLocationFetching.getISSLatitudeAndLongitude() }
             val apodData = async { apodFetching.getAPOD() }
-            val astronomicalData = async { ipGeolocationFetching.getAstronomicalData() }
             geolocationDTODataFromAPI.value = geoLocationData.await()
-            issLocationFromAPIFlow.value = issLocationData.await()
             this@HomeScreenViewModel.apodDataFromAPI.value = apodData.await()
-            this@HomeScreenViewModel.astronomicalDataFromAPIFlow.value = astronomicalData.await()
-            ipGeolocationFetching.getAstronomicalData().collectLatest {
-                _moonAltitude.emit(it)
+            issLocationData.await().collect { _issLocationData ->
+                this@HomeScreenViewModel._issLocationFromAPIFlow.emit(_issLocationData)
             }
         }
+        this.viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
+            ipGeolocationFetching.getAstronomicalData().collect { ipGeolocationData ->
+                this@HomeScreenViewModel._astronomicalDataFromAPIFlow.emit(ipGeolocationData)
+            }
+        }
+        if (!dbUtils.doesThisExistsInDBAPOD(apodDataFromAPI.value.url.toString())) {
+            bookMarkText.value = "Add to bookmarks"
+            bookMarkIcons.value = Icons.Outlined.BookmarkAdd
+        } else {
+            bookMarkText.value = "Remove from bookmarks"
+            bookMarkIcons.value = Icons.Outlined.BookmarkRemove
+        }
+
+        if (apodDataFromAPI.value.url.toString().contains(regex = Regex("/apod.nasa.gov/"))){
+            doesThisExistsInAPODIconTxt(apodDataFromAPI.value.url.toString())
+        }
+    }
+    fun doesThisExistsInAPODIconTxt(imageURL:String){
+        if (!dbUtils.doesThisExistsInDBAPOD(imageURL = imageURL)) {
+            bookMarkText.value = "Add to bookmarks"
+            bookMarkIcons.value = Icons.Outlined.BookmarkAdd
+        } else {
+            bookMarkText.value = "Remove from bookmarks"
+            bookMarkIcons.value = Icons.Outlined.BookmarkRemove
+        }
+    }
+    object BookMarkUtils {
+        val isAlertDialogEnabled = mutableStateOf(false)
     }
 }

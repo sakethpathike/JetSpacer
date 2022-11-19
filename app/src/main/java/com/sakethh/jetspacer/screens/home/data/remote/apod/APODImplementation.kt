@@ -6,7 +6,7 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 
-class APODImplementation(val ktorClient:HttpClient):APODService {
+class APODImplementation(private val ktorClient:HttpClient):APODService {
     override suspend fun getAPOD(): APOD_DTO {
         return ktorClient.get(Constants.APOD_URL).body()
     }

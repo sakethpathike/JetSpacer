@@ -1,129 +1,149 @@
 package com.sakethh.jetspacer.screens.home
 
 import android.annotation.SuppressLint
-import android.util.Log
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.sakethh.jetspacer.screens.Coil_Image
 import com.sakethh.jetspacer.R
+import com.sakethh.jetspacer.localDB.*
+import com.sakethh.jetspacer.screens.home.HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabled
 import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.dto.IPGeoLocationDTO
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.ISSLocationDTO
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.IssPosition
 import com.sakethh.jetspacer.ui.theme.AppTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun HomeScreen() {
-    val homeScreenViewModel:HomeScreenViewModel = viewModel()
+    val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val systemUIController = rememberSystemUiController()
     systemUIController.setStatusBarColor(MaterialTheme.colorScheme.surface)
     val issInfo = "The \"International Space Station\" is currently over ${
-        homeScreenViewModel.issLocationFromAPIFlow.value.collectAsStateWithLifecycle(
+        homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
             initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
         ).value.iss_position.latitude
     }° N, ${
-        homeScreenViewModel.issLocationFromAPIFlow.value.collectAsStateWithLifecycle(
+        homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
             initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
         ).value.iss_position.longitude
     }° E"
-    val issLatitude = homeScreenViewModel.issLocationFromAPIFlow.value.collectAsStateWithLifecycle(
+    val issLatitude = homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
         initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
     ).value.iss_position.latitude
 
-    val issLongitude = homeScreenViewModel.issLocationFromAPIFlow.value.collectAsStateWithLifecycle(
+    val issLongitude = homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
         initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
     ).value.iss_position.longitude
 
-    val issTimestamp = homeScreenViewModel.issLocationFromAPIFlow.value.collectAsStateWithLifecycle(
-        initialValue =  ISSLocationDTO(IssPosition("", ""), "", 0)
+    val issTimestamp = homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
+        initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
     ).value.timestamp.toString()
 
 
     val currentTimeInfo = "Current Time: ${
-        homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
             initialValue = IPGeoLocationDTO()
         ).value.current_time
     }\nDate : ${
-        homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
             initialValue = IPGeoLocationDTO()
         ).value.date
     }\nDay Length : ${
-        homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
             initialValue = IPGeoLocationDTO()
         ).value.day_length
     }"
     // moon info
-    val moonAltitude = homeScreenViewModel.moonAltitude.collectAsState(IPGeoLocationDTO()).value
-    val moonAzimuthValue = homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-        initialValue =  IPGeoLocationDTO()
-    ).value.moon_azimuth.toString()
+    val moonAltitude =
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
+        ).value.moon_altitude.toString()
+    val moonAzimuthValue =
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
+        ).value.moon_azimuth.toString()
 
-    val moonDistanceValue = homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-        initialValue =  IPGeoLocationDTO()
-    ).value.moon_distance.toString()
+    val moonDistanceValue =
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
+        ).value.moon_distance.toString()
     val moonParalyticAngleValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-            initialValue =  IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
         ).value.moon_parallactic_angle.toString()
-    val moonRiseValue = homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-        initialValue = IPGeoLocationDTO()
-    ).value.moonrise.toString()
-    val moonSetValue = homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-        initialValue  = IPGeoLocationDTO()
-    ).value.moonset.toString()
+    val moonRiseValue =
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
+        ).value.moonrise.toString()
+    val moonSetValue =
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
+        ).value.moonset.toString()
 // sun info
     val solarNoonValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-            initialValue  = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
         ).value.solar_noon.toString()
-    val sunAltitudeValue = homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-        initialValue =  IPGeoLocationDTO()
-    ).value.sun_altitude.toString()
+    val sunAltitudeValue =
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
+        ).value.sun_altitude.toString()
 
-    val sunAzimuthValue = homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-        initialValue =  IPGeoLocationDTO()
-    ).value.sun_azimuth.toString()
+    val sunAzimuthValue =
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
+        ).value.sun_azimuth.toString()
 
-    val sunDistanceValue = homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-        initialValue =  IPGeoLocationDTO()
-    ).value.sun_distance.toString()
-    val sunRiseValue = homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-        initialValue = IPGeoLocationDTO()
-    ).value.sunrise.toString()
-    val sunSetValue = homeScreenViewModel.astronomicalDataFromAPIFlow.value.collectAsStateWithLifecycle(
-        initialValue =  IPGeoLocationDTO()
-    ).value.sunset.toString()
+    val sunDistanceValue =
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
+        ).value.sun_distance.toString()
+    val sunRiseValue =
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
+        ).value.sunrise.toString()
+    val sunSetValue =
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
+            initialValue = IPGeoLocationDTO()
+        ).value.sunset.toString()
 
-    val apodURL =  homeScreenViewModel.apodDataFromAPI.value.url.toString()
+    val apodURL = homeScreenViewModel.apodDataFromAPI.value.url.toString()
     val apodTitle = homeScreenViewModel.apodDataFromAPI.value.title.toString()
     val apodDescription = homeScreenViewModel.apodDataFromAPI.value.explanation.toString()
-    val apodDate =  homeScreenViewModel.apodDataFromAPI.value.date.toString()
+    val apodDate = homeScreenViewModel.apodDataFromAPI.value.date.toString()
     val constraintSet = ConstraintSet {
 
         val cardIconConstraintRef = createRefFor("cardIcon")
@@ -136,6 +156,11 @@ fun HomeScreen() {
         val apodDescriptionConstraintRef = createRefFor("apodDescription")
         val apodIconConstraintRef = createRefFor("apodIcon")
         val apodDropDownIconConstraintRef = createRefFor("apodDropDownIcon")
+
+        val moreOptionsIcon = createRefFor("moreOptionsIcon")
+        val moreOptionsDropDown = createRefFor("moreOptionsDropDown")
+        val bookMarkIcon = createRefFor("bookMarkIcon")
+        val downloadIcon = createRefFor("downloadIcon")
 
 
         constrain(cardIconConstraintRef) {
@@ -183,6 +208,25 @@ fun HomeScreen() {
             bottom.linkTo(parent.bottom)
             end.linkTo(parent.end)
         }
+
+
+        constrain(moreOptionsIcon) {
+            top.linkTo(apodMediaConstraintRef.top)
+            end.linkTo(apodMediaConstraintRef.end)
+        }
+        constrain(moreOptionsDropDown) {
+            top.linkTo(apodMediaConstraintRef.top)
+            end.linkTo(apodMediaConstraintRef.end)
+        }
+        constrain(downloadIcon) {
+            bottom.linkTo(bookMarkIcon.top)
+            end.linkTo(apodMediaConstraintRef.end)
+        }
+        constrain(bookMarkIcon) {
+            bottom.linkTo(apodMediaConstraintRef.bottom)
+            end.linkTo(apodMediaConstraintRef.end)
+        }
+
     }
     LazyColumn(
         modifier = Modifier
@@ -190,13 +234,32 @@ fun HomeScreen() {
             .background(MaterialTheme.colorScheme.surface)
     ) {
         item {
-            Text(
-                text = homeScreenViewModel.currentPhaseOfDay,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 24.sp,
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.padding(start = 15.dp, top = 30.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(), horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = homeScreenViewModel.currentPhaseOfDay,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier.padding(start = 15.dp, top = 30.dp)
+                )
+                APODSideIconButton(
+                    imageVector = Icons.Outlined.Settings,
+                    onClick = { },
+                    iconBtnModifier = Modifier
+                        .padding(end = 15.dp, top = 20.dp)
+                        .background(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ),
+                    iconBtnColor = MaterialTheme.colorScheme.primaryContainer,
+                    iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    iconModifier = Modifier
+                )
+            }
         }
         /*Geolocation*/
         item {
@@ -327,7 +390,7 @@ fun HomeScreen() {
                         fontSize = 16.sp,
                         style = MaterialTheme.typography.headlineLarge,
                         modifier = Modifier
-                            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                            .padding(start = 15.dp, end = 15.dp),
                         lineHeight = 18.sp,
                         textAlign = TextAlign.Start
                     )
@@ -361,125 +424,14 @@ fun HomeScreen() {
         }
         /*APOD*/
         item {
-
-            val isIconDownwards = rememberSaveable {
-                mutableStateOf(true)
-            }
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                modifier = Modifier
-                    .padding(start = 15.dp, end = 15.dp, top = 30.dp)
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ) {
-                Column(modifier = Modifier.animateContentSize()) {
-                    ConstraintLayout(constraintSet = constraintSet) {
-                        when (homeScreenViewModel.apodDataFromAPI.value.media_type) {
-                            "image" -> {
-                                Coil_Image().CoilImage(
-                                    imgURL = apodURL,
-                                    contentDescription = "Today's \"Astronomy Picture Of The Day\" image",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .layoutId("apodMedia"),
-                                    onError = painterResource(id = R.drawable.ic_launcher_background),
-                                    contentScale = ContentScale.Fit
-                                )
-                            }
-                            "video" -> {
-                                WebViewModified(
-                                    url = apodURL, modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(450.dp)
-                                        .layoutId("apodMedia")
-                                )
-                            }
-                        }
-                        Icon(
-                            imageVector = Icons.Default.Image,
-                            contentDescription = "Icon Of \"Image\"",
-                            modifier = Modifier
-                                .padding(top = 15.dp, start = 15.dp)
-                                .size(25.dp)
-                                .layoutId("apodIcon"),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Text(
-                            text = "APOD",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 18.sp,
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier
-                                .padding(start = 10.dp, top = 30.dp)
-                                .layoutId("apodTitle")
-                        )
-                        Text(
-                            text = "Astronomy Picture Of The Day\non $apodDate",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 14.sp,
-                            style = MaterialTheme.typography.headlineMedium,
-                            modifier = Modifier
-                                .padding(start = 10.dp, top = 2.dp)
-                                .layoutId("apodDescription"),
-                            lineHeight = 16.sp,
-                            textAlign = TextAlign.Start
-                        )
-                        val currentDropDownIcon =
-                            if (isIconDownwards.value) {
-                                Icons.Default.ArrowDropDown
-                            } else {
-                                Icons.Default.ArrowDropUp
-                            }
-
-                        Icon(
-                            imageVector = currentDropDownIcon,
-                            contentDescription = "dropDown",
-                            modifier = Modifier
-                                .padding(top = 10.dp, end = 15.dp)
-                                .size(32.dp)
-                                .layoutId("apodDropDownIcon")
-                                .clickable {
-                                    isIconDownwards.value = !isIconDownwards.value
-                                },
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-                    Divider(
-                        thickness = 0.dp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(
-                            start = 25.dp,
-                            end = 25.dp,
-                            top = 15.dp,
-                            bottom = 15.dp
-                        )
-                    )
-                    Text(
-                        text = "Title : $apodTitle",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 18.sp,
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier
-                            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                        lineHeight = 18.sp,
-                        textAlign = TextAlign.Start
-                    )
-                    if (!isIconDownwards.value) {
-                        Text(
-                            text = apodDescription,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 18.sp,
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier
-                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                            lineHeight = 20.sp,
-                            textAlign = TextAlign.Start
-                        )
-                    }
-                }
-            }
-
+            APODComposable(
+                constraintSet = constraintSet,
+                homeScreenViewModel = homeScreenViewModel,
+                apodURL = apodURL,
+                apodDate = apodDate,
+                apodDescription = apodDescription,
+                apodTitle = apodTitle
+            )
         }
         /*Astronomical Data*/
         item {
@@ -553,7 +505,7 @@ fun HomeScreen() {
                     // moon info
                     CardRowGrid(
                         lhsCardTitle = "Moon Altitude",
-                        lhsCardValue = moonAltitude.moon_altitude.toString(),
+                        lhsCardValue = moonAltitude,
                         rhsCardTitle = "Moon Azimuth",
                         rhsCardValue = moonAzimuthValue
                     )
@@ -607,6 +559,7 @@ fun HomeScreen() {
                     Spacer(modifier = Modifier.height(15.dp))
                 }
             }
+            Spacer(modifier = Modifier.height(30.dp))
         }
     }
 }
@@ -689,4 +642,420 @@ fun WebViewModified(url: String, modifier: Modifier) {
     WebView(state = webViewState, modifier = modifier, onCreated = { webView ->
         webView.settings.javaScriptEnabled = true
     })
+}
+
+@OptIn(ExperimentalLifecycleComposeApi::class)
+@Composable
+fun APODComposable(
+    constraintSet: ConstraintSet,
+    homeScreenViewModel: HomeScreenViewModel,
+    apodURL: String,
+    apodDate: String,
+    apodDescription: String,
+    apodTitle: String
+) {
+    val context = LocalContext.current
+    val localClipboardManager = LocalClipboardManager.current
+    val localUriHandler = LocalUriHandler.current
+    val isIconDownwards = rememberSaveable {
+        mutableStateOf(true)
+    }
+    val coroutineScope = rememberCoroutineScope()
+    val apodIconButtonTransparencyValue = 0.4f
+    val apodIconTransparencyValue = 0.9f
+    val isMoreClicked = rememberSaveable { mutableStateOf(false) }
+    val doesAPODExistsInDB =
+        homeScreenViewModel.doesAPODExistsInDB.value
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+        modifier = Modifier
+            .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+            .fillMaxWidth()
+            .wrapContentHeight()
+    ) {
+        Column(modifier = Modifier.animateContentSize()) {
+            ConstraintLayout(constraintSet = constraintSet) {
+                when (homeScreenViewModel.apodDataFromAPI.value.media_type) {
+                    "image" -> {
+                        Coil_Image().CoilImage(
+                            imgURL = apodURL,
+                            contentDescription = "Today's \"Astronomy Picture Of The Day\" image",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .layoutId("apodMedia"),
+                            onError = painterResource(id = R.drawable.ic_launcher_background),
+                            contentScale = ContentScale.Fit
+                        )
+                        BoxWithConstraints(
+                            modifier = Modifier
+                                .layoutId("moreOptionsIcon")
+                        ) {
+                            APODSideIconButton(
+                                imageVector = Icons.Default.MoreVert,
+                                onClick = {
+                                    isMoreClicked.value = true
+                                },
+                                iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
+                                    apodIconButtonTransparencyValue
+                                ),
+                                iconBtnModifier = Modifier
+                                    .padding(top = 10.dp, end = 10.dp)
+                                    .background(
+                                        shape = CircleShape,
+                                        color = MaterialTheme.colorScheme.secondary.copy(
+                                            apodIconButtonTransparencyValue
+                                        )
+                                    )
+                                    .layoutId("moreOptionsIcon"),
+                                iconColor = MaterialTheme.colorScheme.onSecondary.copy(
+                                    apodIconTransparencyValue
+                                ),
+                                iconModifier = Modifier
+                            )
+                            DropdownMenu(
+                                expanded = isMoreClicked.value,
+                                onDismissRequest = { isMoreClicked.value = false },
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.secondary)
+                                    .layoutId("moreOptionsDropDown")
+                            ) {
+                                DropDownMenuItemModified(
+                                    text = "Open in browser",
+                                    onClick = {
+                                        isMoreClicked.value = false
+                                        localUriHandler.openUri(apodURL)
+                                    },
+                                    imageVector = Icons.Outlined.OpenInBrowser
+                                )
+                                DropDownMenuItemModified(
+                                    text = "Copy image link",
+                                    onClick = {
+                                        isMoreClicked.value = false
+                                        localClipboardManager.setText(AnnotatedString(apodURL))
+                                        Toast.makeText(
+                                            context,
+                                            "Image URL copied to clipboard",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
+                                    imageVector = Icons.Outlined.ContentCopy
+                                )
+                                DropDownMenuItemModified(
+                                    text = "Share",
+                                    onClick = {
+                                        isMoreClicked.value = false
+                                        val intent = Intent()
+                                        intent.action = Intent.ACTION_SEND
+                                        intent.type = "text/plain"
+                                        intent.putExtra(Intent.EXTRA_TEXT, "Sample")
+                                        val shareIntent =
+                                            Intent.createChooser(intent, "Share using :-")
+                                        context.startActivity(shareIntent)
+                                    },
+                                    imageVector = Icons.Outlined.Share
+                                )
+                                DropDownMenuItemModified(
+                                    text = homeScreenViewModel.bookMarkText.value,
+                                    onClick = {
+                                        homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+                                        coroutineScope.launch {
+                                           homeScreenViewModel.dbImplementation.addNewBookMarkToAPODDB(
+                                                APOD_DB_DTO().apply {
+                                                    id = apodURL
+                                                    title = apodTitle
+                                                    datePublished = apodDate
+                                                    description = apodDescription
+                                                    imageURL = apodURL
+                                                    isBookMarked = true
+                                                }
+                                            )
+                                        }
+                                        if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(apodURL)) {
+                                            Toast.makeText(
+                                                context,
+                                                "Added to bookmarks:)",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        isMoreClicked.value = false
+                                    },
+                                    imageVector = homeScreenViewModel.bookMarkIcons.value
+                                )
+                                DropDownMenuItemModified(
+                                    text = "Download",
+                                    onClick = { isMoreClicked.value = false },
+                                    imageVector = Icons.Outlined.FileDownload
+                                )
+                            }
+                        }
+
+                        APODSideIconButton(
+                            imageVector = Icons.Outlined.FileDownload,
+                            onClick = { },
+                            iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
+                                apodIconButtonTransparencyValue
+                            ),
+                            iconBtnModifier = Modifier
+                                .padding(end = 10.dp, bottom = 10.dp)
+                                .background(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.secondary.copy(
+                                        apodIconButtonTransparencyValue
+                                    )
+                                )
+                                .layoutId("downloadIcon"),
+                            iconColor = MaterialTheme.colorScheme.onSecondary.copy(
+                                apodIconTransparencyValue
+                            ),
+                            iconModifier = Modifier
+                        )
+                        APODSideIconButton(
+                            imageVector = homeScreenViewModel.bookMarkIcons.value,
+                            onClick = {
+                                coroutineScope.launch {
+                                    homeScreenViewModel.dbImplementation.addNewBookMarkToAPODDB(
+                                        APOD_DB_DTO().apply {
+                                            id = apodURL
+                                            title = apodTitle
+                                            datePublished = apodDate
+                                            description = apodDescription
+                                            imageURL = apodURL
+                                            isBookMarked = true
+                                        }
+                                    )
+                                    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+                                }
+                                if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(apodURL)) {
+                                    Toast.makeText(
+                                        context,
+                                        "Added to bookmarks:)",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            },
+                            iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
+                                apodIconButtonTransparencyValue
+                            ),
+                            iconBtnModifier = Modifier
+                                .padding(end = 10.dp, bottom = 10.dp)
+                                .background(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.secondary.copy(
+                                        apodIconButtonTransparencyValue
+                                    )
+                                )
+                                .layoutId("bookMarkIcon"),
+                            iconColor = MaterialTheme.colorScheme.onSecondary.copy(
+                                apodIconTransparencyValue
+                            ),
+                            iconModifier = Modifier
+                        )
+                    }
+                    "video" -> {
+                        WebViewModified(
+                            url = apodURL, modifier = Modifier
+                                .fillMaxWidth()
+                                .height(450.dp)
+                                .layoutId("apodMedia")
+                        )
+                    }
+                }
+                Icon(
+                    imageVector = Icons.Default.Image,
+                    contentDescription = "Icon Of \"Image\"",
+                    modifier = Modifier
+                        .padding(top = 15.dp, start = 15.dp)
+                        .size(25.dp)
+                        .layoutId("apodIcon"),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+                Text(
+                    text = "APOD",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 18.sp,
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier
+                        .padding(start = 10.dp, top = 30.dp)
+                        .layoutId("apodTitle")
+                )
+                Text(
+                    text = "Astronomy Picture Of The Day\non $apodDate",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier
+                        .padding(start = 10.dp, top = 2.dp)
+                        .layoutId("apodDescription"),
+                    lineHeight = 16.sp,
+                    textAlign = TextAlign.Start
+                )
+                val currentDropDownIcon =
+                    if (isIconDownwards.value) {
+                        Icons.Default.ArrowDropDown
+                    } else {
+                        Icons.Default.ArrowDropUp
+                    }
+
+                Icon(
+                    imageVector = currentDropDownIcon,
+                    contentDescription = "dropDown",
+                    modifier = Modifier
+                        .padding(top = 10.dp, end = 15.dp)
+                        .size(32.dp)
+                        .layoutId("apodDropDownIcon")
+                        .clickable {
+                            isIconDownwards.value = !isIconDownwards.value
+                        },
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+            Divider(
+                thickness = 0.dp,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(
+                    start = 25.dp,
+                    end = 25.dp,
+                    top = 15.dp,
+                    bottom = 15.dp
+                )
+            )
+            Text(
+                text = "Title : $apodTitle",
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 18.sp,
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier
+                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                lineHeight = 18.sp,
+                textAlign = TextAlign.Start
+            )
+            if (!isIconDownwards.value) {
+                Text(
+                    text = apodDescription,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 18.sp,
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier
+                        .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                    lineHeight = 20.sp,
+                    textAlign = TextAlign.Start
+                )
+            }
+
+            if (isAlertDialogEnabled.value) {
+                AlertDialog(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    onDismissRequest = { isAlertDialogEnabled.value = false },
+                    title = {
+                        Text(
+                            text = "Wait a minute!",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            fontSize = 18.sp
+                        )
+                    }, text = {
+                        Text(
+                            text = "Are you sure want to remove this APOD publication from bookmarks which is stored locally on your device? This can't be undone.",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            lineHeight = 18.sp
+                        )
+                    }, confirmButton = {
+                        Button(
+                            onClick = {
+                                isAlertDialogEnabled.value = false
+                                coroutineScope.launch {
+                                    homeScreenViewModel.dbImplementation.deleteFromAPODDB(apodURL)
+                                    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+                                    if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(apodURL)) {
+                                        Toast.makeText(
+                                            context,
+                                            "Removed the APOD publication from bookmarks",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Something went wrong:(",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                        ) {
+                            Text(
+                                text = "Remove it ASAP!",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }, dismissButton = {
+                        OutlinedButton(
+                            onClick = { isAlertDialogEnabled.value = false },
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.onSecondary
+                            )
+                        ) {
+                            Text(
+                                text = "Um-mm, Never mind",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onSecondary
+                            )
+                        }
+                    })
+            }
+        }
+    }
+    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+}
+
+@Composable
+fun APODSideIconButton(
+    imageVector: ImageVector,
+    onClick: () -> Unit,
+    iconBtnColor: androidx.compose.ui.graphics.Color,
+    @SuppressLint("ModifierParameter") iconBtnModifier: Modifier = Modifier.background(
+        shape = CircleShape,
+        color = iconBtnColor
+    ),
+    iconColor: androidx.compose.ui.graphics.Color,
+    iconModifier: Modifier
+) {
+    IconButton(
+        onClick = { onClick() },
+        modifier = iconBtnModifier,
+        interactionSource = MutableInteractionSource()
+    ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = null,
+            tint = iconColor,
+            modifier = iconModifier
+        )
+    }
+}
+
+@Composable
+fun DropDownMenuItemModified(text: String, onClick: () -> Unit, imageVector: ImageVector) {
+    DropdownMenuItem(
+        text = {
+            Text(
+                text = text,
+                color = MaterialTheme.colorScheme.onSecondary,
+                style = MaterialTheme.typography.headlineLarge
+            )
+        },
+        onClick = { onClick() },
+        leadingIcon = {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondary
+            )
+        },
+        modifier = Modifier.background(MaterialTheme.colorScheme.secondary)
+    )
 }
