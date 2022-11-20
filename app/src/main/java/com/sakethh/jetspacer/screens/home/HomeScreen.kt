@@ -51,6 +51,8 @@ fun HomeScreen() {
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val systemUIController = rememberSystemUiController()
     systemUIController.setStatusBarColor(MaterialTheme.colorScheme.surface)
+
+
     val issInfo = "The \"International Space Station\" is currently over ${
         homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
             initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
@@ -86,6 +88,8 @@ fun HomeScreen() {
             initialValue = IPGeoLocationDTO()
         ).value.day_length
     }"
+
+
     // moon info
     val moonAltitude =
         homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
@@ -112,6 +116,8 @@ fun HomeScreen() {
         homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
             initialValue = IPGeoLocationDTO()
         ).value.moonset.toString()
+
+
 // sun info
     val solarNoonValue =
         homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
@@ -139,6 +145,7 @@ fun HomeScreen() {
         homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
             initialValue = IPGeoLocationDTO()
         ).value.sunset.toString()
+
 
     val apodURL = homeScreenViewModel.apodDataFromAPI.value.url.toString()
     val apodTitle = homeScreenViewModel.apodDataFromAPI.value.title.toString()
@@ -424,8 +431,7 @@ fun HomeScreen() {
         }
         /*APOD*/
         item {
-            APODComposable(
-                constraintSet = constraintSet,
+            APODCardComposable(
                 homeScreenViewModel = homeScreenViewModel,
                 apodURL = apodURL,
                 apodDate = apodDate,
@@ -644,16 +650,100 @@ fun WebViewModified(url: String, modifier: Modifier) {
     })
 }
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
+@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun APODComposable(
-    constraintSet: ConstraintSet,
+fun APODCardComposable(
     homeScreenViewModel: HomeScreenViewModel,
     apodURL: String,
     apodDate: String,
     apodDescription: String,
-    apodTitle: String
+    apodTitle: String,
+    inBookMarkScreen: Boolean = false
 ) {
+    val constraintSet = ConstraintSet {
+
+        val cardIconConstraintRef = createRefFor("cardIcon")
+        val cardTitleConstraintRef = createRefFor("cardTitle")
+        val titleWithIconConstraintRef = createRefFor("titleWithIcon")
+        val cardDescriptionConstraintRef = createRefFor("cardDescription")
+
+        val apodMediaConstraintRef = createRefFor("apodMedia")
+        val apodTitleConstraintRef = createRefFor("apodTitle")
+        val apodDescriptionConstraintRef = createRefFor("apodDescription")
+        val apodIconConstraintRef = createRefFor("apodIcon")
+        val apodDropDownIconConstraintRef = createRefFor("apodDropDownIcon")
+
+        val moreOptionsIcon = createRefFor("moreOptionsIcon")
+        val moreOptionsDropDown = createRefFor("moreOptionsDropDown")
+        val bookMarkIcon = createRefFor("bookMarkIcon")
+        val downloadIcon = createRefFor("downloadIcon")
+
+
+        constrain(cardIconConstraintRef) {
+            top.linkTo(parent.top)
+            start.linkTo(parent.start)
+        }
+        constrain(cardTitleConstraintRef) {
+            top.linkTo(cardIconConstraintRef.top)
+            start.linkTo(cardIconConstraintRef.end)
+            bottom.linkTo(cardDescriptionConstraintRef.top)
+        }
+        constrain(cardDescriptionConstraintRef) {
+            top.linkTo(cardTitleConstraintRef.bottom)
+            start.linkTo(cardIconConstraintRef.end)
+            bottom.linkTo(cardIconConstraintRef.bottom)
+        }
+        constrain(titleWithIconConstraintRef) {
+            top.linkTo(cardIconConstraintRef.top)
+            start.linkTo(cardIconConstraintRef.end)
+            bottom.linkTo(cardIconConstraintRef.bottom)
+        }
+
+
+        constrain(apodMediaConstraintRef) {
+            top.linkTo(parent.top)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+        }
+        constrain(apodIconConstraintRef) {
+            top.linkTo(apodMediaConstraintRef.bottom)
+            start.linkTo(parent.start)
+        }
+        constrain(apodTitleConstraintRef) {
+            top.linkTo(apodIconConstraintRef.top)
+            start.linkTo(apodIconConstraintRef.end)
+            bottom.linkTo(apodDescriptionConstraintRef.top)
+        }
+        constrain(apodDescriptionConstraintRef) {
+            top.linkTo(apodTitleConstraintRef.bottom)
+            start.linkTo(apodIconConstraintRef.end)
+            bottom.linkTo(apodIconConstraintRef.bottom)
+        }
+        constrain(apodDropDownIconConstraintRef) {
+            top.linkTo(apodTitleConstraintRef.top)
+            bottom.linkTo(parent.bottom)
+            end.linkTo(parent.end)
+        }
+
+
+        constrain(moreOptionsIcon) {
+            top.linkTo(apodMediaConstraintRef.top)
+            end.linkTo(apodMediaConstraintRef.end)
+        }
+        constrain(moreOptionsDropDown) {
+            top.linkTo(apodMediaConstraintRef.top)
+            end.linkTo(apodMediaConstraintRef.end)
+        }
+        constrain(downloadIcon) {
+            bottom.linkTo(bookMarkIcon.top)
+            end.linkTo(apodMediaConstraintRef.end)
+        }
+        constrain(bookMarkIcon) {
+            bottom.linkTo(apodMediaConstraintRef.bottom)
+            end.linkTo(apodMediaConstraintRef.end)
+        }
+
+    }
     val context = LocalContext.current
     val localClipboardManager = LocalClipboardManager.current
     val localUriHandler = LocalUriHandler.current
@@ -760,7 +850,7 @@ fun APODComposable(
                                     onClick = {
                                         homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
                                         coroutineScope.launch {
-                                           homeScreenViewModel.dbImplementation.addNewBookMarkToAPODDB(
+                                            homeScreenViewModel.dbImplementation.addNewBookMarkToAPODDB(
                                                 APOD_DB_DTO().apply {
                                                     id = apodURL
                                                     title = apodTitle
@@ -771,7 +861,10 @@ fun APODComposable(
                                                 }
                                             )
                                         }
-                                        if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(apodURL)) {
+                                        if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(
+                                                apodURL
+                                            )
+                                        ) {
                                             Toast.makeText(
                                                 context,
                                                 "Added to bookmarks:)",
@@ -1006,6 +1099,19 @@ fun APODComposable(
                             )
                         }
                     })
+            }
+            if (inBookMarkScreen) {
+                AssistChip(
+                    modifier = Modifier.padding(start = 15.dp, top = 30.dp),
+                    onClick = { },
+                    label = {
+                        Text(
+                            text = "APOD",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontSize = 12.sp
+                        )
+                    }, colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.primaryContainer))
             }
         }
     }
