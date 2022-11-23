@@ -1,14 +1,12 @@
 package com.sakethh.jetspacer.screens.navigation
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksScreen
 import com.sakethh.jetspacer.screens.home.HomeScreen
+import com.sakethh.jetspacer.screens.space.SpaceScreen
 
 @Composable
 fun MainNavigation(navController: NavHostController) {
@@ -16,8 +14,11 @@ fun MainNavigation(navController: NavHostController) {
         composable(route = NavigationRoutes.HOME_SCREEN) {
             HomeScreen()
         }
+        composable(route = NavigationRoutes.SPACE_SCREEN) {
+            SpaceScreen(navController = navController)
+        }
         composable(route = NavigationRoutes.BOOKMARKS_SCREEN) {
-            BookMarksScreen()
+            BookMarksScreen(navController = navController)
         }
     }
 }

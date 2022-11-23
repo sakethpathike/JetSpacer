@@ -1,17 +1,19 @@
 package com.sakethh.jetspacer.screens.navigation
 
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmarks
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.jetspacer.ui.theme.AppTheme
@@ -36,7 +38,7 @@ fun BottomNavigationComposable(
         BottomNavigationItem(
             name = "Home",
             navigationRoute = NavigationRoutes.HOME_SCREEN,
-            selectedIcon = Icons.Rounded.Home,
+            selectedIcon = Icons.Filled.Home,
             nonSelectedIcon = Icons.Outlined.Home
         ),
         BottomNavigationItem(
@@ -44,18 +46,18 @@ fun BottomNavigationComposable(
             navigationRoute = NavigationRoutes.SPACE_SCREEN,
             selectedIcon = null,
             nonSelectedIcon = null,
-            selectedIconRes = R.drawable.satellite_rounded,
+            selectedIconRes = R.drawable.satellite_filled,
             nonSelectedIconRes = R.drawable.satellite_outlined
         ),
         BottomNavigationItem(
             name = "Bookmarks",
             navigationRoute = NavigationRoutes.BOOKMARKS_SCREEN,
-            selectedIcon = Icons.Rounded.Bookmarks,
+            selectedIcon = Icons.Filled.Bookmarks,
             nonSelectedIcon = Icons.Outlined.Bookmarks
         ),
     )
     AppTheme {
-        NavigationBar(containerColor = MaterialTheme.colorScheme.primaryContainer) {
+        NavigationBar(modifier = Modifier.height(52.dp),containerColor = MaterialTheme.colorScheme.primaryContainer) {
             bottomNavDataList.forEach {
                 val isSelected = currentDestination.toString() == it.navigationRoute
                 val currentIconVector = if (isSelected) {
@@ -64,11 +66,13 @@ fun BottomNavigationComposable(
                     it.nonSelectedIcon
                 }
                 val currentIconRes = if (isSelected) {
-                    R.drawable.satellite_rounded
+                    it.selectedIconRes
                 } else {
-                    R.drawable.satellite_outlined
+                    it.nonSelectedIconRes
                 }
-                NavigationBarItem(selected = isSelected, onClick = {
+                NavigationBarItem(/*
+                    colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(0.3f)),*/
+                    selected = isSelected, onClick = {
                     if (!isSelected) {
                         navController.navigate(it.navigationRoute)
                     }
@@ -80,11 +84,13 @@ fun BottomNavigationComposable(
                             tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     } else {
-                        Icon(
-                            painter = painterResource(id = currentIconRes),
-                            contentDescription = it.name,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                        currentIconRes?.let { it1 -> painterResource(id = it1) }?.let { it2 ->
+                            Icon(
+                                painter = it2,
+                                contentDescription = it.name,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
                 })
             }

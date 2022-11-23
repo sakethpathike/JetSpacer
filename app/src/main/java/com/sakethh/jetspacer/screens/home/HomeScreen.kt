@@ -1,8 +1,10 @@
 package com.sakethh.jetspacer.screens.home
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -51,8 +53,11 @@ fun HomeScreen() {
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val systemUIController = rememberSystemUiController()
     systemUIController.setStatusBarColor(MaterialTheme.colorScheme.surface)
-
-
+    systemUIController.setNavigationBarColor(MaterialTheme.colorScheme.primaryContainer)
+    val activity = LocalContext.current as? Activity
+    BackHandler {
+        activity?.finish()
+    }
     val issInfo = "The \"International Space Station\" is currently over ${
         homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
             initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
@@ -565,7 +570,7 @@ fun HomeScreen() {
                     Spacer(modifier = Modifier.height(15.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
@@ -643,11 +648,16 @@ fun CardForRowGridRaw(
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun WebViewModified(url: String, modifier: Modifier) {
-    val webViewState = rememberWebViewState(url = url)
-    WebView(state = webViewState, modifier = modifier, onCreated = { webView ->
-        webView.settings.javaScriptEnabled = true
-    })
+fun WebViewModified(url: String?, embedString: String? = null, modifier: Modifier) {
+    val webViewState = url?.let { rememberWebViewState(url = it) }
+    if (webViewState != null) {
+        WebView(state = webViewState, modifier = modifier, onCreated = { webView ->
+            webView.settings.javaScriptEnabled = true
+            if (embedString != null) {
+                webView.loadData(embedString, "text/html", null)
+            }
+        })
+    }
 }
 
 @OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class)
@@ -814,7 +824,7 @@ fun APODCardComposable(
                                     text = "Open in browser",
                                     onClick = {
                                         isMoreClicked.value = false
-                                        localUriHandler.openUri(apodURL)
+                                        localUriHandler.openUri("https://apod.nasa.gov/apod/")
                                     },
                                     imageVector = Icons.Outlined.OpenInBrowser
                                 )
@@ -838,7 +848,10 @@ fun APODCardComposable(
                                         val intent = Intent()
                                         intent.action = Intent.ACTION_SEND
                                         intent.type = "text/plain"
-                                        intent.putExtra(Intent.EXTRA_TEXT, "Sample")
+                                        intent.putExtra(
+                                            Intent.EXTRA_TEXT,
+                                            "Check out today's APOD:\nhttps://apod.nasa.gov/apod/"
+                                        )
                                         val shareIntent =
                                             Intent.createChooser(intent, "Share using :-")
                                         context.startActivity(shareIntent)
@@ -1102,7 +1115,8 @@ fun APODCardComposable(
             }
             if (inBookMarkScreen) {
                 AssistChip(
-                    modifier = Modifier.padding(start = 15.dp, top = 30.dp),
+                    border = null,
+                    modifier = Modifier.padding(start = 15.dp, bottom = 10.dp),
                     onClick = { },
                     label = {
                         Text(
@@ -1111,7 +1125,9 @@ fun APODCardComposable(
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontSize = 12.sp
                         )
-                    }, colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.primaryContainer))
+                    },
+                    colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                )
             }
         }
     }

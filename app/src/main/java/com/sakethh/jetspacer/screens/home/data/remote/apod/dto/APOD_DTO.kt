@@ -8,5 +8,6 @@ data class APOD_DTO(
     val media_type: String?="",
     val service_version: String?="",
     val title: String?="",
-    val url: String?=""
+    val url: String?="",
+    val copyright:String?=""
 )
