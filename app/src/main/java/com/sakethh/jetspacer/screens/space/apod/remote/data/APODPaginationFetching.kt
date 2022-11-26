@@ -42,10 +42,16 @@ class APODPaginationFetching() {
         val apodURL =
             "https://api.nasa.gov/planetary/apod?api_key=Ffr9YBia9lLW9vWQgzNvzKtKfGlUNvynVvF0UOcf&start_date=$startDate&end_date=$endDate"
         primaryInitForAPODEndDate = 1
-        return APODImplementation(
+        val apodData = mutableListOf<APOD_DTO>()
+        APODImplementation(
             HTTPClient.httpClient,
             apodURL = apodURL
-        ).getAPODForPaginatedList().reversed()
+        ).getAPODForPaginatedList().reversed().forEach {
+            if (it.media_type.toString() == "image") {
+                apodData.add(it)
+            }
+        }
+        return apodData
 
     }
 

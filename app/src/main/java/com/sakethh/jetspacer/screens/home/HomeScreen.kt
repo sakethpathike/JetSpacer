@@ -580,10 +580,12 @@ fun HomeScreen() {
 fun CardRowGrid(
     lhsCardTitle: String,
     lhsCardValue: String,
+    lhsOnClick:()->Unit={},
     rhsCardTitle: String,
     rhsCardValue: String,
     lhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-    rhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    rhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    rhsOnClick:()->Unit={}
 ) {
     AppTheme {
         Row(
@@ -595,12 +597,22 @@ fun CardRowGrid(
             CardForRowGridRaw(
                 title = lhsCardTitle,
                 value = lhsCardValue,
-                cardColors = lhsCardColors
+                cardColors = lhsCardColors,
+                cardModifier = Modifier
+                    .height(85.dp)
+                    .width(150.dp).clickable {
+                        lhsOnClick()
+                    }
             )
             CardForRowGridRaw(
                 title = rhsCardTitle,
                 value = rhsCardValue,
-                cardColors = rhsCardColors
+                cardColors = rhsCardColors,
+                cardModifier = Modifier
+                    .height(85.dp)
+                    .width(150.dp).clickable {
+rhsOnClick()
+                    }
             )
         }
     }
@@ -670,102 +682,11 @@ fun APODCardComposable(
     apodTitle: String,
     inBookMarkScreen: Boolean = false
 ) {
-    val constraintSet = ConstraintSet {
-
-        val cardIconConstraintRef = createRefFor("cardIcon")
-        val cardTitleConstraintRef = createRefFor("cardTitle")
-        val titleWithIconConstraintRef = createRefFor("titleWithIcon")
-        val cardDescriptionConstraintRef = createRefFor("cardDescription")
-
-        val apodMediaConstraintRef = createRefFor("apodMedia")
-        val apodTitleConstraintRef = createRefFor("apodTitle")
-        val apodDescriptionConstraintRef = createRefFor("apodDescription")
-        val apodIconConstraintRef = createRefFor("apodIcon")
-        val apodDropDownIconConstraintRef = createRefFor("apodDropDownIcon")
-
-        val moreOptionsIcon = createRefFor("moreOptionsIcon")
-        val moreOptionsDropDown = createRefFor("moreOptionsDropDown")
-        val bookMarkIcon = createRefFor("bookMarkIcon")
-        val downloadIcon = createRefFor("downloadIcon")
-
-
-        constrain(cardIconConstraintRef) {
-            top.linkTo(parent.top)
-            start.linkTo(parent.start)
-        }
-        constrain(cardTitleConstraintRef) {
-            top.linkTo(cardIconConstraintRef.top)
-            start.linkTo(cardIconConstraintRef.end)
-            bottom.linkTo(cardDescriptionConstraintRef.top)
-        }
-        constrain(cardDescriptionConstraintRef) {
-            top.linkTo(cardTitleConstraintRef.bottom)
-            start.linkTo(cardIconConstraintRef.end)
-            bottom.linkTo(cardIconConstraintRef.bottom)
-        }
-        constrain(titleWithIconConstraintRef) {
-            top.linkTo(cardIconConstraintRef.top)
-            start.linkTo(cardIconConstraintRef.end)
-            bottom.linkTo(cardIconConstraintRef.bottom)
-        }
-
-
-        constrain(apodMediaConstraintRef) {
-            top.linkTo(parent.top)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-        }
-        constrain(apodIconConstraintRef) {
-            top.linkTo(apodMediaConstraintRef.bottom)
-            start.linkTo(parent.start)
-        }
-        constrain(apodTitleConstraintRef) {
-            top.linkTo(apodIconConstraintRef.top)
-            start.linkTo(apodIconConstraintRef.end)
-            bottom.linkTo(apodDescriptionConstraintRef.top)
-        }
-        constrain(apodDescriptionConstraintRef) {
-            top.linkTo(apodTitleConstraintRef.bottom)
-            start.linkTo(apodIconConstraintRef.end)
-            bottom.linkTo(apodIconConstraintRef.bottom)
-        }
-        constrain(apodDropDownIconConstraintRef) {
-            top.linkTo(apodTitleConstraintRef.top)
-            bottom.linkTo(parent.bottom)
-            end.linkTo(parent.end)
-        }
-
-
-        constrain(moreOptionsIcon) {
-            top.linkTo(apodMediaConstraintRef.top)
-            end.linkTo(apodMediaConstraintRef.end)
-        }
-        constrain(moreOptionsDropDown) {
-            top.linkTo(apodMediaConstraintRef.top)
-            end.linkTo(apodMediaConstraintRef.end)
-        }
-        constrain(downloadIcon) {
-            bottom.linkTo(bookMarkIcon.top)
-            end.linkTo(apodMediaConstraintRef.end)
-        }
-        constrain(bookMarkIcon) {
-            bottom.linkTo(apodMediaConstraintRef.bottom)
-            end.linkTo(apodMediaConstraintRef.end)
-        }
-
-    }
     val context = LocalContext.current
-    val localClipboardManager = LocalClipboardManager.current
-    val localUriHandler = LocalUriHandler.current
     val isIconDownwards = rememberSaveable {
         mutableStateOf(true)
     }
     val coroutineScope = rememberCoroutineScope()
-    val apodIconButtonTransparencyValue = 0.4f
-    val apodIconTransparencyValue = 0.9f
-    val isMoreClicked = rememberSaveable { mutableStateOf(false) }
-    val doesAPODExistsInDB =
-        homeScreenViewModel.doesAPODExistsInDB.value
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         modifier = Modifier
@@ -775,198 +696,13 @@ fun APODCardComposable(
     ) {
         Column(modifier = Modifier.animateContentSize()) {
             ConstraintLayout(constraintSet = constraintSet) {
-                when (homeScreenViewModel.apodDataFromAPI.value.media_type) {
-                    "image" -> {
-                        Coil_Image().CoilImage(
-                            imgURL = apodURL,
-                            contentDescription = "Today's \"Astronomy Picture Of The Day\" image",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .layoutId("apodMedia"),
-                            onError = painterResource(id = R.drawable.ic_launcher_background),
-                            contentScale = ContentScale.Fit
-                        )
-                        BoxWithConstraints(
-                            modifier = Modifier
-                                .layoutId("moreOptionsIcon")
-                        ) {
-                            APODSideIconButton(
-                                imageVector = Icons.Default.MoreVert,
-                                onClick = {
-                                    isMoreClicked.value = true
-                                },
-                                iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
-                                    apodIconButtonTransparencyValue
-                                ),
-                                iconBtnModifier = Modifier
-                                    .padding(top = 10.dp, end = 10.dp)
-                                    .background(
-                                        shape = CircleShape,
-                                        color = MaterialTheme.colorScheme.secondary.copy(
-                                            apodIconButtonTransparencyValue
-                                        )
-                                    )
-                                    .layoutId("moreOptionsIcon"),
-                                iconColor = MaterialTheme.colorScheme.onSecondary.copy(
-                                    apodIconTransparencyValue
-                                ),
-                                iconModifier = Modifier
-                            )
-                            DropdownMenu(
-                                expanded = isMoreClicked.value,
-                                onDismissRequest = { isMoreClicked.value = false },
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.secondary)
-                                    .layoutId("moreOptionsDropDown")
-                            ) {
-                                DropDownMenuItemModified(
-                                    text = "Open in browser",
-                                    onClick = {
-                                        isMoreClicked.value = false
-                                        localUriHandler.openUri("https://apod.nasa.gov/apod/")
-                                    },
-                                    imageVector = Icons.Outlined.OpenInBrowser
-                                )
-                                DropDownMenuItemModified(
-                                    text = "Copy image link",
-                                    onClick = {
-                                        isMoreClicked.value = false
-                                        localClipboardManager.setText(AnnotatedString(apodURL))
-                                        Toast.makeText(
-                                            context,
-                                            "Image URL copied to clipboard",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    },
-                                    imageVector = Icons.Outlined.ContentCopy
-                                )
-                                DropDownMenuItemModified(
-                                    text = "Share",
-                                    onClick = {
-                                        isMoreClicked.value = false
-                                        val intent = Intent()
-                                        intent.action = Intent.ACTION_SEND
-                                        intent.type = "text/plain"
-                                        intent.putExtra(
-                                            Intent.EXTRA_TEXT,
-                                            "Check out today's APOD:\nhttps://apod.nasa.gov/apod/"
-                                        )
-                                        val shareIntent =
-                                            Intent.createChooser(intent, "Share using :-")
-                                        context.startActivity(shareIntent)
-                                    },
-                                    imageVector = Icons.Outlined.Share
-                                )
-                                DropDownMenuItemModified(
-                                    text = homeScreenViewModel.bookMarkText.value,
-                                    onClick = {
-                                        homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
-                                        coroutineScope.launch {
-                                            homeScreenViewModel.dbImplementation.addNewBookMarkToAPODDB(
-                                                APOD_DB_DTO().apply {
-                                                    id = apodURL
-                                                    title = apodTitle
-                                                    datePublished = apodDate
-                                                    description = apodDescription
-                                                    imageURL = apodURL
-                                                    isBookMarked = true
-                                                }
-                                            )
-                                        }
-                                        if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(
-                                                apodURL
-                                            )
-                                        ) {
-                                            Toast.makeText(
-                                                context,
-                                                "Added to bookmarks:)",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                        isMoreClicked.value = false
-                                    },
-                                    imageVector = homeScreenViewModel.bookMarkIcons.value
-                                )
-                                DropDownMenuItemModified(
-                                    text = "Download",
-                                    onClick = { isMoreClicked.value = false },
-                                    imageVector = Icons.Outlined.FileDownload
-                                )
-                            }
-                        }
-
-                        APODSideIconButton(
-                            imageVector = Icons.Outlined.FileDownload,
-                            onClick = { },
-                            iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
-                                apodIconButtonTransparencyValue
-                            ),
-                            iconBtnModifier = Modifier
-                                .padding(end = 10.dp, bottom = 10.dp)
-                                .background(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.secondary.copy(
-                                        apodIconButtonTransparencyValue
-                                    )
-                                )
-                                .layoutId("downloadIcon"),
-                            iconColor = MaterialTheme.colorScheme.onSecondary.copy(
-                                apodIconTransparencyValue
-                            ),
-                            iconModifier = Modifier
-                        )
-                        APODSideIconButton(
-                            imageVector = homeScreenViewModel.bookMarkIcons.value,
-                            onClick = {
-                                coroutineScope.launch {
-                                    homeScreenViewModel.dbImplementation.addNewBookMarkToAPODDB(
-                                        APOD_DB_DTO().apply {
-                                            id = apodURL
-                                            title = apodTitle
-                                            datePublished = apodDate
-                                            description = apodDescription
-                                            imageURL = apodURL
-                                            isBookMarked = true
-                                        }
-                                    )
-                                    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
-                                }
-                                if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(apodURL)) {
-                                    Toast.makeText(
-                                        context,
-                                        "Added to bookmarks:)",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            },
-                            iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
-                                apodIconButtonTransparencyValue
-                            ),
-                            iconBtnModifier = Modifier
-                                .padding(end = 10.dp, bottom = 10.dp)
-                                .background(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.secondary.copy(
-                                        apodIconButtonTransparencyValue
-                                    )
-                                )
-                                .layoutId("bookMarkIcon"),
-                            iconColor = MaterialTheme.colorScheme.onSecondary.copy(
-                                apodIconTransparencyValue
-                            ),
-                            iconModifier = Modifier
-                        )
-                    }
-                    "video" -> {
-                        WebViewModified(
-                            url = apodURL, modifier = Modifier
-                                .fillMaxWidth()
-                                .height(450.dp)
-                                .layoutId("apodMedia")
-                        )
-                    }
-                }
+                APODImageLayout(
+                    homeScreenViewModel = homeScreenViewModel,
+                    apodURL = apodURL,
+                    apodTitle = apodTitle,
+                    apodDate = apodDate,
+                    apodDescription = apodDescription
+                )
                 Icon(
                     imageVector = Icons.Default.Image,
                     contentDescription = "Icon Of \"Image\"",
@@ -1180,4 +916,218 @@ fun DropDownMenuItemModified(text: String, onClick: () -> Unit, imageVector: Ima
         },
         modifier = Modifier.background(MaterialTheme.colorScheme.secondary)
     )
+}
+
+@Composable
+fun APODImageLayout(
+    homeScreenViewModel: HomeScreenViewModel,
+    apodURL: String,
+    apodTitle: String,
+    apodDate: String,
+    apodDescription: String,
+    inAPODScreen: Boolean = false
+) {
+
+    val context = LocalContext.current
+    val localClipboardManager = LocalClipboardManager.current
+    val localUriHandler = LocalUriHandler.current
+    val coroutineScope = rememberCoroutineScope()
+    val apodIconButtonTransparencyValue = 0.4f
+    val apodIconTransparencyValue = 0.9f
+    val isMoreClicked = rememberSaveable { mutableStateOf(false) }
+    when (homeScreenViewModel.apodDataFromAPI.value.media_type) {
+        "image" -> {
+            Coil_Image().CoilImage(
+                imgURL = apodURL,
+                contentDescription = "Today's \"Astronomy Picture Of The Day\" image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .layoutId("apodMedia"),
+                onError = painterResource(id = R.drawable.ic_launcher_background),
+                contentScale = ContentScale.Fit
+            )
+            BoxWithConstraints(
+                modifier = Modifier
+                    .layoutId("moreOptionsIcon")
+            ) {
+                APODSideIconButton(
+                    imageVector = Icons.Default.MoreVert,
+                    onClick = {
+                        isMoreClicked.value = true
+                    },
+                    iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
+                        apodIconButtonTransparencyValue
+                    ),
+                    iconBtnModifier = Modifier
+                        .padding(top = 10.dp, end = 10.dp)
+                        .background(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.secondary.copy(
+                                apodIconButtonTransparencyValue
+                            )
+                        )
+                        .layoutId("moreOptionsIcon"),
+                    iconColor = MaterialTheme.colorScheme.onSecondary.copy(
+                        apodIconTransparencyValue
+                    ),
+                    iconModifier = Modifier
+                )
+                DropdownMenu(
+                    expanded = isMoreClicked.value,
+                    onDismissRequest = { isMoreClicked.value = false },
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.secondary)
+                        .layoutId("moreOptionsDropDown")
+                ) {
+                    DropDownMenuItemModified(
+                        text = "Open in browser",
+                        onClick = {
+                            isMoreClicked.value = false
+                            localUriHandler.openUri("https://apod.nasa.gov/apod/")
+                        },
+                        imageVector = Icons.Outlined.OpenInBrowser
+                    )
+                    DropDownMenuItemModified(
+                        text = "Copy image link",
+                        onClick = {
+                            isMoreClicked.value = false
+                            localClipboardManager.setText(AnnotatedString(apodURL))
+                            Toast.makeText(
+                                context,
+                                "Image URL copied to clipboard",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        imageVector = Icons.Outlined.ContentCopy
+                    )
+                    DropDownMenuItemModified(
+                        text = "Share",
+                        onClick = {
+                            isMoreClicked.value = false
+                            val intent = Intent()
+                            intent.action = Intent.ACTION_SEND
+                            intent.type = "text/plain"
+                            intent.putExtra(
+                                Intent.EXTRA_TEXT,
+                                "Check out today's APOD:\nhttps://apod.nasa.gov/apod/"
+                            )
+                            val shareIntent =
+                                Intent.createChooser(intent, "Share using :-")
+                            context.startActivity(shareIntent)
+                        },
+                        imageVector = Icons.Outlined.Share
+                    )
+                    DropDownMenuItemModified(
+                        text = homeScreenViewModel.bookMarkText.value,
+                        onClick = {
+                            homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+                            coroutineScope.launch {
+                                homeScreenViewModel.dbImplementation.addNewBookMarkToAPODDB(
+                                    APOD_DB_DTO().apply {
+                                        id = apodURL
+                                        title = apodTitle
+                                        datePublished = apodDate
+                                        description = apodDescription
+                                        imageURL = apodURL
+                                        isBookMarked = true
+                                    }
+                                )
+                            }
+                            if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(
+                                    apodURL
+                                )
+                            ) {
+                                Toast.makeText(
+                                    context,
+                                    "Added to bookmarks:)",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            isMoreClicked.value = false
+                        },
+                        imageVector = homeScreenViewModel.bookMarkIcons.value
+                    )
+                    DropDownMenuItemModified(
+                        text = "Download",
+                        onClick = { isMoreClicked.value = false },
+                        imageVector = Icons.Outlined.FileDownload
+                    )
+                }
+            }
+
+            if (!inAPODScreen) {
+                APODSideIconButton(
+                    imageVector = Icons.Outlined.FileDownload,
+                    onClick = { },
+                    iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
+                        apodIconButtonTransparencyValue
+                    ),
+                    iconBtnModifier = Modifier
+                        .padding(end = 10.dp, bottom = 10.dp)
+                        .background(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.secondary.copy(
+                                apodIconButtonTransparencyValue
+                            )
+                        )
+                        .layoutId("downloadIcon"),
+                    iconColor = MaterialTheme.colorScheme.onSecondary.copy(
+                        apodIconTransparencyValue
+                    ),
+                    iconModifier = Modifier
+                )
+                APODSideIconButton(
+                    imageVector = homeScreenViewModel.bookMarkIcons.value,
+                    onClick = {
+                        coroutineScope.launch {
+                            homeScreenViewModel.dbImplementation.addNewBookMarkToAPODDB(
+                                APOD_DB_DTO().apply {
+                                    id = apodURL
+                                    title = apodTitle
+                                    datePublished = apodDate
+                                    description = apodDescription
+                                    imageURL = apodURL
+                                    isBookMarked = true
+                                }
+                            )
+                            homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+                        }
+                        if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(apodURL)) {
+                            Toast.makeText(
+                                context,
+                                "Added to bookmarks:)",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    },
+                    iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
+                        apodIconButtonTransparencyValue
+                    ),
+                    iconBtnModifier = Modifier
+                        .padding(end = 10.dp, bottom = 10.dp)
+                        .background(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.secondary.copy(
+                                apodIconButtonTransparencyValue
+                            )
+                        )
+                        .layoutId("bookMarkIcon"),
+                    iconColor = MaterialTheme.colorScheme.onSecondary.copy(
+                        apodIconTransparencyValue
+                    ),
+                    iconModifier = Modifier
+                )
+            }
+        }
+        "video" -> {
+            WebViewModified(
+                url = apodURL, modifier = Modifier
+                    .fillMaxWidth()
+                    .height(450.dp)
+                    .layoutId("apodMedia")
+            )
+        }
+    }
+
 }
