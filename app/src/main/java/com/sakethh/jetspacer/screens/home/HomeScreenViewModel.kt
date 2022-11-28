@@ -69,7 +69,7 @@ class HomeScreenViewModel(
         }
         this.viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
             awaitAll(
-                async { ipGeolocationFetching.getGeoLocationData() },
+                async { ipGeolocationFetching.getGeoLocationData()},
                 async { issLocationFetching.getISSLatitudeAndLongitude() },
                 async { apodFetching.getAPOD() }
             )

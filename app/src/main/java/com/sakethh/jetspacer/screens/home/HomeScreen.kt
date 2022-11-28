@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
@@ -27,6 +28,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -580,12 +582,12 @@ fun HomeScreen() {
 fun CardRowGrid(
     lhsCardTitle: String,
     lhsCardValue: String,
-    lhsOnClick:()->Unit={},
+    lhsOnClick: () -> Unit = {},
     rhsCardTitle: String,
     rhsCardValue: String,
     lhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     rhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-    rhsOnClick:()->Unit={}
+    rhsOnClick: () -> Unit = {}
 ) {
     AppTheme {
         Row(
@@ -600,7 +602,8 @@ fun CardRowGrid(
                 cardColors = lhsCardColors,
                 cardModifier = Modifier
                     .height(85.dp)
-                    .width(150.dp).clickable {
+                    .width(150.dp)
+                    .clickable {
                         lhsOnClick()
                     }
             )
@@ -610,8 +613,9 @@ fun CardRowGrid(
                 cardColors = rhsCardColors,
                 cardModifier = Modifier
                     .height(85.dp)
-                    .width(150.dp).clickable {
-rhsOnClick()
+                    .width(150.dp)
+                    .clickable {
+                        rhsOnClick()
                     }
             )
         }
@@ -625,36 +629,70 @@ fun CardForRowGridRaw(
     cardModifier: Modifier = Modifier
         .height(85.dp)
         .width(150.dp),
-    cardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    cardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    inSpaceScreen: Boolean = false,
+    imageHeight: Dp =110.dp,
+    imgURL:String=""
 ) {
+    val lhsTextColumnModifier=if(!inSpaceScreen){
+        Modifier.padding(15.dp)
+    }else{
+        Modifier
+            .padding(15.dp)
+            .fillMaxWidth(0.55f)
+    }
     AppTheme {
         Card(
             modifier = cardModifier,
             colors = cardColors
         ) {
-            Column(
-                modifier = Modifier.padding(15.dp)
-            ) {
-                Text(
-                    text = title,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontSize = 14.sp,
-                    style = MaterialTheme.typography.headlineMedium,
-                    lineHeight = 16.sp,
-                    softWrap = true,
-                    textAlign = TextAlign.Start
-                )
-                Text(
-                    text = value,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontSize = 16.sp,
-                    style = MaterialTheme.typography.headlineLarge,
-                    lineHeight = 18.sp,
-                    softWrap = true,
-                    textAlign = TextAlign.Start, modifier = Modifier.padding(top = 4.dp)
-                )
+            Row {
+                Column(
+                    modifier = lhsTextColumnModifier
+                ) {
+                    Text(
+                        text = title,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.headlineMedium,
+                        lineHeight = 16.sp,
+                        softWrap = true,
+                        textAlign = TextAlign.Start
+                    )
+                    Text(
+                        text = value,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontSize = 16.sp,
+                        style = MaterialTheme.typography.headlineLarge,
+                        lineHeight = 18.sp,
+                        softWrap = true,
+                        textAlign = TextAlign.Start, modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+                if(inSpaceScreen){
+                    Box(Modifier.background(
+                            brush = Brush.horizontalGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primaryContainer.copy(
+                                        0.3f
+                                    ), MaterialTheme.colorScheme.primaryContainer.copy(1f)
+                                )
+                            )
+                            )) {
+                        Coil_Image().CoilImage(
+                            imgURL = imgURL,
+                            contentDescription = "",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(imageHeight),
+                            onError = painterResource(id = R.drawable.satellite_filled),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
             }
         }
+
     }
 }
 
@@ -672,6 +710,7 @@ fun WebViewModified(url: String?, embedString: String? = null, modifier: Modifie
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun APODCardComposable(
@@ -867,7 +906,9 @@ fun APODCardComposable(
             }
         }
     }
-    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+    coroutineScope.launch {
+        homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+    }
 }
 
 @Composable
@@ -943,6 +984,9 @@ fun APODImageLayout(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
+                    .clickable {
+
+                    }
                     .layoutId("apodMedia"),
                 onError = painterResource(id = R.drawable.ic_launcher_background),
                 contentScale = ContentScale.Fit

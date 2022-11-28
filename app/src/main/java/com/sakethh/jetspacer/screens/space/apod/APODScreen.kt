@@ -63,13 +63,18 @@ fun APODScreen(navController: NavController) {
     val apodTitle = rememberSaveable { mutableStateOf("") }
     val apodDate = rememberSaveable { mutableStateOf("") }
     val apodDescription = rememberSaveable { mutableStateOf("") }
-    val apodCopyright = rememberSaveable { mutableStateOf("") }
     val homeScreenVM: HomeScreenViewModel = viewModel()
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     BackHandler {
-        navController.navigate(NavigationRoutes.SPACE_SCREEN) {
-            popUpTo(0)
+        if (bottomSheetState.isVisible) {
+            coroutineScope.launch {
+                bottomSheetState.hide()
+            }
+        } else {
+            navController.navigate(NavigationRoutes.SPACE_SCREEN) {
+                popUpTo(0)
+            }
         }
     }
     AppTheme {
@@ -98,8 +103,7 @@ fun APODScreen(navController: NavController) {
                         apodURL = apodURL.value,
                         apodTitle = apodTitle.value,
                         apodDate = apodDate.value,
-                        apodDescription = apodDescription.value,
-                        apodCopyright = apodCopyright.value
+                        apodDescription = apodDescription.value
                     )
                 },
                 sheetState = bottomSheetState,
@@ -130,7 +134,6 @@ fun APODScreen(navController: NavController) {
                                         apodURL.value = apodItem.url.toString()
                                         apodDescription.value = apodItem.explanation.toString()
                                         apodTitle.value = apodItem.title.toString()
-                                        apodCopyright.value = apodItem.copyright.toString()
                                         bottomSheetState.show()
                                     }
                                 },
@@ -146,17 +149,21 @@ fun APODScreen(navController: NavController) {
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun APODBottomSheetContent(
     homeScreenViewModel: HomeScreenViewModel,
     apodURL: String,
     apodTitle: String,
     apodDate: String,
-    apodDescription: String,
-    apodCopyright: String
+    apodDescription: String
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+
+    coroutineScope.launch {
+        homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+    }
     LazyColumn {
         item {
             ConstraintLayout(constraintSet = constraintSet) {
@@ -264,18 +271,18 @@ fun APODBottomSheetContent(
                 textAlign = TextAlign.Start
             )
         }
-        item {/*
-            Text(
-                text = "© $apodCopyright",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 18.sp,
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier
-                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                lineHeight = 20.sp,
-                textAlign = TextAlign.Start
-            )*/
-        }
+/*item {
+    Text(
+        text = "© $apodCopyright",
+        color = MaterialTheme.colorScheme.onPrimary,
+        fontSize = 18.sp,
+        style = MaterialTheme.typography.headlineLarge,
+        modifier = Modifier
+            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+        lineHeight = 20.sp,
+        textAlign = TextAlign.Start
+    )
+}*/
 
         item {
             Divider(

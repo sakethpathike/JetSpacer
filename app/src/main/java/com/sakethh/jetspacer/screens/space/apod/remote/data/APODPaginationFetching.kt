@@ -3,9 +3,9 @@ package com.sakethh.jetspacer.screens.space.apod.remote.data
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import com.sakethh.jetspacer.screens.HTTPClient
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODImplementation
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
+import com.sakethh.jetspacer.screens.httpClient.HTTPClient
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching.APODPaginationUtils.calendar
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching.APODPaginationUtils.currentAPODDate
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching.APODPaginationUtils.initialFetchingValue
@@ -20,7 +20,7 @@ class APODPaginationFetching() {
 
     @SuppressLint("SimpleDateFormat")
     suspend fun getPaginatedAPODATA(): List<APOD_DTO> {
-        val apodImplementation = APODImplementation(HTTPClient.httpClient)
+        val apodImplementation = APODImplementation(HTTPClient.ktorClient)
         val fetchingLimit = 15
         val dateFormat = SimpleDateFormat("yyyy-MM-dd")
         initialFetchingValue += fetchingLimit
@@ -44,7 +44,7 @@ class APODPaginationFetching() {
         primaryInitForAPODEndDate = 1
         val apodData = mutableListOf<APOD_DTO>()
         APODImplementation(
-            HTTPClient.httpClient,
+            HTTPClient.ktorClient,
             apodURL = apodURL
         ).getAPODForPaginatedList().reversed().forEach {
             if (it.media_type.toString() == "image") {
@@ -64,7 +64,7 @@ class APODPaginationFetching() {
     }
 
     init {
-        val apodImplementation = APODImplementation(HTTPClient.httpClient)
+        val apodImplementation = APODImplementation(HTTPClient.ktorClient)
         CoroutineScope(Dispatchers.Default).launch {
             currentAPODDate = apodImplementation.getAPOD().date.toString()
         }
