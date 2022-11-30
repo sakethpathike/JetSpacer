@@ -16,6 +16,8 @@ val constraintSet = ConstraintSet {
     val apodIconConstraintRef = createRefFor("apodIcon")
     val apodDropDownIconConstraintRef = createRefFor("apodDropDownIcon")
 
+    val changeAPODDate = createRefFor("changeAPODDate")
+
     val moreOptionsIcon = createRefFor("moreOptionsIcon")
     val moreOptionsDropDown = createRefFor("moreOptionsDropDown")
     val bookMarkIcon = createRefFor("bookMarkIcon")
@@ -61,6 +63,10 @@ val constraintSet = ConstraintSet {
         top.linkTo(apodTitleConstraintRef.bottom)
         start.linkTo(apodIconConstraintRef.end)
         bottom.linkTo(apodIconConstraintRef.bottom)
+    }
+    constrain(changeAPODDate) {
+        top.linkTo(apodDescriptionConstraintRef.bottom)
+        start.linkTo(apodDescriptionConstraintRef.start)
     }
     constrain(apodDropDownIconConstraintRef) {
         top.linkTo(apodTitleConstraintRef.top)

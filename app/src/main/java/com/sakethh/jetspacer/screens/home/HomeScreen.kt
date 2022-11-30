@@ -11,16 +11,28 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.material.SelectableChipColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -46,10 +58,11 @@ import com.sakethh.jetspacer.screens.home.HomeScreenViewModel.BookMarkUtils.isAl
 import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.dto.IPGeoLocationDTO
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.ISSLocationDTO
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.IssPosition
+import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
+@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen() {
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
@@ -57,8 +70,18 @@ fun HomeScreen() {
     systemUIController.setStatusBarColor(MaterialTheme.colorScheme.surface)
     systemUIController.setNavigationBarColor(MaterialTheme.colorScheme.primaryContainer)
     val activity = LocalContext.current as? Activity
+
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val coroutineScope = rememberCoroutineScope()
     BackHandler {
-        activity?.finish()
+        if (bottomSheetState.isVisible) {
+            coroutineScope.launch {
+                bottomSheetState.hide()
+            }
+        } else {
+            activity?.finish()
+        }
     }
     val issInfo = "The \"International Space Station\" is currently over ${
         homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
@@ -242,337 +265,357 @@ fun HomeScreen() {
         }
 
     }
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-    ) {
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(), horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = homeScreenViewModel.currentPhaseOfDay,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 24.sp,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(start = 15.dp, top = 30.dp)
-                )
-                APODSideIconButton(
-                    imageVector = Icons.Outlined.Settings,
-                    onClick = { },
-                    iconBtnModifier = Modifier
-                        .padding(end = 15.dp, top = 20.dp)
-                        .background(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ),
-                    iconBtnColor = MaterialTheme.colorScheme.primaryContainer,
-                    iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    iconModifier = Modifier
-                )
-            }
-        }
-        /*Geolocation*/
-        item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                modifier = Modifier
-                    .padding(start = 15.dp, end = 15.dp, top = 30.dp)
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ) {
-                Column {
-                    ConstraintLayout(constraintSet = constraintSet) {
-                        Icon(
-                            imageVector = Icons.Default.MyLocation,
-                            contentDescription = "Icon Of \"My Location\"",
-                            modifier = Modifier
-                                .padding(top = 15.dp, start = 15.dp)
-                                .size(25.dp)
-                                .layoutId("cardIcon"),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Text(
-                            text = "Your Geolocation Data",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 18.sp,
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier
-                                .padding(start = 10.dp, top = 10.dp)
-                                .layoutId("cardTitle")
-                        )
-                        Text(
-                            text = "Based on your I.P address",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 14.sp,
-                            style = MaterialTheme.typography.headlineMedium,
-                            modifier = Modifier
-                                .padding(start = 10.dp, top = 2.dp)
-                                .layoutId("cardDescription")
-                        )
-                    }
-                    Divider(
-                        thickness = 0.dp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(
-                            start = 25.dp,
-                            end = 25.dp,
-                            top = 15.dp,
-                            bottom = 15.dp
-                        )
-                    )
-                    Text(
-                        text = "I.P address : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.ip}\nLocation : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.district}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.city}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.country_name}.",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 16.sp,
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier
-                            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                        lineHeight = 18.sp,
-                        textAlign = TextAlign.Start
-                    )
-                    Divider(
-                        thickness = 0.dp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(
-                            start = 25.dp,
-                            end = 25.dp,
-                            top = 0.dp,
-                            bottom = 15.dp
-                        )
-                    )
-                    Text(
-                        text = "Zip code : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.zipcode}\n" +
-                                "Latitude and Longitude of the city : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.latitude}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude}",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 16.sp,
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier
-                            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                        lineHeight = 18.sp,
-                        textAlign = TextAlign.Start
-                    )
-                }
-            }
-        }
-        /*ISS Location*/
-        item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                modifier = Modifier
-                    .padding(start = 15.dp, end = 15.dp, top = 30.dp)
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ) {
-                Column {
-                    ConstraintLayout(constraintSet = constraintSet) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.satellite_icon),
-                            contentDescription = "Icon Of \"Satellite\"",
-                            modifier = Modifier
-                                .padding(top = 15.dp, start = 15.dp)
-                                .size(25.dp)
-                                .layoutId("cardIcon"),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Text(
-                            text = "ISS Info",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 18.sp,
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier
-                                .padding(start = 10.dp, top = 10.dp)
-                                .layoutId("titleWithIcon")
-                        )
-                    }
-                    Divider(
-                        thickness = 0.dp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(
-                            start = 25.dp,
-                            end = 25.dp,
-                            top = 15.dp,
-                            bottom = 15.dp
-                        )
-                    )
-                    Text(
-                        text = issInfo,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 16.sp,
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier
-                            .padding(start = 15.dp, end = 15.dp),
-                        lineHeight = 18.sp,
-                        textAlign = TextAlign.Start
-                    )
-                    Divider(
-                        thickness = 0.dp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(
-                            start = 25.dp,
-                            end = 25.dp,
-                            top = 15.dp,
-                            bottom = 15.dp
-                        )
-                    )
-                    CardRowGrid(
-                        lhsCardTitle = "Latitude",
-                        lhsCardValue = issLatitude,
-                        rhsCardTitle = "Longitude",
-                        rhsCardValue = issLongitude
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    CardRowGrid(
-                        lhsCardTitle = "Time Stamp",
-                        lhsCardValue = issTimestamp,
-                        rhsCardTitle = "",
-                        rhsCardValue = "",
-                        rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                }
-            }
-        }
-        /*APOD*/
-        item {
-            APODCardComposable(
+    ModalBottomSheetLayout(
+        sheetContent = {
+            APODBottomSheetContent(
                 homeScreenViewModel = homeScreenViewModel,
                 apodURL = apodURL,
+                apodTitle = apodTitle,
                 apodDate = apodDate,
-                apodDescription = apodDescription,
-                apodTitle = apodTitle
+                apodDescription = apodDescription
             )
-        }
-        /*Astronomical Data*/
-        item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                modifier = Modifier
-                    .padding(start = 15.dp, end = 15.dp, top = 30.dp)
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ) {
-                Column {
-                    ConstraintLayout(constraintSet = constraintSet) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.list_icon),
-                            contentDescription = "Icon Of \"DataExploration\"",
-                            modifier = Modifier
-                                .padding(top = 15.dp, start = 15.dp)
-                                .size(25.dp)
-                                .layoutId("cardIcon"),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Text(
-                            text = "Astronomical Data",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 18.sp,
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier
-                                .padding(start = 10.dp, top = 10.dp)
-                                .layoutId("cardTitle")
-                        )
-                        Text(
-                            text = "Based on your I.P address",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 14.sp,
-                            style = MaterialTheme.typography.headlineMedium,
-                            modifier = Modifier
-                                .padding(start = 10.dp, top = 2.dp)
-                                .layoutId("cardDescription")
-                        )
-                    }
-                    Divider(
-                        thickness = 0.dp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(
-                            start = 25.dp,
-                            end = 25.dp,
-                            top = 15.dp,
-                            bottom = 15.dp
-                        )
-                    )
+        },
+        sheetState = bottomSheetState,
+        sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
+        sheetBackgroundColor = MaterialTheme.colorScheme.primary
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+        ) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(), horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        text = currentTimeInfo,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 16.sp,
+                        text = homeScreenViewModel.currentPhaseOfDay,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 24.sp,
                         style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier
-                            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                        lineHeight = 18.sp,
-                        textAlign = TextAlign.Start
+                        modifier = Modifier.padding(start = 15.dp, top = 30.dp)
                     )
-                    Divider(
-                        thickness = 0.dp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(
-                            start = 25.dp,
-                            end = 25.dp,
-                            top = 0.dp,
-                            bottom = 15.dp
-                        )
+                    APODSideIconButton(
+                        imageVector = Icons.Outlined.Settings,
+                        onClick = { },
+                        iconBtnModifier = Modifier
+                            .padding(end = 15.dp, top = 20.dp)
+                            .background(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primaryContainer
+                            ),
+                        iconBtnColor = MaterialTheme.colorScheme.primaryContainer,
+                        iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        iconModifier = Modifier
                     )
-                    // moon info
-                    CardRowGrid(
-                        lhsCardTitle = "Moon Altitude",
-                        lhsCardValue = moonAltitude,
-                        rhsCardTitle = "Moon Azimuth",
-                        rhsCardValue = moonAzimuthValue
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    CardRowGrid(
-                        lhsCardTitle = "Moon Distance",
-                        lhsCardValue = moonDistanceValue,
-                        rhsCardTitle = "Moon Paralytic Angle",
-                        rhsCardValue = moonParalyticAngleValue
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    CardRowGrid(
-                        lhsCardTitle = "Moon Rise",
-                        lhsCardValue = moonRiseValue,
-                        rhsCardTitle = "Moon Set",
-                        rhsCardValue = moonSetValue
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Divider(
-                        thickness = 0.dp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(
-                            start = 25.dp,
-                            end = 25.dp,
-                            top = 0.dp,
-                            bottom = 0.dp
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    // sun info
-                    CardRowGrid(
-                        lhsCardTitle = "Sun Altitude",
-                        lhsCardValue = sunAltitudeValue,
-                        rhsCardTitle = "Sun Azimuth",
-                        rhsCardValue = sunAzimuthValue
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    CardRowGrid(
-                        lhsCardTitle = "Sun Distance",
-                        lhsCardValue = sunDistanceValue,
-                        rhsCardTitle = "Sun Rise",
-                        rhsCardValue = sunRiseValue
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    CardRowGrid(
-                        lhsCardTitle = "Sun Set",
-                        lhsCardValue = sunSetValue,
-                        rhsCardTitle = "Solar Noon",
-                        rhsCardValue = solarNoonValue
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(80.dp))
+            /*Geolocation*/
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier
+                        .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ) {
+                    Column {
+                        ConstraintLayout(constraintSet = constraintSet) {
+                            Icon(
+                                imageVector = Icons.Default.MyLocation,
+                                contentDescription = "Icon Of \"My Location\"",
+                                modifier = Modifier
+                                    .padding(top = 15.dp, start = 15.dp)
+                                    .size(25.dp)
+                                    .layoutId("cardIcon"),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                text = "Your Geolocation Data",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 18.sp,
+                                style = MaterialTheme.typography.headlineLarge,
+                                modifier = Modifier
+                                    .padding(start = 10.dp, top = 10.dp)
+                                    .layoutId("cardTitle")
+                            )
+                            Text(
+                                text = "Based on your I.P address",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 14.sp,
+                                style = MaterialTheme.typography.headlineMedium,
+                                modifier = Modifier
+                                    .padding(start = 10.dp, top = 2.dp)
+                                    .layoutId("cardDescription")
+                            )
+                        }
+                        Divider(
+                            thickness = 0.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(
+                                start = 25.dp,
+                                end = 25.dp,
+                                top = 15.dp,
+                                bottom = 15.dp
+                            )
+                        )
+                        Text(
+                            text = "I.P address : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.ip}\nLocation : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.district}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.city}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.country_name}.",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.headlineLarge,
+                            modifier = Modifier
+                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                            lineHeight = 18.sp,
+                            textAlign = TextAlign.Start
+                        )
+                        Divider(
+                            thickness = 0.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(
+                                start = 25.dp,
+                                end = 25.dp,
+                                top = 0.dp,
+                                bottom = 15.dp
+                            )
+                        )
+                        Text(
+                            text = "Zip code : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.zipcode}\n" +
+                                    "Latitude and Longitude of the city : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.latitude}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude}",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.headlineLarge,
+                            modifier = Modifier
+                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                            lineHeight = 18.sp,
+                            textAlign = TextAlign.Start
+                        )
+                    }
+                }
+            }
+            /*ISS Location*/
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier
+                        .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ) {
+                    Column {
+                        ConstraintLayout(constraintSet = constraintSet) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.satellite_icon),
+                                contentDescription = "Icon Of \"Satellite\"",
+                                modifier = Modifier
+                                    .padding(top = 15.dp, start = 15.dp)
+                                    .size(25.dp)
+                                    .layoutId("cardIcon"),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                text = "ISS Info",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 18.sp,
+                                style = MaterialTheme.typography.headlineLarge,
+                                modifier = Modifier
+                                    .padding(start = 10.dp, top = 10.dp)
+                                    .layoutId("titleWithIcon")
+                            )
+                        }
+                        Divider(
+                            thickness = 0.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(
+                                start = 25.dp,
+                                end = 25.dp,
+                                top = 15.dp,
+                                bottom = 15.dp
+                            )
+                        )
+                        Text(
+                            text = issInfo,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.headlineLarge,
+                            modifier = Modifier
+                                .padding(start = 15.dp, end = 15.dp),
+                            lineHeight = 18.sp,
+                            textAlign = TextAlign.Start
+                        )
+                        Divider(
+                            thickness = 0.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(
+                                start = 25.dp,
+                                end = 25.dp,
+                                top = 15.dp,
+                                bottom = 15.dp
+                            )
+                        )
+                        CardRowGrid(
+                            lhsCardTitle = "Latitude",
+                            lhsCardValue = issLatitude,
+                            rhsCardTitle = "Longitude",
+                            rhsCardValue = issLongitude
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Time Stamp",
+                            lhsCardValue = issTimestamp,
+                            rhsCardTitle = "",
+                            rhsCardValue = "",
+                            rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                    }
+                }
+            }
+            /*APOD*/
+            item {
+                APODCardComposable(
+                    homeScreenViewModel = homeScreenViewModel,
+                    apodURL = apodURL,
+                    apodDate = apodDate,
+                    apodDescription = apodDescription,
+                    apodTitle = apodTitle,
+                    imageOnClick = {
+                        coroutineScope.launch {
+                            bottomSheetState.show()
+                        }
+                    }
+                )
+            }
+            /*Astronomical Data*/
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier
+                        .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ) {
+                    Column {
+                        ConstraintLayout(constraintSet = constraintSet) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.list_icon),
+                                contentDescription = "Icon Of \"DataExploration\"",
+                                modifier = Modifier
+                                    .padding(top = 15.dp, start = 15.dp)
+                                    .size(25.dp)
+                                    .layoutId("cardIcon"),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                text = "Astronomical Data",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 18.sp,
+                                style = MaterialTheme.typography.headlineLarge,
+                                modifier = Modifier
+                                    .padding(start = 10.dp, top = 10.dp)
+                                    .layoutId("cardTitle")
+                            )
+                            Text(
+                                text = "Based on your I.P address",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 14.sp,
+                                style = MaterialTheme.typography.headlineMedium,
+                                modifier = Modifier
+                                    .padding(start = 10.dp, top = 2.dp)
+                                    .layoutId("cardDescription")
+                            )
+                        }
+                        Divider(
+                            thickness = 0.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(
+                                start = 25.dp,
+                                end = 25.dp,
+                                top = 15.dp,
+                                bottom = 15.dp
+                            )
+                        )
+                        Text(
+                            text = currentTimeInfo,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.headlineLarge,
+                            modifier = Modifier
+                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                            lineHeight = 18.sp,
+                            textAlign = TextAlign.Start
+                        )
+                        Divider(
+                            thickness = 0.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(
+                                start = 25.dp,
+                                end = 25.dp,
+                                top = 0.dp,
+                                bottom = 15.dp
+                            )
+                        )
+                        // moon info
+                        CardRowGrid(
+                            lhsCardTitle = "Moon Altitude",
+                            lhsCardValue = moonAltitude,
+                            rhsCardTitle = "Moon Azimuth",
+                            rhsCardValue = moonAzimuthValue
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Moon Distance",
+                            lhsCardValue = moonDistanceValue,
+                            rhsCardTitle = "Moon Paralytic Angle",
+                            rhsCardValue = moonParalyticAngleValue
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Moon Rise",
+                            lhsCardValue = moonRiseValue,
+                            rhsCardTitle = "Moon Set",
+                            rhsCardValue = moonSetValue
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        Divider(
+                            thickness = 0.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(
+                                start = 25.dp,
+                                end = 25.dp,
+                                top = 0.dp,
+                                bottom = 0.dp
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        // sun info
+                        CardRowGrid(
+                            lhsCardTitle = "Sun Altitude",
+                            lhsCardValue = sunAltitudeValue,
+                            rhsCardTitle = "Sun Azimuth",
+                            rhsCardValue = sunAzimuthValue
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Sun Distance",
+                            lhsCardValue = sunDistanceValue,
+                            rhsCardTitle = "Sun Rise",
+                            rhsCardValue = sunRiseValue
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Sun Set",
+                            lhsCardValue = sunSetValue,
+                            rhsCardTitle = "Solar Noon",
+                            rhsCardValue = solarNoonValue
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                    }
+                }
+                Spacer(modifier = Modifier.height(80.dp))
+            }
         }
     }
 }
@@ -631,12 +674,12 @@ fun CardForRowGridRaw(
         .width(150.dp),
     cardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     inSpaceScreen: Boolean = false,
-    imageHeight: Dp =110.dp,
-    imgURL:String=""
+    imageHeight: Dp = 110.dp,
+    imgURL: String = ""
 ) {
-    val lhsTextColumnModifier=if(!inSpaceScreen){
+    val lhsTextColumnModifier = if (!inSpaceScreen) {
         Modifier.padding(15.dp)
-    }else{
+    } else {
         Modifier
             .padding(15.dp)
             .fillMaxWidth(0.55f)
@@ -669,8 +712,9 @@ fun CardForRowGridRaw(
                         textAlign = TextAlign.Start, modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-                if(inSpaceScreen){
-                    Box(Modifier.background(
+                if (inSpaceScreen) {
+                    Box(
+                        Modifier.background(
                             brush = Brush.horizontalGradient(
                                 listOf(
                                     MaterialTheme.colorScheme.primaryContainer.copy(
@@ -678,7 +722,8 @@ fun CardForRowGridRaw(
                                     ), MaterialTheme.colorScheme.primaryContainer.copy(1f)
                                 )
                             )
-                            )) {
+                        )
+                    ) {
                         Coil_Image().CoilImage(
                             imgURL = imgURL,
                             contentDescription = "",
@@ -711,7 +756,10 @@ fun WebViewModified(url: String?, embedString: String? = null, modifier: Modifie
 }
 
 @SuppressLint("CoroutineCreationDuringComposition")
-@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalMaterialApi::class, ExperimentalMaterialApi::class
+)
 @Composable
 fun APODCardComposable(
     homeScreenViewModel: HomeScreenViewModel,
@@ -719,7 +767,11 @@ fun APODCardComposable(
     apodDate: String,
     apodDescription: String,
     apodTitle: String,
-    inBookMarkScreen: Boolean = false
+    cardTopPaddingValue:Dp=30.dp,
+    inBookMarkScreen: Boolean = false,
+    inSpaceScreen: Boolean = false,
+    imageOnClick: () -> Unit = {},
+    changeDateChipOnClick:()->Unit={}
 ) {
     val context = LocalContext.current
     val isIconDownwards = rememberSaveable {
@@ -729,7 +781,7 @@ fun APODCardComposable(
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         modifier = Modifier
-            .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+            .padding(start = 15.dp, end = 15.dp, top = cardTopPaddingValue)
             .fillMaxWidth()
             .wrapContentHeight()
     ) {
@@ -740,7 +792,10 @@ fun APODCardComposable(
                     apodURL = apodURL,
                     apodTitle = apodTitle,
                     apodDate = apodDate,
-                    apodDescription = apodDescription
+                    apodDescription = apodDescription,
+                    imageOnClick = {
+                        imageOnClick()
+                    }
                 )
                 Icon(
                     imageVector = Icons.Default.Image,
@@ -771,6 +826,29 @@ fun APODCardComposable(
                     lineHeight = 16.sp,
                     textAlign = TextAlign.Start
                 )
+                if (inSpaceScreen) {
+                    AssistChip(
+                        modifier = Modifier.layoutId("changeAPODDate"),
+                        onClick = { changeDateChipOnClick()},
+                        label = {
+                            Text(
+                                text = "Change APOD Date",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                style = MaterialTheme.typography.headlineMedium
+                            )
+                        }, trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.ImageSearch,
+                                modifier = Modifier.size(InputChipDefaults.IconSize),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        },
+                        shape = RoundedCornerShape(5.dp),
+                        colors = AssistChipDefaults.assistChipColors(),
+                        border = AssistChipDefaults.assistChipBorder(borderWidth = 0.dp, borderColor = MaterialTheme.colorScheme.onPrimary)
+                    )
+                }
                 val currentDropDownIcon =
                     if (isIconDownwards.value) {
                         Icons.Default.ArrowDropDown
@@ -847,9 +925,16 @@ fun APODCardComposable(
                             onClick = {
                                 isAlertDialogEnabled.value = false
                                 coroutineScope.launch {
-                                    homeScreenViewModel.dbImplementation.deleteFromAPODDB(apodURL)
-                                    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
-                                    if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(apodURL)) {
+                                    homeScreenViewModel.dbImplementation.deleteFromAPODDB(
+                                        apodURL
+                                    )
+                                    homeScreenViewModel.doesThisExistsInAPODIconTxt(
+                                        apodURL
+                                    )
+                                    if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(
+                                            apodURL
+                                        )
+                                    ) {
                                         Toast.makeText(
                                             context,
                                             "Removed the APOD publication from bookmarks",
@@ -906,6 +991,7 @@ fun APODCardComposable(
             }
         }
     }
+
     coroutineScope.launch {
         homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
     }
@@ -966,7 +1052,8 @@ fun APODImageLayout(
     apodTitle: String,
     apodDate: String,
     apodDescription: String,
-    inAPODScreen: Boolean = false
+    inAPODScreen: Boolean = false,
+    imageOnClick: () -> Unit = {}
 ) {
 
     val context = LocalContext.current
@@ -985,11 +1072,11 @@ fun APODImageLayout(
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .clickable {
-
+                        imageOnClick()
                     }
                     .layoutId("apodMedia"),
                 onError = painterResource(id = R.drawable.ic_launcher_background),
-                contentScale = ContentScale.Fit
+                contentScale = ContentScale.Crop
             )
             BoxWithConstraints(
                 modifier = Modifier
