@@ -10,6 +10,7 @@ import com.sakethh.jetspacer.screens.bookMarks.BookMarksScreen
 import com.sakethh.jetspacer.screens.home.HomeScreen
 import com.sakethh.jetspacer.screens.space.SpaceScreen
 import com.sakethh.jetspacer.screens.space.apod.APODScreen
+import com.sakethh.jetspacer.screens.space.rovers.RoversScreen
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -26,6 +27,9 @@ fun MainNavigation(navController: NavHostController) {
         }
         composable(route = NavigationRoutes.APOD_SCREEN) {
             APODScreen(navController = navController)
+        }
+        composable(route = NavigationRoutes.ROVERS_SCREEN) {
+            RoversScreen(navController = navController)
         }
     }
 }

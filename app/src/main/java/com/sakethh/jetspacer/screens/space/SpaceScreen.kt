@@ -123,7 +123,7 @@ fun SpaceScreen(navController: NavController) {
                             .padding(15.dp)
                             .fillMaxWidth()
                             .wrapContentHeight()
-                            .clickable { },
+                            .clickable { navController.navigate(NavigationRoutes.ROVERS_SCREEN)},
                         inSpaceScreen = true,
                         imgURL = "https://ia601406.us.archive.org/18/items/jetspacer/rover%20original%20flipped%20low%20quality%20jpg.jpg",
                         imageHeight = 130.dp
