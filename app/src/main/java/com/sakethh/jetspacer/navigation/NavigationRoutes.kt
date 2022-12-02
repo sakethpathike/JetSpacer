@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.screens.navigation
+package com.sakethh.jetspacer.navigation
 
 object NavigationRoutes {
     const val HOME_SCREEN = "homeScreen"

@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODImplementation
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
-import com.sakethh.jetspacer.screens.httpClient.HTTPClient
+import com.sakethh.jetspacer.httpClient.HTTPClient
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching.APODPaginationUtils.calendar
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching.APODPaginationUtils.currentAPODDate
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching.APODPaginationUtils.initialFetchingValue

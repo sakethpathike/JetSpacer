@@ -19,8 +19,8 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksScreen
 import com.sakethh.jetspacer.screens.home.HomeScreen
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
-import com.sakethh.jetspacer.screens.navigation.BottomNavigationComposable
-import com.sakethh.jetspacer.screens.navigation.MainNavigation
+import com.sakethh.jetspacer.navigation.BottomNavigationComposable
+import com.sakethh.jetspacer.navigation.MainNavigation
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.screens.space.apod.APODScreen
 import com.sakethh.jetspacer.ui.theme.AppTheme

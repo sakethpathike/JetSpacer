@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.screens.httpClient
+package com.sakethh.jetspacer.httpClient
 
 import io.ktor.client.*
 import io.ktor.client.engine.android.*

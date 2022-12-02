@@ -1,7 +1,7 @@
 package com.sakethh.jetspacer.screens.home.data.remote.issLocation
 
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.ISSLocationDTO
-import com.sakethh.jetspacer.screens.httpClient.HTTPClient
+import com.sakethh.jetspacer.httpClient.HTTPClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 

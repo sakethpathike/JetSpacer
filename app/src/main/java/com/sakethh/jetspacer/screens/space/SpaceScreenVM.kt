@@ -8,9 +8,8 @@ import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODFetching
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.screens.space.remote.data.SpaceScreenImplementation
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.sakethh.jetspacer.screens.space.remote.data.marsWeather.dto.MarsWeatherDTO
+import kotlinx.coroutines.*
 
 class SpaceScreenVM(
     private val spaceScreenImplementation: SpaceScreenImplementation = SpaceScreenImplementation(),
@@ -20,10 +19,12 @@ class SpaceScreenVM(
     val apodDateData = mutableStateOf(APOD_DTO())
     private val coroutineExceptionalHandler =
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
+    val marsWeatherDTO = mutableStateOf(MarsWeatherDTO())
 
     init {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            apodDateData.value = apodFetching.getAPOD()
+                apodDateData.value = apodFetching.getAPOD()
+                marsWeatherDTO.value = spaceScreenImplementation.getMarsWeatherData()
         }
     }
 

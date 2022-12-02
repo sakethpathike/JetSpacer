@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -18,18 +21,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.layoutId
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.commandiron.wheel_picker_compose.WheelDatePicker
-import com.sakethh.jetspacer.screens.home.APODCardComposable
-import com.sakethh.jetspacer.screens.home.CardForRowGridRaw
-import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
-import com.sakethh.jetspacer.screens.home.WebViewModified
-import com.sakethh.jetspacer.screens.navigation.NavigationRoutes
+import com.sakethh.jetspacer.screens.home.*
+import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
+import com.sakethh.jetspacer.R
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -58,9 +62,10 @@ fun SpaceScreen(navController: NavController) {
     val isDatePickerAlertDialogEnabled = rememberSaveable { mutableStateOf(false) }
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
-    val apodData =spaceScreenVM.apodDateData
+    val apodData = spaceScreenVM.apodDateData
     val apodURL = rememberSaveable { mutableStateOf("") }
-    val currentDayAPODURL=homeScreenViewModel.apodDataFromAPI.value.url.toString()
+    val currentDayAPODURL = homeScreenViewModel.apodDataFromAPI.value.url.toString()
+    val marsWeatherData = spaceScreenVM.marsWeatherDTO.value
     AppTheme {
         ModalBottomSheetLayout(
             sheetContent = {
@@ -92,7 +97,7 @@ fun SpaceScreen(navController: NavController) {
                             .clickable { navController.navigate(NavigationRoutes.APOD_SCREEN) },
                         inSpaceScreen = true,
                         imgURL = currentDayAPODURL,
-                        imageHeight = 130.dp
+                        imageHeight = 110.dp
                     )
 
                 }
@@ -123,21 +128,10 @@ fun SpaceScreen(navController: NavController) {
                             .padding(15.dp)
                             .fillMaxWidth()
                             .wrapContentHeight()
-                            .clickable { navController.navigate(NavigationRoutes.ROVERS_SCREEN)},
+                            .clickable { navController.navigate(NavigationRoutes.ROVERS_SCREEN) },
                         inSpaceScreen = true,
                         imgURL = "https://ia601406.us.archive.org/18/items/jetspacer/rover%20original%20flipped%20low%20quality%20jpg.jpg",
-                        imageHeight = 130.dp
-                    )
-                }
-
-
-                item {
-                    WebViewModified(
-                        url = null,
-                        embedString = "<iframe width=\"660\" height=\"371\" src=\"https://www.youtube.com/embed/86YLFOog4GM\" title=\"\uD83C\uDF0E Nasa Live Stream  - Earth From Space :  Live Views from the ISS\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp)
+                        imageHeight = 125.dp
                     )
                 }
 
@@ -201,6 +195,115 @@ fun SpaceScreen(navController: NavController) {
                                 }
                             })
                     }
+                }
+                item {
+                    androidx.compose.material3.Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier
+                            .padding(start = 15.dp, end = 15.dp, top = 0.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    ) {
+                        ConstraintLayout(constraintSet = constraintSet) {
+                            Icon(
+                                imageVector = Icons.Outlined.Insights,
+                                contentDescription = "Icon Of \"Insights\"",
+                                modifier = Modifier
+                                    .padding(top = 15.dp, start = 15.dp)
+                                    .size(25.dp)
+                                    .layoutId("cardIcon"),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                text = "Weather on the Red Planet",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 18.sp,
+                                style = MaterialTheme.typography.headlineLarge,
+                                modifier = Modifier
+                                    .padding(start = 10.dp, top = 10.dp)
+                                    .layoutId("cardTitle")
+                            )
+                            Text(
+                                text = "Based on Curiosity Rover on Mars",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 14.sp,
+                                style = MaterialTheme.typography.headlineMedium,
+                                modifier = Modifier
+                                    .padding(start = 10.dp, top = 2.dp)
+                                    .layoutId("cardDescription")
+                            )
+                        }
+                        androidx.compose.material3.Divider(
+                            thickness = 0.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(
+                                start = 25.dp,
+                                end = 25.dp,
+                                top = 15.dp,
+                                bottom = 15.dp
+                            )
+                        )
+                        CardRowGrid(
+                            lhsCardTitle = "Terrestrial Date",
+                            lhsCardValue = marsWeatherData.terrestrial_date,
+                            rhsCardTitle = "Season",
+                            rhsCardValue = marsWeatherData.season
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Min Temperature",
+                            lhsCardValue = marsWeatherData.min_temp.toString(),
+                            rhsCardTitle = "Max Temperature",
+                            rhsCardValue = marsWeatherData.max_temp.toString()
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Pressure",
+                            lhsCardValue = marsWeatherData.pressure.toString(),
+                            rhsCardTitle = "Pressure String",
+                            rhsCardValue = marsWeatherData.pressure_string
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Atmosphere",
+                            lhsCardValue = marsWeatherData.atmo_opacity,
+                            rhsCardTitle = "Local UV Irradiance",
+                            rhsCardValue = marsWeatherData.local_uv_irradiance_index
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Sunrise",
+                            lhsCardValue = marsWeatherData.sunrise,
+                            rhsCardTitle = "Sunset",
+                            rhsCardValue = marsWeatherData.sunset
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Min GTS Temperature",
+                            lhsCardValue = marsWeatherData.min_gts_temp.toString(),
+                            rhsCardTitle = "Max GTS Temperature",
+                            rhsCardValue = marsWeatherData.max_gts_temp.toString()
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Unit Of Measure",
+                            lhsCardValue = marsWeatherData.unitOfMeasure,
+                            rhsCardTitle = "Timezone",
+                            rhsCardValue = marsWeatherData.TZ_Data
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Sol",
+                            lhsCardValue = marsWeatherData.sol.toString(),
+                            rhsCardTitle = "",
+                            rhsCardValue = "",
+                            rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                    }
+                }
+                item{
+                    Spacer(modifier = Modifier.height(75.dp))
                 }
             }
         }

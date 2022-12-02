@@ -86,4 +86,6 @@ dependencies {
     implementation 'com.google.accompanist:accompanist-webview:0.26.5-rc'
     implementation 'io.realm.kotlin:library-base:1.2.0'
     implementation 'com.github.commandiron:WheelPickerCompose:1.1.2'
+    implementation "com.google.accompanist:accompanist-pager:0.25.0" // Pager
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.25.0" // Pager Indicators
 }

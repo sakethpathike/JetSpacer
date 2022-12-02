@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksScreen
-import com.sakethh.jetspacer.screens.navigation.NavigationRoutes
+import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.space.apod.APODScreen
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.R
@@ -56,6 +56,7 @@ fun RoversScreen(navController: NavController) {
     AppTheme {
         CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Rtl) {
             ModalNavigationDrawer(
+                gesturesEnabled = false,
                 drawerContent = {
                     CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
                         Column(
@@ -75,7 +76,7 @@ fun RoversScreen(navController: NavController) {
                                 modifier = Modifier.padding(start = 15.dp),
                                 maxLines = 3,
                                 lineHeight = 41.sp,
-                                textAlign = TextAlign.Start
+                               textAlign = TextAlign.Start
                             )
                             Divider(
                                 thickness = 0.dp,
@@ -141,7 +142,6 @@ fun RoversScreen(navController: NavController) {
                         }
                     }
                 },
-                gesturesEnabled = true,
                 drawerState = navigationDrawerState
             ) {
                 CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {

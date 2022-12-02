@@ -31,7 +31,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.screens.home.APODCardComposable
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
-import com.sakethh.jetspacer.screens.navigation.NavigationRoutes
+import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.launch

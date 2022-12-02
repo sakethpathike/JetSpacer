@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.screens.navigation
+package com.sakethh.jetspacer.navigation
 
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
