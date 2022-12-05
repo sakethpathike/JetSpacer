@@ -46,7 +46,7 @@ class APODPaginationFetching() {
         APODImplementation(
             HTTPClient.ktorClient,
             apodURL = apodURL
-        ).getAPODForPaginatedList().reversed().forEach {
+        ).getAPODForPaginatedList().component1().reversed().forEach {
             if (it.media_type.toString() == "image") {
                 apodData.add(it)
             }

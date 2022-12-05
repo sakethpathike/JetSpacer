@@ -1,6 +1,9 @@
 package com.sakethh.jetspacer.screens.space.rovers
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.CuriosityRoverScreen
 import com.sakethh.jetspacer.screens.space.rovers.opportunity.OpportunityRoverScreen
@@ -13,4 +16,7 @@ class RoversScreenVM : ViewModel() {
         RoversScreen(screenName = "Opportunity", composable = { OpportunityRoverScreen() }),
         RoversScreen(screenName = "Spirit", composable = { SpiritRoverScreen() }),
     )
+    object RoverScreenUtils{
+        val paddingValues= mutableStateOf(PaddingValues(0.dp))
+    }
 }

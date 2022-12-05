@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.fhaz
+package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.chemcam
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import com.sakethh.jetspacer.ui.theme.AppTheme
 
 @Composable
-fun FHAZScreen() {
+fun ChemCamCuriosityCameraScreen() {
     AppTheme {
         Box(
             modifier = Modifier
@@ -19,7 +19,7 @@ fun FHAZScreen() {
                 .background(MaterialTheme.colorScheme.surface),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "FHAZScreen")
+            Text(text = "ChemCamScreen")
         }
     }
 }

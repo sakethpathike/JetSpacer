@@ -67,6 +67,7 @@ fun BookMarksScreen(navController: NavController) {
     val apodTitle = rememberSaveable { mutableStateOf("") }
     val apodDate = rememberSaveable { mutableStateOf("") }
     val apodDescription = rememberSaveable { mutableStateOf("") }
+    val apodMediaType = rememberSaveable { mutableStateOf("") }
 
     AppTheme {
         Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
@@ -94,7 +95,8 @@ fun BookMarksScreen(navController: NavController) {
                         apodURL = apodURL.value,
                         apodTitle = apodTitle.value,
                         apodDate = apodDate.value,
-                        apodDescription = apodDescription.value
+                        apodDescription = apodDescription.value,
+                        apodMediaType = apodMediaType.value
                     )
                 },
                 sheetState = bottomSheetState,
@@ -120,10 +122,12 @@ fun BookMarksScreen(navController: NavController) {
                                 apodTitle.value = bookMarkedItem.title
                                 apodDate.value = bookMarkedItem.datePublished
                                 apodDescription.value = bookMarkedItem.description
+                                apodMediaType.value = bookMarkedItem.mediaType
                                 coroutineScope.launch {
                                     bottomSheetState.show()
                                 }
-                            }
+                            },
+                            apodMediaType = bookMarkedItem.mediaType
                         )
                     }
                     item {

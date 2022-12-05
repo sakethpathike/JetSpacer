@@ -49,14 +49,13 @@ fun RoversScreen(navController: NavController) {
             }
         }
     }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val roversScreenVM: RoversScreenVM = viewModel()
     val currentScreenIteration = remember { mutableStateOf(0) }
     val currentScreenName = remember { mutableStateOf("") }
     AppTheme {
         CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Rtl) {
             ModalNavigationDrawer(
-                gesturesEnabled = false,
+                gesturesEnabled = true,
                 drawerContent = {
                     CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
                         Column(
@@ -76,7 +75,7 @@ fun RoversScreen(navController: NavController) {
                                 modifier = Modifier.padding(start = 15.dp),
                                 maxLines = 3,
                                 lineHeight = 41.sp,
-                               textAlign = TextAlign.Start
+                                textAlign = TextAlign.Start
                             )
                             Divider(
                                 thickness = 0.dp,
@@ -94,10 +93,10 @@ fun RoversScreen(navController: NavController) {
                                         .height(75.dp)
                                         .fillMaxWidth()
                                         .clickable {
-                                            currentScreenIteration.value = index
                                             coroutineScope.launch {
                                                 navigationDrawerState.close()
                                             }
+                                            currentScreenIteration.value = index
                                         }
                                         .wrapContentHeight()
                                 ) {
@@ -146,10 +145,8 @@ fun RoversScreen(navController: NavController) {
             ) {
                 CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
                     Scaffold(
-                        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                         topBar = {
                             TopAppBar(
-                                scrollBehavior = scrollBehavior,
                                 title = {
                                     Text(
                                         text = currentScreenName.value,
@@ -178,6 +175,7 @@ fun RoversScreen(navController: NavController) {
                                 )
                             )
                         }) {
+                        RoversScreenVM.RoverScreenUtils.paddingValues.value = it
                         roversScreenVM.listForDrawerContent[currentScreenIteration.value].composable()
                         currentScreenName.value =
                             roversScreenVM.listForDrawerContent[currentScreenIteration.value].screenName

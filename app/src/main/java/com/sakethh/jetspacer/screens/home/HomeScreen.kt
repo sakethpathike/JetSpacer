@@ -179,90 +179,7 @@ fun HomeScreen() {
     val apodTitle = homeScreenViewModel.apodDataFromAPI.value.title.toString()
     val apodDescription = homeScreenViewModel.apodDataFromAPI.value.explanation.toString()
     val apodDate = homeScreenViewModel.apodDataFromAPI.value.date.toString()
-    val constraintSet = ConstraintSet {
-
-        val cardIconConstraintRef = createRefFor("cardIcon")
-        val cardTitleConstraintRef = createRefFor("cardTitle")
-        val titleWithIconConstraintRef = createRefFor("titleWithIcon")
-        val cardDescriptionConstraintRef = createRefFor("cardDescription")
-
-        val apodMediaConstraintRef = createRefFor("apodMedia")
-        val apodTitleConstraintRef = createRefFor("apodTitle")
-        val apodDescriptionConstraintRef = createRefFor("apodDescription")
-        val apodIconConstraintRef = createRefFor("apodIcon")
-        val apodDropDownIconConstraintRef = createRefFor("apodDropDownIcon")
-
-        val moreOptionsIcon = createRefFor("moreOptionsIcon")
-        val moreOptionsDropDown = createRefFor("moreOptionsDropDown")
-        val bookMarkIcon = createRefFor("bookMarkIcon")
-        val downloadIcon = createRefFor("downloadIcon")
-
-
-        constrain(cardIconConstraintRef) {
-            top.linkTo(parent.top)
-            start.linkTo(parent.start)
-        }
-        constrain(cardTitleConstraintRef) {
-            top.linkTo(cardIconConstraintRef.top)
-            start.linkTo(cardIconConstraintRef.end)
-            bottom.linkTo(cardDescriptionConstraintRef.top)
-        }
-        constrain(cardDescriptionConstraintRef) {
-            top.linkTo(cardTitleConstraintRef.bottom)
-            start.linkTo(cardIconConstraintRef.end)
-            bottom.linkTo(cardIconConstraintRef.bottom)
-        }
-        constrain(titleWithIconConstraintRef) {
-            top.linkTo(cardIconConstraintRef.top)
-            start.linkTo(cardIconConstraintRef.end)
-            bottom.linkTo(cardIconConstraintRef.bottom)
-        }
-
-
-        constrain(apodMediaConstraintRef) {
-            top.linkTo(parent.top)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-        }
-        constrain(apodIconConstraintRef) {
-            top.linkTo(apodMediaConstraintRef.bottom)
-            start.linkTo(parent.start)
-        }
-        constrain(apodTitleConstraintRef) {
-            top.linkTo(apodIconConstraintRef.top)
-            start.linkTo(apodIconConstraintRef.end)
-            bottom.linkTo(apodDescriptionConstraintRef.top)
-        }
-        constrain(apodDescriptionConstraintRef) {
-            top.linkTo(apodTitleConstraintRef.bottom)
-            start.linkTo(apodIconConstraintRef.end)
-            bottom.linkTo(apodIconConstraintRef.bottom)
-        }
-        constrain(apodDropDownIconConstraintRef) {
-            top.linkTo(apodTitleConstraintRef.top)
-            bottom.linkTo(parent.bottom)
-            end.linkTo(parent.end)
-        }
-
-
-        constrain(moreOptionsIcon) {
-            top.linkTo(apodMediaConstraintRef.top)
-            end.linkTo(apodMediaConstraintRef.end)
-        }
-        constrain(moreOptionsDropDown) {
-            top.linkTo(apodMediaConstraintRef.top)
-            end.linkTo(apodMediaConstraintRef.end)
-        }
-        constrain(downloadIcon) {
-            bottom.linkTo(bookMarkIcon.top)
-            end.linkTo(apodMediaConstraintRef.end)
-        }
-        constrain(bookMarkIcon) {
-            bottom.linkTo(apodMediaConstraintRef.bottom)
-            end.linkTo(apodMediaConstraintRef.end)
-        }
-
-    }
+    val apodMediaType = homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
     ModalBottomSheetLayout(
         sheetContent = {
             APODBottomSheetContent(
@@ -270,7 +187,8 @@ fun HomeScreen() {
                 apodURL = apodURL,
                 apodTitle = apodTitle,
                 apodDate = apodDate,
-                apodDescription = apodDescription
+                apodDescription = apodDescription,
+                apodMediaType = apodMediaType
             )
         },
         sheetState = bottomSheetState,
@@ -483,7 +401,8 @@ fun HomeScreen() {
                         coroutineScope.launch {
                             bottomSheetState.show()
                         }
-                    }
+                    },
+                    apodMediaType = apodMediaType
                 )
             }
             /*Astronomical Data*/
@@ -765,11 +684,12 @@ fun APODCardComposable(
     apodDate: String,
     apodDescription: String,
     apodTitle: String,
-    cardTopPaddingValue:Dp=30.dp,
+    apodMediaType: String,
+    cardTopPaddingValue: Dp = 30.dp,
     inBookMarkScreen: Boolean = false,
     inSpaceScreen: Boolean = false,
     imageOnClick: () -> Unit = {},
-    changeDateChipOnClick:()->Unit={}
+    changeDateChipOnClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val isIconDownwards = rememberSaveable {
@@ -785,7 +705,7 @@ fun APODCardComposable(
     ) {
         Column(modifier = Modifier.animateContentSize()) {
             ConstraintLayout(constraintSet = constraintSet) {
-                APODImageLayout(
+                APODMediaLayout(
                     homeScreenViewModel = homeScreenViewModel,
                     apodURL = apodURL,
                     apodTitle = apodTitle,
@@ -793,7 +713,8 @@ fun APODCardComposable(
                     apodDescription = apodDescription,
                     imageOnClick = {
                         imageOnClick()
-                    }
+                    },
+                    apodMediaType = apodMediaType
                 )
                 Icon(
                     imageVector = Icons.Default.Image,
@@ -827,7 +748,7 @@ fun APODCardComposable(
                 if (inSpaceScreen) {
                     AssistChip(
                         modifier = Modifier.layoutId("changeAPODDate"),
-                        onClick = { changeDateChipOnClick()},
+                        onClick = { changeDateChipOnClick() },
                         label = {
                             Text(
                                 text = "Change APOD Date",
@@ -844,7 +765,10 @@ fun APODCardComposable(
                         },
                         shape = RoundedCornerShape(5.dp),
                         colors = AssistChipDefaults.assistChipColors(),
-                        border = AssistChipDefaults.assistChipBorder(borderWidth = 0.dp, borderColor = MaterialTheme.colorScheme.onPrimary)
+                        border = AssistChipDefaults.assistChipBorder(
+                            borderWidth = 0.dp,
+                            borderColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     )
                 }
                 val currentDropDownIcon =
@@ -1044,14 +968,15 @@ fun DropDownMenuItemModified(text: String, onClick: () -> Unit, imageVector: Ima
 }
 
 @Composable
-fun APODImageLayout(
+fun APODMediaLayout(
     homeScreenViewModel: HomeScreenViewModel,
     apodURL: String,
     apodTitle: String,
     apodDate: String,
     apodDescription: String,
     inAPODScreen: Boolean = false,
-    imageOnClick: () -> Unit = {}
+    imageOnClick: () -> Unit = {},
+    apodMediaType: String,
 ) {
 
     val context = LocalContext.current
@@ -1061,7 +986,7 @@ fun APODImageLayout(
     val apodIconButtonTransparencyValue = 0.4f
     val apodIconTransparencyValue = 0.9f
     val isMoreClicked = rememberSaveable { mutableStateOf(false) }
-    when (homeScreenViewModel.apodDataFromAPI.value.media_type) {
+    when (apodMediaType) {
         "image" -> {
             Coil_Image().CoilImage(
                 imgURL = apodURL,
@@ -1159,6 +1084,7 @@ fun APODImageLayout(
                                         datePublished = apodDate
                                         description = apodDescription
                                         imageURL = apodURL
+                                        this.mediaType=apodMediaType
                                         isBookMarked = true
                                     }
                                 )
@@ -1217,6 +1143,7 @@ fun APODImageLayout(
                                     datePublished = apodDate
                                     description = apodDescription
                                     imageURL = apodURL
+                                    this.mediaType=apodMediaType
                                     isBookMarked = true
                                 }
                             )

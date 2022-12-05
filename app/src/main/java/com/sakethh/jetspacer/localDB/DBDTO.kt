@@ -8,6 +8,7 @@ class APOD_DB_DTO : RealmObject{
     var datePublished: String = ""
     var description: String = ""
     var imageURL: String = ""
+    var mediaType:String=""
     var isBookMarked: Boolean = false
 
     @PrimaryKey

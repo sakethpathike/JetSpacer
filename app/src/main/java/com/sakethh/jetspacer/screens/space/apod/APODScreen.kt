@@ -62,6 +62,7 @@ fun APODScreen(navController: NavController) {
     val apodTitle = rememberSaveable { mutableStateOf("") }
     val apodDate = rememberSaveable { mutableStateOf("") }
     val apodDescription = rememberSaveable { mutableStateOf("") }
+    val apodMediaType = rememberSaveable { mutableStateOf("") }
     val homeScreenVM: HomeScreenViewModel = viewModel()
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
@@ -102,7 +103,8 @@ fun APODScreen(navController: NavController) {
                         apodURL = apodURL.value,
                         apodTitle = apodTitle.value,
                         apodDate = apodDate.value,
-                        apodDescription = apodDescription.value
+                        apodDescription = apodDescription.value,
+                        apodMediaType = apodMediaType.value
                     )
                 },
                 sheetState = bottomSheetState,
@@ -133,6 +135,7 @@ fun APODScreen(navController: NavController) {
                                         apodURL.value = apodItem.url.toString()
                                         apodDescription.value = apodItem.explanation.toString()
                                         apodTitle.value = apodItem.title.toString()
+                                        apodMediaType.value = apodItem.media_type.toString()
                                         bottomSheetState.show()
                                     }
                                 },
@@ -155,7 +158,8 @@ fun APODBottomSheetContent(
     apodURL: String,
     apodTitle: String,
     apodDate: String,
-    apodDescription: String
+    apodDescription: String,
+    apodMediaType: String,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -166,13 +170,14 @@ fun APODBottomSheetContent(
     LazyColumn {
         item {
             ConstraintLayout(constraintSet = constraintSet) {
-                APODImageLayout(
+                APODMediaLayout(
                     homeScreenViewModel = homeScreenViewModel,
                     apodURL = apodURL,
                     apodTitle = apodTitle,
                     apodDate = apodDate,
                     apodDescription = apodDescription,
-                    inAPODScreen = true
+                    inAPODScreen = true,
+                    apodMediaType = apodMediaType
                 )
             }
         }
@@ -206,6 +211,7 @@ fun APODBottomSheetContent(
                                         datePublished = apodDate
                                         description = apodDescription
                                         imageURL = apodURL
+                                        this.mediaType=apodMediaType
                                         isBookMarked = true
                                     }
                                 )

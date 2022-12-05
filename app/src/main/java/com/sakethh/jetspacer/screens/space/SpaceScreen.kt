@@ -74,7 +74,8 @@ fun SpaceScreen(navController: NavController) {
                     apodURL = apodData.value.url.toString(),
                     apodTitle = apodData.value.title.toString(),
                     apodDate = apodData.value.date.toString(),
-                    apodDescription = apodData.value.explanation.toString()
+                    apodDescription = apodData.value.explanation.toString(),
+                    apodMediaType = apodData.value.media_type.toString()
                 )
             },
             sheetState = bottomSheetState,
@@ -117,7 +118,8 @@ fun SpaceScreen(navController: NavController) {
                         inSpaceScreen = true,
                         changeDateChipOnClick = {
                             isDatePickerAlertDialogEnabled.value = true
-                        }
+                        },
+                        apodMediaType = apodData.value.media_type.toString()
                     )
                 }
                 item {

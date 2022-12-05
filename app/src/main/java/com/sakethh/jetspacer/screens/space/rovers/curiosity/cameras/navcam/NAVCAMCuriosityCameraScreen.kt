@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.chemcam
+package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.navcam
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import com.sakethh.jetspacer.ui.theme.AppTheme
 
 @Composable
-fun ChemCamScreen() {
+fun NAVCAMCuriosityCameraScreen() {
     AppTheme {
         Box(
             modifier = Modifier
@@ -19,7 +19,7 @@ fun ChemCamScreen() {
                 .background(MaterialTheme.colorScheme.surface),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "ChemCamScreen")
+            Text(text = "NAVCAMScreen")
         }
     }
 }
