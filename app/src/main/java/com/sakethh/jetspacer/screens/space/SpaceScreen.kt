@@ -1,7 +1,6 @@
 package com.sakethh.jetspacer.screens.space
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,7 +20,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -33,7 +31,6 @@ import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
-import com.sakethh.jetspacer.R
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -105,7 +102,7 @@ fun SpaceScreen(navController: NavController) {
                 item {
                     APODCardComposable(
                         homeScreenViewModel = homeScreenViewModel,
-                        apodURL = apodData.value.url.toString(),
+                        imageURL = apodData.value.url.toString(),
                         apodTitle = apodData.value.title.toString(),
                         apodDate = apodData.value.date.toString(),
                         apodDescription = apodData.value.explanation.toString(),
@@ -119,7 +116,11 @@ fun SpaceScreen(navController: NavController) {
                         changeDateChipOnClick = {
                             isDatePickerAlertDialogEnabled.value = true
                         },
-                        apodMediaType = apodData.value.media_type.toString()
+                        apodMediaType = apodData.value.media_type.toString(),
+                        saveToMarsRoversDB = false,
+                        saveToAPODDB = true,
+                        roverDBDTO = null,
+                        inAPODBottomSheetContent = false
                     )
                 }
                 item {

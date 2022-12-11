@@ -3,6 +3,8 @@
 package com.sakethh.jetspacer.screens.home
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.BookmarkRemove
@@ -10,8 +12,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.localDB.DBUtils
+import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODFetching
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.IPGeolocationFetching
@@ -69,7 +73,7 @@ class HomeScreenViewModel(
         }
         this.viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
             awaitAll(
-                async { ipGeolocationFetching.getGeoLocationData()},
+                async { ipGeolocationFetching.getGeoLocationData() },
                 async { issLocationFetching.getISSLatitudeAndLongitude() },
                 async { apodFetching.getAPOD() }
             )
@@ -95,11 +99,12 @@ class HomeScreenViewModel(
             bookMarkIcons.value = Icons.Outlined.BookmarkRemove
         }
 
-        if (apodDataFromAPI.value.url.toString().contains(regex = Regex("/apod.nasa.gov/"))){
+        if (apodDataFromAPI.value.url.toString().contains(regex = Regex("/apod.nasa.gov/"))) {
             doesThisExistsInAPODIconTxt(apodDataFromAPI.value.url.toString())
         }
     }
-    fun doesThisExistsInAPODIconTxt(imageURL:String){
+
+    fun doesThisExistsInAPODIconTxt(imageURL: String) {
         if (!dbUtils.doesThisExistsInDBAPOD(imageURL = imageURL)) {
             bookMarkText.value = "Add to bookmarks"
             bookMarkIcons.value = Icons.Outlined.BookmarkAdd
@@ -108,7 +113,28 @@ class HomeScreenViewModel(
             bookMarkIcons.value = Icons.Outlined.BookmarkRemove
         }
     }
+    fun doesThisExistsInRoverDBIconTxt(imageURL: String) {
+        if (!dbUtils.doesThisExistsInDBRover(imageURL = imageURL)) {
+            bookMarkText.value = "Add to bookmarks"
+            bookMarkIcons.value = Icons.Outlined.BookmarkAdd
+        } else {
+            bookMarkText.value = "Remove from bookmarks"
+            bookMarkIcons.value = Icons.Outlined.BookmarkRemove
+        }
+    }
+
+    suspend fun addNewBookMarkToRoverDB(marsRoverDBDTO: MarsRoversDBDTO) {
+        dbImplementation.addNewBookMarkToRoverDB(
+            marsRoverDbDto = marsRoverDBDTO
+        )
+    }
+
+    suspend fun addNewBookMarkToAPODDB(apodDbDto: APOD_DB_DTO) {
+        dbImplementation.addNewBookMarkToAPODDB(apodDbDto = apodDbDto)
+    }
+
     object BookMarkUtils {
-        val isAlertDialogEnabled = mutableStateOf(false)
+        val isAlertDialogEnabledForAPODDB = mutableStateOf(false)
+        val isAlertDialogEnabledForRoversDB = mutableStateOf(false)
     }
 }

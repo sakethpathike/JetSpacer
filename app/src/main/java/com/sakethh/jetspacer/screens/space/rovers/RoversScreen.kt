@@ -6,12 +6,16 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.rememberDrawerState
 import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,19 +33,28 @@ import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.space.apod.APODScreen
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.R
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RoverBottomSheetContent
 import kotlinx.coroutines.launch
 
 @SuppressLint("CoroutineCreationDuringComposition", "UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun RoversScreen(navController: NavController) {
     val navigationDrawerState =
         androidx.compose.material3.rememberDrawerState(initialValue = androidx.compose.material3.DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val roversScreenVM: RoversScreenVM = viewModel()
     BackHandler {
         if (navigationDrawerState.isOpen) {
             coroutineScope.launch {
                 navigationDrawerState.close()
+            }
+        } else if (bottomSheetState.isVisible) {
+            coroutineScope.launch {
+                roversScreenVM.shouldBtmSheetVisible.value = false
+                bottomSheetState.hide()
             }
         } else {
             navController.navigate(NavigationRoutes.SPACE_SCREEN) {
@@ -49,9 +62,17 @@ fun RoversScreen(navController: NavController) {
             }
         }
     }
-    val roversScreenVM: RoversScreenVM = viewModel()
+    if (roversScreenVM.shouldBtmSheetVisible.value) {
+        coroutineScope.launch {
+            bottomSheetState.show()
+        }
+    }
+    if (!bottomSheetState.isVisible) {
+        roversScreenVM.shouldBtmSheetVisible.value = false
+    }
     val currentScreenIteration = remember { mutableStateOf(0) }
     val currentScreenName = remember { mutableStateOf("") }
+
     AppTheme {
         CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Rtl) {
             ModalNavigationDrawer(
@@ -144,41 +165,60 @@ fun RoversScreen(navController: NavController) {
                 drawerState = navigationDrawerState
             ) {
                 CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
-                    Scaffold(
-                        topBar = {
-                            TopAppBar(
-                                title = {
-                                    Text(
-                                        text = currentScreenName.value,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 22.sp,
-                                        style = MaterialTheme.typography.headlineLarge
-                                    )
-                                },
-                                actions = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Menu,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .padding(end = 15.dp)
-                                            .clickable {
-                                                coroutineScope.launch {
-                                                    navigationDrawerState.open()
-                                                }
-                                            },
-                                        tint = MaterialTheme.colorScheme.onSurface
-                                    )
-                                },
-                                colors = TopAppBarDefaults.mediumTopAppBarColors(
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    scrolledContainerColor = MaterialTheme.colorScheme.surface
-                                )
+                    ModalBottomSheetLayout(
+                        sheetContent = {
+                            RoverBottomSheetContent(
+                                imgURL = roversScreenVM.imgURL.value,
+                                capturedOn = roversScreenVM.capturedOn.value,
+                                cameraName = roversScreenVM.cameraName.value,
+                                sol = roversScreenVM.sol.value,
+                                earthDate = roversScreenVM.earthDate.value,
+                                roverName = roversScreenVM.roverName.value,
+                                roverStatus = roversScreenVM.roverStatus.value,
+                                launchingDate = roversScreenVM.launchingDate.value,
+                                landingDate = roversScreenVM.landingDate.value
                             )
-                        }) {
-                        RoversScreenVM.RoverScreenUtils.paddingValues.value = it
-                        roversScreenVM.listForDrawerContent[currentScreenIteration.value].composable()
-                        currentScreenName.value =
-                            roversScreenVM.listForDrawerContent[currentScreenIteration.value].screenName
+                        },
+                        sheetState = bottomSheetState,
+                        sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
+                        sheetBackgroundColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Scaffold(
+                            topBar = {
+                                TopAppBar(
+                                    title = {
+                                        Text(
+                                            text = currentScreenName.value,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            fontSize = 22.sp,
+                                            style = MaterialTheme.typography.headlineLarge
+                                        )
+                                    },
+                                    actions = {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Menu,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .padding(end = 15.dp)
+                                                .clickable {
+                                                    coroutineScope.launch {
+                                                        navigationDrawerState.open()
+                                                    }
+                                                },
+                                            tint = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    colors = TopAppBarDefaults.mediumTopAppBarColors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        scrolledContainerColor = MaterialTheme.colorScheme.surface
+                                    )
+                                )
+                            }) {
+                            RoversScreenVM.RoverScreenUtils.paddingValues.value = it
+                            roversScreenVM.listForDrawerContent[currentScreenIteration.value].composable()
+                            currentScreenName.value =
+                                roversScreenVM.listForDrawerContent[currentScreenIteration.value].screenName
+                        }
                     }
                 }
             }

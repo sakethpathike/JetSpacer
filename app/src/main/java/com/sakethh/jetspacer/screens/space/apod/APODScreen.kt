@@ -38,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Coil_Image
+import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.ui.theme.AppTheme
@@ -45,6 +46,8 @@ import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.screens.home.*
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
 @OptIn(
@@ -167,17 +170,24 @@ fun APODBottomSheetContent(
     coroutineScope.launch {
         homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
     }
+    @SuppressLint("SimpleDateFormat")
+    val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+    val currentDate = dateFormat.format(Calendar.getInstance().time)
+
     LazyColumn {
         item {
             ConstraintLayout(constraintSet = constraintSet) {
                 APODMediaLayout(
                     homeScreenViewModel = homeScreenViewModel,
-                    apodURL = apodURL,
+                    imageURL = apodURL,
                     apodTitle = apodTitle,
                     apodDate = apodDate,
                     apodDescription = apodDescription,
-                    inAPODScreen = true,
-                    apodMediaType = apodMediaType
+                    saveToAPODDB = true,
+                    apodMediaType = apodMediaType,
+                    saveToMarsRoversDB = false,
+                    inAPODBottomSheetContent = true,
+                    marsRoversDBDTO = null
                 )
             }
         }
@@ -206,13 +216,15 @@ fun APODBottomSheetContent(
                             coroutineScope.launch {
                                 homeScreenViewModel.dbImplementation.addNewBookMarkToAPODDB(
                                     APOD_DB_DTO().apply {
-                                        id = apodURL
-                                        title = apodTitle
-                                        datePublished = apodDate
-                                        description = apodDescription
-                                        imageURL = apodURL
-                                        this.mediaType=apodMediaType
-                                        isBookMarked = true
+                                        this.title = apodTitle
+                                        this.datePublished = apodDate
+                                        this.description = apodDescription
+                                        this.imageURL = apodURL
+                                        this.mediaType = apodMediaType
+                                        this.isBookMarked = true
+                                        this.category = "APOD"
+                                        this.addedToLocalDBOn = currentDate
+                                        this.id = apodURL
                                     }
                                 )
                             }
@@ -301,6 +313,9 @@ fun APODBottomSheetContent(
                 )
             )
         }
+    }
+    coroutineScope.launch {
+        homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
     }
 }
 
