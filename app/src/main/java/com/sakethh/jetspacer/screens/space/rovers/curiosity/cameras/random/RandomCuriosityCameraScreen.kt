@@ -13,13 +13,13 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,13 +47,34 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @SuppressLint("CoroutineCreationDuringComposition")
+
+@Composable
+fun RandomCuriosityCameraScreen() {
+    val coroutineScope = rememberCoroutineScope()
+    val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
+    val randomCuriosityCameraData =
+        randomCuriosityCameraVM.randomCuriosityCameraData.collectAsStateWithLifecycle().value
+    ModifiedLazyVerticalGrid(listData = randomCuriosityCameraData) {
+        randomCuriosityCameraVM.currentPage.value =
+            randomCuriosityCameraVM.currentPage.value + 1
+        coroutineScope.launch {
+            randomCuriosityCameraVM.enteredSol.value?.let { it1 ->
+                randomCuriosityCameraVM.getRandomCuriosityData(
+                    sol = it1.toInt(),
+                    page = randomCuriosityCameraVM.currentPage.value
+                )
+            }
+        }
+    }
+}
+
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
     ExperimentalFoundationApi::class, ExperimentalLifecycleComposeApi::class
 )
 @Composable
-fun RandomCuriosityCameraScreen() {
+fun ModifiedLazyVerticalGrid(listData: List<Photo>, onLoadMoreImagesBtnPress: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
     val roversScreenVM: RoversScreenVM = viewModel()
@@ -67,7 +88,7 @@ fun RandomCuriosityCameraScreen() {
                 .fillMaxWidth()
                 .wrapContentHeight()
         ) {
-            itemsIndexed(randomCuriosityCameraData.value) { itemIndex: Int, dataItem: Photo ->
+            itemsIndexed(listData) { itemIndex: Int, dataItem: Photo ->
                 atLastIndex.value = itemIndex == randomCuriosityCameraData.value.lastIndex
                 Coil_Image().CoilImage(
                     imgURL = dataItem.img_src,
@@ -105,16 +126,7 @@ fun RandomCuriosityCameraScreen() {
                     ) {
                         OutlinedButton(
                             onClick = {
-                                randomCuriosityCameraVM.currentPage.value =
-                                    randomCuriosityCameraVM.currentPage.value + 1
-                                coroutineScope.launch {
-                                    randomCuriosityCameraVM.enteredSol.value?.let { it1 ->
-                                        randomCuriosityCameraVM.getRandomCuriosityData(
-                                            sol = it1.toInt(),
-                                            page = randomCuriosityCameraVM.currentPage.value
-                                        )
-                                    }
-                                }
+                                onLoadMoreImagesBtnPress()
                             },
                             border = BorderStroke(
                                 1.dp,
@@ -140,7 +152,6 @@ fun RandomCuriosityCameraScreen() {
                 Spacer(modifier = Modifier.height(100.dp))
             }
         }
-
 
     }
 }
