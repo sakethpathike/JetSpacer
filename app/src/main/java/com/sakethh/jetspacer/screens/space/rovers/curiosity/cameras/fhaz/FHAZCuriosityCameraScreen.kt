@@ -1,39 +1,113 @@
 package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.fhaz
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewModelScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sakethh.jetspacer.screens.Status
+import com.sakethh.jetspacer.screens.StatusScreen
+import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasVM
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.fhaz.FHAZCuriosityCameraScreen.currentPage
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.ModifiedLazyVerticalGrid
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RandomCuriosityCameraVM
-import com.sakethh.jetspacer.ui.theme.AppTheme
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.SolTextField
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestVM
 import kotlinx.coroutines.launch
+import okhttp3.internal.toImmutableList
 
+@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FHAZCuriosityCameraScreen() {
     val curiosityCameraVM: CuriosityCamerasVM = viewModel()
-    val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
+    val roversScreenVM: RoversScreenVM = viewModel()
     val coroutineScope = rememberCoroutineScope()
-    LaunchedEffect(key1 = coroutineScope) {
-        coroutineScope.launch {
-            randomCuriosityCameraVM.enteredSol.value?.let {
-                curiosityCameraVM.getFHAZData(
-                    page = 0,
-                    sol = it.toInt()
+    val solValue = rememberSaveable { mutableStateOf("0") }
+    val solImagesData = curiosityCameraVM.fhazDataFromAPI.value
+    val context = LocalContext.current
+    LaunchedEffect(key1 = true) {
+        curiosityCameraVM.getFHAZData(
+            sol = solValue.value.toInt(),
+            page = currentPage
+        )
+    }
+    Scaffold(floatingActionButtonPosition = FabPosition.Center, floatingActionButton = {
+        if (solImagesData.isNotEmpty() && curiosityCameraVM._fhazDataFromAPI.value.isEmpty() && curiosityCameraVM.isFHAZDataLoaded.value && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
+            Snackbar(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier
+                    .padding(start = 20.dp, end = 20.dp, bottom = 50.dp)
+                    .wrapContentHeight()
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(15.dp)
+            ) {
+                Text(
+                    text = "You've reached the end, change the sol value to explore more!",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    softWrap = true,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Start,
+                    lineHeight = 18.sp
                 )
             }
         }
-    }
-    ModifiedLazyVerticalGrid(listData = curiosityCameraVM.fhazDataFromAPI.value) {
+    }) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(it)
+        ) {
+            SolTextField(solValue = solValue, onContinueClick = {
+                curiosityCameraVM.isFHAZDataLoaded.value = false
+                curiosityCameraVM.clearFHAZData()
+                coroutineScope.launch {
+                    curiosityCameraVM.getFHAZData(solValue.value.toInt(), 0)
+                }
+            })
+            if (!curiosityCameraVM.isFHAZDataLoaded.value) {
+                StatusScreen(
+                    title = "Wait a moment!",
+                    description = "fetching the images from this camera that were captured on sol ${solValue.value}",
+                    status = Status.LOADING
+                )
 
+            } else if (solImagesData.isEmpty()) {
+                StatusScreen(
+                    title = "4ooooFour",
+                    description = "No images were captured by this camera on sol ${solValue.value}. Change the sol value; it may give results.",
+                    status = Status.FOURO4InMarsScreen
+                )
+            } else {
+                ModifiedLazyVerticalGrid(listData = solImagesData) {
+                    coroutineScope.launch {
+                        curiosityCameraVM.getFHAZData(
+                            sol = solValue.value.toInt(),
+                            page = currentPage++
+                        )
+                    }
+                }
+            }
+
+        }
     }
+}
+
+object FHAZCuriosityCameraScreen {
+    var currentPage = 0
 }

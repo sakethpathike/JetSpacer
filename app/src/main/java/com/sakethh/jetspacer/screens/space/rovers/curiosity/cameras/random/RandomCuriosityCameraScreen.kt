@@ -2,12 +2,11 @@ package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -18,10 +17,7 @@ import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +37,9 @@ import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
 import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestVM
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -76,11 +74,8 @@ fun RandomCuriosityCameraScreen() {
 @Composable
 fun ModifiedLazyVerticalGrid(listData: List<Photo>, onLoadMoreImagesBtnPress: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
-    val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
     val roversScreenVM: RoversScreenVM = viewModel()
-    val randomCuriosityCameraData =
-        randomCuriosityCameraVM.randomCuriosityCameraData.collectAsStateWithLifecycle()
-    val atLastIndex = rememberSaveable { mutableStateOf(false) }
+    val curiosityCameraVM: CuriosityCamerasVM = viewModel()
     AppTheme {
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Adaptive(150.dp),
@@ -89,7 +84,10 @@ fun ModifiedLazyVerticalGrid(listData: List<Photo>, onLoadMoreImagesBtnPress: ()
                 .wrapContentHeight()
         ) {
             itemsIndexed(listData) { itemIndex: Int, dataItem: Photo ->
-                atLastIndex.value = itemIndex == randomCuriosityCameraData.value.lastIndex
+                roversScreenVM.atLastIndexInLazyVerticalGrid.value =
+                    itemIndex == listData.lastIndex
+                curiosityCameraVM.atNearlyLastImageAtLastSolPage.value =
+                    itemIndex == listData.lastIndex
                 Coil_Image().CoilImage(
                     imgURL = dataItem.img_src,
                     contentDescription = "",
@@ -114,10 +112,9 @@ fun ModifiedLazyVerticalGrid(listData: List<Photo>, onLoadMoreImagesBtnPress: ()
                     contentScale = ContentScale.Crop
                 )
             }
-
-
             item {
-                if (atLastIndex.value) {
+
+                if (curiosityCameraVM._fhazDataFromAPI.value.isNotEmpty() && curiosityCameraVM.isFHAZDataLoaded.value) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -140,29 +137,28 @@ fun ModifiedLazyVerticalGrid(listData: List<Photo>, onLoadMoreImagesBtnPress: ()
                             )
                         }
                     }
-                } else {
+                }/* else if (roversScreenVM.atLastIndexInLazyVerticalGrid.value && curiosityCameraVM._fhazDataFromAPI.value.isEmpty()) {
                     CircularProgressIndicator(
                         modifier = Modifier.padding(50.dp),
                         strokeWidth = 4.dp,
                         color = MaterialTheme.colorScheme.primary
                     )
-                }
-            }
-            item {
-                Spacer(modifier = Modifier.height(100.dp))
+                }*/
+                Spacer(modifier = Modifier.height(125.dp))
             }
         }
-
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SolTextField() {
+fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
     val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
+    val manifestVM: ManifestVM = viewModel()
     val isEditedIconClicked = rememberSaveable { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-    val supportingText = rememberSaveable { mutableStateOf("value of Sol should be >= 0") }
+    val supportingText =
+        rememberSaveable(manifestVM.maxCuriositySol.value) { mutableStateOf("value of Sol should be >= 0 and <= ${manifestVM.maxCuriositySol.value}") }
     AppTheme {
         Row(
             modifier = Modifier
@@ -180,9 +176,9 @@ fun SolTextField() {
                 modifier = Modifier
                     .padding(top = 15.dp)
                     .fillMaxWidth(0.65f),
-                value = randomCuriosityCameraVM.enteredSol.value.toString(),
+                value = solValue.value,
                 onValueChange = {
-                    randomCuriosityCameraVM.enteredSol.value = it
+                    solValue.value = it
                 },
                 leadingIcon = {
                     Icon(
@@ -227,15 +223,7 @@ fun SolTextField() {
                     onClick = {
                         isEditedIconClicked.value = false
                         randomCuriosityCameraVM.currentPage.value = 1
-                        coroutineScope.launch {
-                            // supportingText.value = "value of Sol can't be empty"
-                            randomCuriosityCameraVM.enteredSol.value?.let {
-                                randomCuriosityCameraVM.getRandomCuriosityData(
-                                    sol = it.toInt(),
-                                    1
-                                )
-                            }
-                        }
+                        onContinueClick()
                     },
                     iconBtnColor = MaterialTheme.colorScheme.onPrimary.copy(0.3f),
                     iconColor = MaterialTheme.colorScheme.onPrimary,

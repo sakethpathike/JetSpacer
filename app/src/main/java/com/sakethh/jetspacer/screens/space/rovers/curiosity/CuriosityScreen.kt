@@ -12,14 +12,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM.RoverScreenUtils.paddingValues
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RandomCuriosityCameraScreen
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.chemcam.ChemCamCuriosityCameraScreen
@@ -30,7 +33,10 @@ import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.mast.MASTCur
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.navcam.NAVCAMCuriosityCameraScreen
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.SolTextField
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.rhaz.RHAZCuriosityCameraScreen
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestVM
 import com.sakethh.jetspacer.ui.theme.AppTheme
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
@@ -38,19 +44,14 @@ import kotlinx.coroutines.launch
 fun CuriosityRoverScreen() {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
-    val curiosityRoverCameras =
-        rememberSaveable {
-            listOf(
-                CuriosityCameras(name = "Random", composable = { RandomCuriosityCameraScreen() }),
-                CuriosityCameras(name = "FHAZ", composable = { FHAZCuriosityCameraScreen() }),
-                CuriosityCameras(name = "RHAZ", composable = { RHAZCuriosityCameraScreen() }),
-                CuriosityCameras(name = "MAST", composable = { MASTCuriosityCameraScreen() }),
-                CuriosityCameras(name = "CHEMCAM", composable = { ChemCamCuriosityCameraScreen() }),
-                CuriosityCameras(name = "MAHLI", composable = { MAHLICuriosityCameraScreen() }),
-                CuriosityCameras(name = "MARDI", composable = { MARDICuriosityCameraScreen() }),
-                CuriosityCameras(name = "NAVCAM", composable = { NAVCAMCuriosityCameraScreen() }),
-            )
+    val manifestVM: ManifestVM = viewModel()
+    val roversScreenVM: RoversScreenVM = viewModel()
+    LaunchedEffect(key1 = coroutineScope) {
+        coroutineScope.launch {
+            manifestVM.maxCuriositySol()
         }
+    }
+
     AppTheme {
         Column {
             LazyColumn(
@@ -63,7 +64,7 @@ fun CuriosityRoverScreen() {
                         selectedTabIndex = pagerState.currentPage,
                         modifier = Modifier.padding(paddingValues = paddingValues.value),
                     ) {
-                        curiosityRoverCameras.forEachIndexed { index, camera ->
+                        roversScreenVM.curiosityRoverCameras.forEachIndexed { index, camera ->
                             Tab(
                                 selected = pagerState.currentPage == index,
                                 onClick = {
@@ -72,7 +73,7 @@ fun CuriosityRoverScreen() {
                                         pagerState.animateScrollToPage(index)
                                     }.start()
                                 },
-                                modifier = Modifier.padding(15.dp )
+                                modifier = Modifier.padding(15.dp)
                             ) {
                                 Text(
                                     text = camera.name,
@@ -83,15 +84,13 @@ fun CuriosityRoverScreen() {
                             }
                         }
                     }
-                    SolTextField()
                 }
             }
 
-        HorizontalPager(count = curiosityRoverCameras.size, state = pagerState) {
-            curiosityRoverCameras[pagerState.currentPage].composable()
-        }}
+            HorizontalPager(count = roversScreenVM.curiosityRoverCameras.size, state = pagerState) {
+                roversScreenVM.curiosityRoverCameras[pagerState.currentPage].composable()
+            }
+        }
 
     }
 }
-
-data class CuriosityCameras(val name: String, val composable: @Composable () -> Unit)
