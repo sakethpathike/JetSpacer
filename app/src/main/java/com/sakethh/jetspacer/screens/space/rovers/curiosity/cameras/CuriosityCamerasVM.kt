@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class CuriosityCamerasVM(private val curiosityCamerasImplementation: CuriosityCamerasImplementation = CuriosityCamerasImplementation()) :
     ViewModel() {
 
-    val atNearlyLastImageAtLastSolPage= mutableStateOf(false)
+    val atNearlyLastImageAtLastSolPage = mutableStateOf(false)
 
     val _fhazDataFromAPI = mutableStateOf<List<Photo>>(emptyList())
     val fhazDataFromAPI = mutableStateOf<List<Photo>>(emptyList())
@@ -48,10 +48,6 @@ class CuriosityCamerasVM(private val curiosityCamerasImplementation: CuriosityCa
         isFHAZDataLoaded.value = true
     }
 
-    fun clearFHAZData() {
-        fhazDataFromAPI.value = emptyList()
-    }
-
 
     suspend fun getRHAZData(sol: Int, page: Int) {
         _rhazDataFromAPI.value = curiosityCamerasImplementation.getRHAZData(sol, page)
@@ -59,9 +55,6 @@ class CuriosityCamerasVM(private val curiosityCamerasImplementation: CuriosityCa
         isRHAZCamDataLoaded.value = true
     }
 
-    fun clearRHAZData() {
-        rhazDataFromAPI.value = emptyList()
-    }
 
     suspend fun getMASTData(sol: Int, page: Int) {
         _mastDataFromAPI.value = curiosityCamerasImplementation.getMASTData(sol, page)
@@ -69,9 +62,6 @@ class CuriosityCamerasVM(private val curiosityCamerasImplementation: CuriosityCa
         isMASTCamDataLoaded.value = true
     }
 
-    fun clearMASTData() {
-        mastDataFromAPI.value = emptyList()
-    }
 
     suspend fun getCHEMCAMData(sol: Int, page: Int) {
         _chemcamDataFromAPI.value = curiosityCamerasImplementation.getCHEMCAMData(sol, page)
@@ -79,9 +69,6 @@ class CuriosityCamerasVM(private val curiosityCamerasImplementation: CuriosityCa
         isChemCamDataLoaded.value = true
     }
 
-    fun clearCHEMCAMData() {
-        chemcamDataFromAPI.value = emptyList()
-    }
 
     suspend fun getMAHLIData(sol: Int, page: Int) {
         _mahliDataFromAPI.value = curiosityCamerasImplementation.getMAHLIData(sol, page)
@@ -89,9 +76,6 @@ class CuriosityCamerasVM(private val curiosityCamerasImplementation: CuriosityCa
         isMAHLIDataLoaded.value = true
     }
 
-    fun clearMAHLIData() {
-        mahliDataFromAPI.value = emptyList()
-    }
 
     suspend fun getMARDIData(sol: Int, page: Int) {
         _mardiDataFromAPI.value = curiosityCamerasImplementation.getMARDIData(sol, page)
@@ -99,9 +83,6 @@ class CuriosityCamerasVM(private val curiosityCamerasImplementation: CuriosityCa
         isMARDIDataLoaded.value = true
     }
 
-    fun clearMARDIData() {
-        mardiDataFromAPI.value = emptyList()
-    }
 
     suspend fun getNAVCAMData(sol: Int, page: Int) {
         _navcamDataFromAPI.value = curiosityCamerasImplementation.getNAVCAMData(sol, page)
@@ -109,7 +90,33 @@ class CuriosityCamerasVM(private val curiosityCamerasImplementation: CuriosityCa
         isNAVCAMDataLoaded.value = true
     }
 
-    fun clearNAVCAMData() {
-        navcamDataFromAPI.value = emptyList()
+    fun clearCuriosityCameraData(cameraName: CuriosityCameras) {
+        when (cameraName) {
+            CuriosityCameras.FHAZ -> {
+                fhazDataFromAPI.value = emptyList()
+            }
+            CuriosityCameras.RHAZ -> {
+                rhazDataFromAPI.value = emptyList()
+            }
+            CuriosityCameras.MAST -> {
+                mastDataFromAPI.value = emptyList()
+            }
+            CuriosityCameras.CHEMCAM -> {
+                chemcamDataFromAPI.value = emptyList()
+            }
+            CuriosityCameras.MAHLI -> {
+                mahliDataFromAPI.value = emptyList()
+            }
+            CuriosityCameras.MARDI -> {
+                mardiDataFromAPI.value = emptyList()
+            }
+            CuriosityCameras.NAVCAM -> {
+                navcamDataFromAPI.value = emptyList()
+            }
+        }
+    }
+
+    enum class CuriosityCameras {
+        FHAZ, RHAZ, MAST, CHEMCAM, MAHLI, MARDI, NAVCAM
     }
 }

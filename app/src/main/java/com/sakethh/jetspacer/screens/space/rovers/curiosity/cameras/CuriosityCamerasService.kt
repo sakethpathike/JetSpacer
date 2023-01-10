@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras
 
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 
+
 interface CuriosityCamerasService {
     suspend fun getFHAZData(sol: Int,page:Int):List<Photo>
     suspend fun getRHAZData(sol: Int,page:Int):List<Photo>

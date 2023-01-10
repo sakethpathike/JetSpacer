@@ -1,9 +1,5 @@
 package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.fhaz
 
-import android.util.Log
-import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -11,25 +7,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.fhaz.FHAZCuriosityCameraScreen.currentPage
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.fhaz.FHAZCuriosityCameraScreen.solValue
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.ModifiedLazyVerticalGrid
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.SolTextField
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestVM
 import kotlinx.coroutines.launch
-import okhttp3.internal.toImmutableList
 
 @OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -37,13 +29,11 @@ fun FHAZCuriosityCameraScreen() {
     val curiosityCameraVM: CuriosityCamerasVM = viewModel()
     val roversScreenVM: RoversScreenVM = viewModel()
     val coroutineScope = rememberCoroutineScope()
-    val solValue = rememberSaveable { mutableStateOf("0") }
     val solImagesData = curiosityCameraVM.fhazDataFromAPI.value
-    val context = LocalContext.current
     LaunchedEffect(key1 = true) {
         curiosityCameraVM.getFHAZData(
             sol = solValue.value.toInt(),
-            page = currentPage
+            page = 0
         )
     }
     Scaffold(floatingActionButtonPosition = FabPosition.Center, floatingActionButton = {
@@ -74,8 +64,9 @@ fun FHAZCuriosityCameraScreen() {
                 .padding(it)
         ) {
             SolTextField(solValue = solValue, onContinueClick = {
+                currentPage = 0
                 curiosityCameraVM.isFHAZDataLoaded.value = false
-                curiosityCameraVM.clearFHAZData()
+                curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.FHAZ)
                 coroutineScope.launch {
                     curiosityCameraVM.getFHAZData(solValue.value.toInt(), 0)
                 }
@@ -94,7 +85,7 @@ fun FHAZCuriosityCameraScreen() {
                     status = Status.FOURO4InMarsScreen
                 )
             } else {
-                ModifiedLazyVerticalGrid(listData = solImagesData) {
+                ModifiedLazyVerticalGrid(listData = solImagesData, loadMoreButtonBooleanExpression = curiosityCameraVM._fhazDataFromAPI.value.isNotEmpty() && curiosityCameraVM.isFHAZDataLoaded.value) {
                     coroutineScope.launch {
                         curiosityCameraVM.getFHAZData(
                             sol = solValue.value.toInt(),
@@ -109,5 +100,6 @@ fun FHAZCuriosityCameraScreen() {
 }
 
 object FHAZCuriosityCameraScreen {
+    var solValue = mutableStateOf("0")
     var currentPage = 0
 }
