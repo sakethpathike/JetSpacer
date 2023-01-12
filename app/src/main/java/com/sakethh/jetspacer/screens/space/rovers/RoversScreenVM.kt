@@ -3,7 +3,6 @@ package com.sakethh.jetspacer.screens.space.rovers
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.CuriosityRoverScreen
@@ -19,7 +18,7 @@ import com.sakethh.jetspacer.screens.space.rovers.opportunity.OpportunityRoverSc
 import com.sakethh.jetspacer.screens.space.rovers.spirit.SpiritRoverScreen
 
 data class RoversScreen(val screenName: String, val composable: @Composable () -> Unit)
-data class CuriosityCameras(val name: String, val composable: @Composable () -> Unit)
+data class RoverCameras(val name: String, val composable: @Composable () -> Unit)
 class RoversScreenVM : ViewModel() {
     val listForDrawerContent = listOf(
         RoversScreen(screenName = "Curiosity", composable = { CuriosityRoverScreen() }),
@@ -27,16 +26,16 @@ class RoversScreenVM : ViewModel() {
         RoversScreen(screenName = "Spirit", composable = { SpiritRoverScreen() }),
     )
     val curiosityRoverCameras = listOf(
-        CuriosityCameras(name = "Random", composable = { RandomCuriosityCameraScreen() }),
-        CuriosityCameras(name = "FHAZ", composable = { FHAZCuriosityCameraScreen() }),
-        CuriosityCameras(name = "RHAZ", composable = { RHAZCuriosityCameraScreen() }),
-        CuriosityCameras(name = "MAST", composable = { MASTCuriosityCameraScreen() }),
-        CuriosityCameras(name = "CHEMCAM", composable = { ChemCamCuriosityCameraScreen() }),
-        CuriosityCameras(name = "MAHLI", composable = { MAHLICuriosityCameraScreen() }),
-        CuriosityCameras(name = "MARDI", composable = { MARDICuriosityCameraScreen() }),
-        CuriosityCameras(name = "NAVCAM", composable = { NAVCAMCuriosityCameraScreen() }),
+        RoverCameras(name = "Random", composable = { RandomCuriosityCameraScreen() }),
+        RoverCameras(name = "FHAZ", composable = { FHAZCuriosityCameraScreen() }),
+        RoverCameras(name = "RHAZ", composable = { RHAZCuriosityCameraScreen() }),
+        RoverCameras(name = "MAST", composable = { MASTCuriosityCameraScreen() }),
+        RoverCameras(name = "CHEMCAM", composable = { ChemCamCuriosityCameraScreen() }),
+        RoverCameras(name = "MAHLI", composable = { MAHLICuriosityCameraScreen() }),
+        RoverCameras(name = "MARDI", composable = { MARDICuriosityCameraScreen() }),
+        RoverCameras(name = "NAVCAM", composable = { NAVCAMCuriosityCameraScreen() }),
     )
-    val atLastIndexInLazyVerticalGrid= mutableStateOf(false)
+    val atLastIndexInLazyVerticalGrid = mutableStateOf(false)
 
     val imgURL = mutableStateOf("")
     val capturedOn = mutableStateOf("")

@@ -38,7 +38,7 @@ import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestVM
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestForCuriosityVM
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -240,10 +240,10 @@ fun LazyStaggeredGridState.atLastIndex(): Boolean {
 @Composable
 fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
     val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
-    val manifestVM: ManifestVM = viewModel()
+    val manifestForCuriosityVM: ManifestForCuriosityVM = viewModel()
     val isEditedIconClicked = rememberSaveable { mutableStateOf(false) }
     val supportingText =
-        rememberSaveable(manifestVM.maxCuriositySol.value) { mutableStateOf("value of Sol should be >= 0 and <= ${manifestVM.maxCuriositySol.value}") }
+        rememberSaveable(manifestForCuriosityVM.maxCuriositySol.value) { mutableStateOf("value of Sol should be >= 0 and <= ${manifestForCuriosityVM.maxCuriositySol.value}") }
     AppTheme {
         Row(
             modifier = Modifier

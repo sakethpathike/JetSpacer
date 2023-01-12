@@ -34,7 +34,7 @@ fun NAVCAMCuriosityCameraScreen() {
     LaunchedEffect(key1 = true) {
         curiosityCameraVM.getNAVCAMData(
             sol = NAVCAMCuriosityCameraScreen.solValue.value.toInt(),
-            page = 0
+            page = NAVCAMCuriosityCameraScreen.currentPage
         )
     }
     Scaffold(floatingActionButtonPosition = FabPosition.Center, floatingActionButton = {

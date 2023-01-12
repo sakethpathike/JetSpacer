@@ -6,13 +6,13 @@ import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.dto.RoverMa
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 
-class ManifestImplementation : ManifestService {
+class ManifestForCuriosityImplementation : ManifestService {
     override suspend fun getCuriosityMaxSol(): Int {
-        return manifestDataRequest<RoverManifestDTO>(roverName = RoverNameForManifestData.CURIOSITY).photo_manifest.max_sol
+        return manifestForCuriosityDataRequest<RoverManifestDTO>(roverName = RoverNameForManifestData.CURIOSITY).photo_manifest.max_sol
     }
 }
 
-suspend inline fun <reified T : Any> manifestDataRequest(roverName: String): T {
+suspend inline fun <reified T : Any> manifestForCuriosityDataRequest(roverName: String): T {
     return HTTPClient.ktorClient.get("https://api.nasa.gov/mars-photos/api/v1/manifests/$roverName?api_key=${Constants.NASA_APIKEY}")
         .body()
 }

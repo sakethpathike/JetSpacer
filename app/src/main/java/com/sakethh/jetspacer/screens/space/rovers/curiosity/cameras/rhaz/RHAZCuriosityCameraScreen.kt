@@ -34,7 +34,7 @@ fun RHAZCuriosityCameraScreen() {
     LaunchedEffect(key1 = true) {
         curiosityCameraVM.getRHAZData(
             sol = RHAZCuriosityCameraScreen.solValue.value.toInt(),
-            page = 0
+            page = RHAZCuriosityCameraScreen.currentPage
         )
     }
     Scaffold(floatingActionButtonPosition = FabPosition.Center, floatingActionButton = {
