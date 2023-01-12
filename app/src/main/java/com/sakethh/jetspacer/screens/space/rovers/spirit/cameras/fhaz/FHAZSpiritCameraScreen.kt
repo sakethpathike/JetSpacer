@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.fhaz
+package com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.fhaz
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,25 +18,25 @@ import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.ModifiedLazyVerticalGrid
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.SolTextField
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.OpportunityCamerasVM
+import com.sakethh.jetspacer.screens.space.rovers.spirit.SpiritCamerasVM
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun FHAZOpportunityCameraScreen() {
-    val opportunityVM: OpportunityCamerasVM = viewModel()
+fun FHAZSpiritCameraScreen() {
+    val spiritVM: SpiritCamerasVM = viewModel()
     val roversScreenVM: RoversScreenVM = viewModel()
     val coroutineScope = rememberCoroutineScope()
-    val solImagesData = opportunityVM.fhazDataFromAPI.value
+    val solImagesData = spiritVM.fhazDataFromAPI.value
     LaunchedEffect(key1 = true) {
-        opportunityVM.retrieveOpportunityCameraData(
-            cameraName = OpportunityCamerasVM.OpportunityCameras.FHAZ,
-            sol = FHAZOpportunityCameraScreen.solValue.value.toInt(),
+        spiritVM.retrieveSpiritCameraData(
+            cameraName = SpiritCamerasVM.SpiritCameras.FHAZ,
+            sol = FHAZSpiritCameraScreen.solValue.value.toInt(),
             page = 0
         )
     }
     Scaffold(floatingActionButtonPosition = FabPosition.Center, floatingActionButton = {
-        if (solImagesData.isNotEmpty() && opportunityVM._fhazDataFromAPI.value.isEmpty() && opportunityVM.isFHAZDataLoaded.value && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
+        if (solImagesData.isNotEmpty() && spiritVM._fhazDataFromAPI.value.isEmpty() && spiritVM.isFHAZDataLoaded.value && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
             Snackbar(
                 containerColor = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier
@@ -62,41 +62,41 @@ fun FHAZOpportunityCameraScreen() {
                 .fillMaxWidth()
                 .padding(it)
         ) {
-            SolTextField(solValue = FHAZOpportunityCameraScreen.solValue, onContinueClick = {
-                FHAZOpportunityCameraScreen.currentPage = 0
-                opportunityVM.isFHAZDataLoaded.value = false
-                opportunityVM.clearOpportunityCameraData(cameraName = OpportunityCamerasVM.OpportunityCameras.FHAZ)
+            SolTextField(solValue = FHAZSpiritCameraScreen.solValue, onContinueClick = {
+                FHAZSpiritCameraScreen.currentPage = 0
+                spiritVM.isFHAZDataLoaded.value = false
+                spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.FHAZ)
                 coroutineScope.launch {
-                    opportunityVM.retrieveOpportunityCameraData(
-                        cameraName = OpportunityCamerasVM.OpportunityCameras.FHAZ,
-                        sol = FHAZOpportunityCameraScreen.solValue.value.toInt(),
+                    spiritVM.retrieveSpiritCameraData(
+                        cameraName = SpiritCamerasVM.SpiritCameras.FHAZ,
+                        sol = FHAZSpiritCameraScreen.solValue.value.toInt(),
                         page = 0
                     )
                 }
             })
-            if (!opportunityVM.isFHAZDataLoaded.value) {
+            if (!spiritVM.isFHAZDataLoaded.value) {
                 StatusScreen(
                     title = "Wait a moment!",
-                    description = "fetching the images from this camera that were captured on sol ${FHAZOpportunityCameraScreen.solValue.value}",
+                    description = "fetching the images from this camera that were captured on sol ${FHAZSpiritCameraScreen.solValue.value}",
                     status = Status.LOADING
                 )
 
             } else if (solImagesData.isEmpty()) {
                 StatusScreen(
                     title = "4ooooFour",
-                    description = "No images were captured by this camera on sol ${FHAZOpportunityCameraScreen.solValue.value}. Change the sol value; it may give results.",
+                    description = "No images were captured by this camera on sol ${FHAZSpiritCameraScreen.solValue.value}. Change the sol value; it may give results.",
                     status = Status.FOURO4InMarsScreen
                 )
             } else {
                 ModifiedLazyVerticalGrid(
                     listData = solImagesData,
-                    loadMoreButtonBooleanExpression = opportunityVM._fhazDataFromAPI.value.isNotEmpty() && opportunityVM.isFHAZDataLoaded.value
+                    loadMoreButtonBooleanExpression = spiritVM._fhazDataFromAPI.value.isNotEmpty() && spiritVM.isFHAZDataLoaded.value
                 ) {
                     coroutineScope.launch {
-                        opportunityVM.retrieveOpportunityCameraData(
-                            cameraName = OpportunityCamerasVM.OpportunityCameras.FHAZ,
-                            sol = FHAZOpportunityCameraScreen.solValue.value.toInt(),
-                            page = FHAZOpportunityCameraScreen.currentPage++
+                        spiritVM.retrieveSpiritCameraData(
+                            cameraName = SpiritCamerasVM.SpiritCameras.FHAZ,
+                            sol = FHAZSpiritCameraScreen.solValue.value.toInt(),
+                            page = FHAZSpiritCameraScreen.currentPage++
                         )
                     }
                 }
@@ -106,7 +106,7 @@ fun FHAZOpportunityCameraScreen() {
     }
 }
 
-object FHAZOpportunityCameraScreen {
+object FHAZSpiritCameraScreen {
     var solValue = mutableStateOf("0")
     var currentPage = 0
 }

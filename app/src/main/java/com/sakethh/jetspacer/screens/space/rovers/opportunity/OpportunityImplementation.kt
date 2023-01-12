@@ -3,7 +3,6 @@ package com.sakethh.jetspacer.screens.space.rovers.opportunity
 import androidx.compose.runtime.mutableStateListOf
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.httpClient.HTTPClient
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasService
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.RandomCameraDTO
 import io.ktor.client.call.*

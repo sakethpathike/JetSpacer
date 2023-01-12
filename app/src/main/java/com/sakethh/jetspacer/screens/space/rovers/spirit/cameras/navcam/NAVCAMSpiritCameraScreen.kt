@@ -1,6 +1,9 @@
-package com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.fhaz
+package com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.navcam
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -11,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
@@ -19,24 +21,25 @@ import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.ModifiedLazyVerticalGrid
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.SolTextField
 import com.sakethh.jetspacer.screens.space.rovers.opportunity.OpportunityCamerasVM
+import com.sakethh.jetspacer.screens.space.rovers.spirit.SpiritCamerasVM
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FHAZOpportunityCameraScreen() {
-    val opportunityVM: OpportunityCamerasVM = viewModel()
+fun NAVCAMSpiritCameraScreen() {
+    val spiritVM: SpiritCamerasVM = viewModel()
     val roversScreenVM: RoversScreenVM = viewModel()
     val coroutineScope = rememberCoroutineScope()
-    val solImagesData = opportunityVM.fhazDataFromAPI.value
+    val solImagesData = spiritVM.navcamDataFromAPI.value
     LaunchedEffect(key1 = true) {
-        opportunityVM.retrieveOpportunityCameraData(
-            cameraName = OpportunityCamerasVM.OpportunityCameras.FHAZ,
-            sol = FHAZOpportunityCameraScreen.solValue.value.toInt(),
+        spiritVM.retrieveSpiritCameraData(
+            cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM,
+            sol = NAVCAMSpiritCameraScreen.solValue.value.toInt(),
             page = 0
         )
     }
     Scaffold(floatingActionButtonPosition = FabPosition.Center, floatingActionButton = {
-        if (solImagesData.isNotEmpty() && opportunityVM._fhazDataFromAPI.value.isEmpty() && opportunityVM.isFHAZDataLoaded.value && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
+        if (solImagesData.isNotEmpty() && spiritVM._navcamDataFromAPI.value.isEmpty() && spiritVM.isNAVCAMDataLoaded.value && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
             Snackbar(
                 containerColor = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier
@@ -62,41 +65,41 @@ fun FHAZOpportunityCameraScreen() {
                 .fillMaxWidth()
                 .padding(it)
         ) {
-            SolTextField(solValue = FHAZOpportunityCameraScreen.solValue, onContinueClick = {
-                FHAZOpportunityCameraScreen.currentPage = 0
-                opportunityVM.isFHAZDataLoaded.value = false
-                opportunityVM.clearOpportunityCameraData(cameraName = OpportunityCamerasVM.OpportunityCameras.FHAZ)
+            SolTextField(solValue = NAVCAMSpiritCameraScreen.solValue, onContinueClick = {
+                NAVCAMSpiritCameraScreen.currentPage = 0
+                spiritVM.isNAVCAMDataLoaded.value = false
+                spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM)
                 coroutineScope.launch {
-                    opportunityVM.retrieveOpportunityCameraData(
-                        cameraName = OpportunityCamerasVM.OpportunityCameras.FHAZ,
-                        sol = FHAZOpportunityCameraScreen.solValue.value.toInt(),
+                    spiritVM.retrieveSpiritCameraData(
+                        cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM,
+                        sol = NAVCAMSpiritCameraScreen.solValue.value.toInt(),
                         page = 0
                     )
                 }
             })
-            if (!opportunityVM.isFHAZDataLoaded.value) {
+            if (!spiritVM.isNAVCAMDataLoaded.value) {
                 StatusScreen(
                     title = "Wait a moment!",
-                    description = "fetching the images from this camera that were captured on sol ${FHAZOpportunityCameraScreen.solValue.value}",
+                    description = "fetching the images from this camera that were captured on sol ${NAVCAMSpiritCameraScreen.solValue.value}",
                     status = Status.LOADING
                 )
 
             } else if (solImagesData.isEmpty()) {
                 StatusScreen(
                     title = "4ooooFour",
-                    description = "No images were captured by this camera on sol ${FHAZOpportunityCameraScreen.solValue.value}. Change the sol value; it may give results.",
+                    description = "No images were captured by this camera on sol ${NAVCAMSpiritCameraScreen.solValue.value}. Change the sol value; it may give results.",
                     status = Status.FOURO4InMarsScreen
                 )
             } else {
                 ModifiedLazyVerticalGrid(
                     listData = solImagesData,
-                    loadMoreButtonBooleanExpression = opportunityVM._fhazDataFromAPI.value.isNotEmpty() && opportunityVM.isFHAZDataLoaded.value
+                    loadMoreButtonBooleanExpression = spiritVM._navcamDataFromAPI.value.isNotEmpty() && spiritVM.isNAVCAMDataLoaded.value
                 ) {
                     coroutineScope.launch {
-                        opportunityVM.retrieveOpportunityCameraData(
-                            cameraName = OpportunityCamerasVM.OpportunityCameras.FHAZ,
-                            sol = FHAZOpportunityCameraScreen.solValue.value.toInt(),
-                            page = FHAZOpportunityCameraScreen.currentPage++
+                        spiritVM.retrieveSpiritCameraData(
+                            cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM,
+                            sol = NAVCAMSpiritCameraScreen.solValue.value.toInt(),
+                            page = NAVCAMSpiritCameraScreen.currentPage++
                         )
                     }
                 }
@@ -106,7 +109,7 @@ fun FHAZOpportunityCameraScreen() {
     }
 }
 
-object FHAZOpportunityCameraScreen {
+object NAVCAMSpiritCameraScreen {
     var solValue = mutableStateOf("0")
     var currentPage = 0
 }

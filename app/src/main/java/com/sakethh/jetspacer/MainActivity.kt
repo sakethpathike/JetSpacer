@@ -11,7 +11,6 @@ import androidx.navigation.compose.rememberNavController
 import com.sakethh.jetspacer.navigation.BottomNavigationComposable
 import com.sakethh.jetspacer.navigation.MainNavigation
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestForCuriosityVM
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.fhaz.FHAZOpportunityCameraScreen
 import com.sakethh.jetspacer.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {

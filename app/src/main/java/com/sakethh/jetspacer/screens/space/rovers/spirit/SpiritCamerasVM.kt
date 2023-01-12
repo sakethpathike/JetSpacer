@@ -1,26 +1,26 @@
-package com.sakethh.jetspacer.screens.space.rovers.opportunity
+package com.sakethh.jetspacer.screens.space.rovers.spirit
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.sakethh.jetspacer.screens.space.rovers.RoverCameras
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.fhaz.FHAZOpportunityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.minites.MinitesOpportunityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.pancam.PANCAMOpportunityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.navcam.NAVCAMOpportunityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.random.RandomOpportunityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.rhaz.RHAZOpportunityCameraScreen
+import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.fhaz.FHAZSpiritCameraScreen
+import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.minites.MinitesSpiritCameraScreen
+import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.navcam.NAVCAMSpiritCameraScreen
+import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.pancam.PANCAMSpiritCameraScreen
+import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.random.RandomSpiritCameraScreen
+import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.rhaz.RHAZSpiritCameraScreen
 
-class OpportunityCamerasVM(private val opportunityCamerasImplementation: OpportunityCamerasImplementation = OpportunityCamerasImplementation()) :
+class SpiritCamerasVM(private val spiritCamerasImplementation: SpiritCamerasImplementation = SpiritCamerasImplementation()) :
     ViewModel() {
 
-    val opportunityRoverCameras = listOf(
-        RoverCameras(name = "Random", composable = { RandomOpportunityCameraScreen() }),
-        RoverCameras(name = "FHAZ", composable = { FHAZOpportunityCameraScreen() }),
-        RoverCameras(name = "RHAZ", composable = { RHAZOpportunityCameraScreen() }),
-        RoverCameras(name = "NAVCAM", composable = { NAVCAMOpportunityCameraScreen() }),
-        RoverCameras(name = "PANCAM", composable = { PANCAMOpportunityCameraScreen() }),
-        RoverCameras(name = "MINITES", composable = { MinitesOpportunityCameraScreen() }),
+    val spiritRoverCameras = listOf(
+        RoverCameras(name = "Random", composable = { RandomSpiritCameraScreen() }),
+        RoverCameras(name = "FHAZ", composable = { FHAZSpiritCameraScreen() }),
+        RoverCameras(name = "RHAZ", composable = { RHAZSpiritCameraScreen() }),
+        RoverCameras(name = "NAVCAM", composable = { NAVCAMSpiritCameraScreen() }),
+        RoverCameras(name = "PANCAM", composable = { PANCAMSpiritCameraScreen() }),
+        RoverCameras(name = "MINITES", composable = { MinitesSpiritCameraScreen() }),
     )
 
     val _randomCameraData = mutableStateOf<List<Photo>>(emptyList())
@@ -49,66 +49,67 @@ class OpportunityCamerasVM(private val opportunityCamerasImplementation: Opportu
     val isNAVCAMDataLoaded = mutableStateOf(false)
 
 
-    suspend fun retrieveOpportunityCameraData(cameraName: OpportunityCameras, sol: Int, page: Int) {
+    suspend fun retrieveSpiritCameraData(cameraName: SpiritCameras, sol: Int, page: Int) {
         when (cameraName) {
-            OpportunityCameras.RHAZ -> {
-                _rhazDataFromAPI.value = opportunityCamerasImplementation.getRHAZData(sol, page)
+            SpiritCameras.RHAZ -> {
+                _rhazDataFromAPI.value = spiritCamerasImplementation.getRHAZData(sol, page)
                 rhazDataFromAPI.value += _rhazDataFromAPI.value
                 isRHAZCamDataLoaded.value = true
             }
-            OpportunityCameras.FHAZ -> {
-                _fhazDataFromAPI.value = opportunityCamerasImplementation.getFHAZData(sol, page)
+            SpiritCameras.FHAZ -> {
+                _fhazDataFromAPI.value = spiritCamerasImplementation.getFHAZData(sol, page)
                 fhazDataFromAPI.value += _fhazDataFromAPI.value
                 isFHAZDataLoaded.value = true
             }
-            OpportunityCameras.NAVCAM -> {
-                _navcamDataFromAPI.value = opportunityCamerasImplementation.getNAVCAMData(sol, page)
+            SpiritCameras.NAVCAM -> {
+                _navcamDataFromAPI.value = spiritCamerasImplementation.getNAVCAMData(sol, page)
                 navcamDataFromAPI.value += _navcamDataFromAPI.value
                 isNAVCAMDataLoaded.value = true
             }
-            OpportunityCameras.MINITES -> {
+            SpiritCameras.MINITES -> {
                 _minitesDataFromAPI.value =
-                    opportunityCamerasImplementation.getMINITESData(sol, page)
+                    spiritCamerasImplementation.getMINITESData(sol, page)
                 minitesDataFromAPI.value += _minitesDataFromAPI.value
                 isMinitesDataLoaded.value = true
             }
-            OpportunityCameras.PANCAM -> {
-                _pancamDataFromAPI.value = opportunityCamerasImplementation.getPANCAMData(sol, page)
+            SpiritCameras.PANCAM -> {
+                _pancamDataFromAPI.value = spiritCamerasImplementation.getPANCAMData(sol, page)
                 pancamDataFromAPI.value += _pancamDataFromAPI.value
                 isPancamDataLoaded.value = true
             }
-            OpportunityCameras.RANDOM -> {
-                _randomCameraData.value = opportunityCamerasImplementation.getRandomCamerasData(sol, page).photos
+            SpiritCameras.RANDOM -> {
+                _randomCameraData.value =
+                    spiritCamerasImplementation.getRandomCamerasData(sol, page).photos
                 randomCameraDataFromAPI.value += _randomCameraData.value
                 isRandomCamerasDataLoaded.value = true
             }
         }
     }
 
-    fun clearOpportunityCameraData(cameraName: OpportunityCameras) {
+    fun clearSpiritCameraData(cameraName: SpiritCameras) {
         when (cameraName) {
-            OpportunityCameras.RHAZ -> {
+            SpiritCameras.RHAZ -> {
                 rhazDataFromAPI.value = emptyList()
             }
-            OpportunityCameras.FHAZ -> {
+            SpiritCameras.FHAZ -> {
                 fhazDataFromAPI.value = emptyList()
             }
-            OpportunityCameras.NAVCAM -> {
+            SpiritCameras.NAVCAM -> {
                 navcamDataFromAPI.value = emptyList()
             }
-            OpportunityCameras.MINITES -> {
+            SpiritCameras.MINITES -> {
                 minitesDataFromAPI.value = emptyList()
             }
-            OpportunityCameras.PANCAM -> {
+            SpiritCameras.PANCAM -> {
                 pancamDataFromAPI.value = emptyList()
             }
-            OpportunityCameras.RANDOM -> {
+            SpiritCameras.RANDOM -> {
                 randomCameraDataFromAPI.value = emptyList()
             }
         }
     }
 
-    enum class OpportunityCameras {
+    enum class SpiritCameras {
         FHAZ, RHAZ, NAVCAM, PANCAM, MINITES, RANDOM
     }
 }
