@@ -6,34 +6,44 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.CuriosityRoverScreen
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.chemcam.ChemCamCuriosityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.fhaz.FHAZCuriosityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.mahli.MAHLICuriosityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.mardi.MARDICuriosityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.mast.MASTCuriosityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.navcam.NAVCAMCuriosityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RandomCuriosityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.rhaz.RHAZCuriosityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.OpportunityRoverScreen
-import com.sakethh.jetspacer.screens.space.rovers.spirit.SpiritRoverScreen
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasScreen
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasVM
+import com.sakethh.jetspacer.screens.space.rovers.opportunity.OpportunityMainRoverScreen
+import com.sakethh.jetspacer.screens.space.rovers.spirit.SpiritRoverMainScreen
 
 data class RoversScreen(val screenName: String, val composable: @Composable () -> Unit)
 data class RoverCameras(val name: String, val composable: @Composable () -> Unit)
 class RoversScreenVM : ViewModel() {
     val listForDrawerContent = listOf(
         RoversScreen(screenName = "Curiosity", composable = { CuriosityRoverScreen() }),
-        RoversScreen(screenName = "Opportunity", composable = { OpportunityRoverScreen() }),
-        RoversScreen(screenName = "Spirit", composable = { SpiritRoverScreen() }),
+        RoversScreen(screenName = "Opportunity", composable = { OpportunityMainRoverScreen() }),
+        RoversScreen(screenName = "Spirit", composable = { SpiritRoverMainScreen() }),
     )
     val curiosityRoverCameras = listOf(
-        RoverCameras(name = "Random", composable = { RandomCuriosityCameraScreen() }),
-        RoverCameras(name = "FHAZ", composable = { FHAZCuriosityCameraScreen() }),
-        RoverCameras(name = "RHAZ", composable = { RHAZCuriosityCameraScreen() }),
-        RoverCameras(name = "MAST", composable = { MASTCuriosityCameraScreen() }),
-        RoverCameras(name = "CHEMCAM", composable = { ChemCamCuriosityCameraScreen() }),
-        RoverCameras(name = "MAHLI", composable = { MAHLICuriosityCameraScreen() }),
-        RoverCameras(name = "MARDI", composable = { MARDICuriosityCameraScreen() }),
-        RoverCameras(name = "NAVCAM", composable = { NAVCAMCuriosityCameraScreen() }),
+        RoverCameras(
+            name = "Random",
+            composable = { CuriosityCamerasScreen(cameraName = CuriosityCamerasVM.CuriosityCameras.RANDOM) }),
+        RoverCameras(
+            name = "FHAZ",
+            composable = { CuriosityCamerasScreen(cameraName = CuriosityCamerasVM.CuriosityCameras.FHAZ) }),
+        RoverCameras(
+            name = "RHAZ",
+            composable = { CuriosityCamerasScreen(cameraName = CuriosityCamerasVM.CuriosityCameras.RHAZ) }),
+        RoverCameras(
+            name = "MAST",
+            composable = { CuriosityCamerasScreen(cameraName = CuriosityCamerasVM.CuriosityCameras.MAST) }),
+        RoverCameras(
+            name = "CHEMCAM",
+            composable = { CuriosityCamerasScreen(cameraName = CuriosityCamerasVM.CuriosityCameras.CHEMCAM) }),
+        RoverCameras(
+            name = "MAHLI",
+            composable = { CuriosityCamerasScreen(cameraName = CuriosityCamerasVM.CuriosityCameras.MAHLI) }),
+        RoverCameras(
+            name = "MARDI",
+            composable = { CuriosityCamerasScreen(cameraName = CuriosityCamerasVM.CuriosityCameras.MARDI) }),
+        RoverCameras(
+            name = "NAVCAM",
+            composable = { CuriosityCamerasScreen(cameraName = CuriosityCamerasVM.CuriosityCameras.NAVCAM) }),
     )
     val atLastIndexInLazyVerticalGrid = mutableStateOf(false)
 

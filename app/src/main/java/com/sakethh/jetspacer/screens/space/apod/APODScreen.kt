@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -18,9 +19,7 @@ import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -44,7 +43,11 @@ import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
+import com.sakethh.jetspacer.screens.Status
+import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.home.*
+import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.atLastIndex
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -58,9 +61,7 @@ import java.util.*
 fun APODScreen(navController: NavController) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val apodScreenVM: APODScreenVM = viewModel()
-    val apodPaginatedData = apodScreenVM.dataForPagination.collectAsStateWithLifecycle().value
     val coroutineScope = rememberCoroutineScope()
-
     val apodURL = rememberSaveable { mutableStateOf("") }
     val apodTitle = rememberSaveable { mutableStateOf("") }
     val apodDate = rememberSaveable { mutableStateOf("") }
@@ -98,56 +99,71 @@ fun APODScreen(navController: NavController) {
                 )
             )
         }) {
-
-            ModalBottomSheetLayout(
-                sheetContent = {
-                    APODBottomSheetContent(
-                        homeScreenViewModel = homeScreenVM,
-                        apodURL = apodURL.value,
-                        apodTitle = apodTitle.value,
-                        apodDate = apodDate.value,
-                        apodDescription = apodDescription.value,
-                        apodMediaType = apodMediaType.value
-                    )
-                },
-                sheetState = bottomSheetState,
-                sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
-                sheetBackgroundColor = MaterialTheme.colorScheme.primary
-            ) {
-                LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(150.dp),
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surface)
-                        .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .padding(it)
-                ) {
-                    itemsIndexed(apodPaginatedData) { currentAPODItemIndex: Int, apodItem: APOD_DTO ->
-                        if (currentAPODItemIndex == apodPaginatedData.lastIndex - 6) {
-                            coroutineScope.launch {
-                                apodScreenVM.fetchAPODData()
-                            }
-                        }
-                        Coil_Image().CoilImage(
-                            imgURL = apodItem.url.toString(),
-                            contentDescription = apodItem.title.toString(),
-                            modifier = Modifier
-                                .padding(1.dp)
-                                .clickable {
-                                    coroutineScope.launch {
-                                        apodDate.value = apodItem.date.toString()
-                                        apodURL.value = apodItem.url.toString()
-                                        apodDescription.value = apodItem.explanation.toString()
-                                        apodTitle.value = apodItem.title.toString()
-                                        apodMediaType.value = apodItem.media_type.toString()
-                                        bottomSheetState.show()
-                                    }
-                                },
-                            onError = painterResource(id = R.drawable.satellite_filled)
+            if (apodScreenVM.isDataForAPODPaginationLoaded.value) {
+                ModalBottomSheetLayout(
+                    sheetContent = {
+                        APODBottomSheetContent(
+                            homeScreenViewModel = homeScreenVM,
+                            apodURL = apodURL.value,
+                            apodTitle = apodTitle.value,
+                            apodDate = apodDate.value,
+                            apodDescription = apodDescription.value,
+                            apodMediaType = apodMediaType.value
                         )
+                    },
+                    sheetState = bottomSheetState,
+                    sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
+                    sheetBackgroundColor = MaterialTheme.colorScheme.primary
+                ) {
+                    LazyVerticalStaggeredGrid(
+                        columns = StaggeredGridCells.Adaptive(150.dp),
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surface)
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
+                            .padding(it)
+                    ) {
+                        itemsIndexed(apodScreenVM.dataForPagination.value) { currentAPODItemIndex: Int, apodItem: APOD_DTO ->
+                            if (currentAPODItemIndex == apodScreenVM.dataForPagination.value.lastIndex - 6) {
+                                coroutineScope.launch {
+                                    apodScreenVM.fetchAPODData()
+                                }
+                            }
+                            Coil_Image().CoilImage(
+                                imgURL = apodItem.url.toString(),
+                                contentDescription = apodItem.title.toString(),
+                                modifier = Modifier
+                                    .padding(1.dp)
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            apodDate.value = apodItem.date.toString()
+                                            apodURL.value = apodItem.url.toString()
+                                            apodDescription.value = apodItem.explanation.toString()
+                                            apodTitle.value = apodItem.title.toString()
+                                            apodMediaType.value = apodItem.media_type.toString()
+                                            bottomSheetState.show()
+                                        }
+                                    },
+                                onError = painterResource(id = R.drawable.satellite_filled)
+                            )
+                        }
+                        item {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                modifier = Modifier.padding(50.dp),
+                                strokeWidth = 4.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(75.dp))
+                        }
                     }
-                    item {
-                        Spacer(modifier = Modifier.height(25.dp))
-                    }
+                }
+            } else {
+                Column {
+                    Spacer(modifier = Modifier.height(95.dp))
+                    StatusScreen(
+                        title = "Wait a moment!",
+                        description = "fetching the APOD Data from Space!",
+                        status = Status.LOADING
+                    )
                 }
             }
         }

@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun OpportunityRoverScreen() {
+fun OpportunityMainRoverScreen() {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
     val manifestForCuriosityVM: ManifestForCuriosityVM = viewModel()

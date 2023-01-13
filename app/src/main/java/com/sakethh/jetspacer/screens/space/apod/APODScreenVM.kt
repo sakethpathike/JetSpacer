@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,16 +17,19 @@ class APODScreenVM(private val apodPaginationFetching: APODPaginationFetching = 
     ViewModel() {
     private val coroutineExceptionalHandler =
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
-    private val _dataForPagination = MutableStateFlow<List<APOD_DTO>>(emptyList())
-    val dataForPagination = _dataForPagination.asStateFlow()
+    val _dataForAPODPagination = mutableStateOf<List<APOD_DTO>>(emptyList())
+    val dataForPagination = mutableStateOf<List<APOD_DTO>>(emptyList())
+    val isDataForAPODPaginationLoaded = mutableStateOf(false)
 
     init {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-           fetchAPODData()
+            fetchAPODData()
         }
     }
 
     suspend fun fetchAPODData() {
-        _dataForPagination.emit(apodPaginationFetching.getPaginatedAPODATA())
+        _dataForAPODPagination.value = apodPaginationFetching.getPaginatedAPODATA()
+        dataForPagination.value += _dataForAPODPagination.value
+        isDataForAPODPaginationLoaded.value = true
     }
 }

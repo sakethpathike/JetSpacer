@@ -4,24 +4,31 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.sakethh.jetspacer.screens.space.rovers.RoverCameras
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
-import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.fhaz.FHAZSpiritCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.minites.MinitesSpiritCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.navcam.NAVCAMSpiritCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.pancam.PANCAMSpiritCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.random.RandomSpiritCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.rhaz.RHAZSpiritCameraScreen
+import com.sakethh.jetspacer.screens.space.rovers.opportunity.OpportunityCamerasVM
+import com.sakethh.jetspacer.screens.space.rovers.spirit.cameras.SpiritRoverSubScreen
 
 class SpiritCamerasVM(private val spiritCamerasImplementation: SpiritCamerasImplementation = SpiritCamerasImplementation()) :
     ViewModel() {
 
     val spiritRoverCameras = listOf(
-        RoverCameras(name = "Random", composable = { RandomSpiritCameraScreen() }),
-        RoverCameras(name = "FHAZ", composable = { FHAZSpiritCameraScreen() }),
-        RoverCameras(name = "RHAZ", composable = { RHAZSpiritCameraScreen() }),
-        RoverCameras(name = "NAVCAM", composable = { NAVCAMSpiritCameraScreen() }),
-        RoverCameras(name = "PANCAM", composable = { PANCAMSpiritCameraScreen() }),
-        RoverCameras(name = "MINITES", composable = { MinitesSpiritCameraScreen() }),
-    )
+        RoverCameras(
+            name = "Random",
+            composable = { SpiritRoverSubScreen(cameraName = SpiritCameras.RANDOM) }),
+        RoverCameras(
+            name = "FHAZ",
+            composable = { SpiritRoverSubScreen(cameraName = SpiritCameras.FHAZ) }),
+        RoverCameras(
+            name = "RHAZ",
+            composable = { SpiritRoverSubScreen(cameraName = SpiritCameras.RHAZ) }),
+        RoverCameras(
+            name = "NAVCAM",
+            composable = { SpiritRoverSubScreen(cameraName = SpiritCameras.NAVCAM) }),
+        RoverCameras(
+            name = "PANCAM",
+            composable = { SpiritRoverSubScreen(cameraName = SpiritCameras.PANCAM) }),
+        RoverCameras(
+            name = "MINITES",
+            composable = { SpiritRoverSubScreen(cameraName = SpiritCameras.MINITES) }))
 
     val _randomCameraData = mutableStateOf<List<Photo>>(emptyList())
     val randomCameraDataFromAPI = mutableStateOf<List<Photo>>(emptyList())

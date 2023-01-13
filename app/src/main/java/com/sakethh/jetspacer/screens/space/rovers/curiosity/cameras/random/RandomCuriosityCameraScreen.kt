@@ -44,98 +44,10 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class)
-@SuppressLint("CoroutineCreationDuringComposition")
-
-@Composable
-fun RandomCuriosityCameraScreen() {
-    val randomCuriosityVM: RandomCuriosityCameraVM = viewModel()
-    val roversScreenVM: RoversScreenVM = viewModel()
-    val coroutineScope = rememberCoroutineScope()
-    val solImagesData = randomCuriosityVM.randomCuriosityCameraData.value
-    LaunchedEffect(key1 = true) {
-        randomCuriosityVM.getRandomCuriosityData(
-            sol = RandomCuriosityCameraScreen.solValue.value.toInt(),
-            page = 0
-        )
-    }
-    Scaffold(floatingActionButtonPosition = FabPosition.Center, floatingActionButton = {
-        if (solImagesData.isNotEmpty() && randomCuriosityVM._randomCuriosityCameraData.value.isEmpty() && randomCuriosityVM.isRandomCamerasDataLoaded.value && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
-            Snackbar(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp, bottom = 50.dp)
-                    .wrapContentHeight()
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(15.dp)
-            ) {
-                Text(
-                    text = "You've reached the end, change the sol value to explore more!",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    softWrap = true,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Start,
-                    lineHeight = 18.sp
-                )
-            }
-        }
-    }) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(it)
-        ) {
-            SolTextField(solValue = RandomCuriosityCameraScreen.solValue, onContinueClick = {
-                RandomCuriosityCameraScreen.currentPage = 0
-                randomCuriosityVM.isRandomCamerasDataLoaded.value = false
-                randomCuriosityVM.clearRandomCuriosityCameraData()
-                coroutineScope.launch {
-                    randomCuriosityVM.getRandomCuriosityData(
-                        RandomCuriosityCameraScreen.solValue.value.toInt(),
-                        0
-                    )
-                }
-            })
-            if (!randomCuriosityVM.isRandomCamerasDataLoaded.value) {
-                StatusScreen(
-                    title = "Wait a moment!",
-                    description = "fetching the images that were captured on sol ${RandomCuriosityCameraScreen.solValue.value}",
-                    status = Status.LOADING
-                )
-
-            } else if (solImagesData.isEmpty()) {
-                StatusScreen(
-                    title = "4ooooFour",
-                    description = "No images were captured on sol ${RandomCuriosityCameraScreen.solValue.value}. Change the sol value; it may give results.",
-                    status = Status.FOURO4InMarsScreen
-                )
-            } else {
-                ModifiedLazyVerticalGrid(
-                    listData = solImagesData,
-                    loadMoreButtonBooleanExpression = randomCuriosityVM._randomCuriosityCameraData.value.isNotEmpty() && randomCuriosityVM.isRandomCamerasDataLoaded.value
-                ) {
-                    coroutineScope.launch {
-                        randomCuriosityVM.getRandomCuriosityData(
-                            sol = RandomCuriosityCameraScreen.solValue.value.toInt(),
-                            page = RandomCuriosityCameraScreen.currentPage++
-                        )
-                    }
-                }
-            }
-
-        }
-    }
-}
-
-object RandomCuriosityCameraScreen {
-    var solValue = mutableStateOf("0")
-    var currentPage = 0
-}
-
-@OptIn(
-    ExperimentalFoundationApi::class, ExperimentalLifecycleComposeApi::class
+@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class
 )
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun ModifiedLazyVerticalGrid(
     listData: List<Photo>,

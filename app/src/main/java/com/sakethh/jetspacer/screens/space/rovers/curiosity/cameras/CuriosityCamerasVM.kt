@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RandomCuriosityCameraVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -9,7 +10,10 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class CuriosityCamerasVM(private val curiosityCamerasImplementation: CuriosityCamerasImplementation = CuriosityCamerasImplementation()) :
+class CuriosityCamerasVM(
+    private val randomCuriosityCameraVM: RandomCuriosityCameraVM = RandomCuriosityCameraVM(),
+    private val curiosityCamerasImplementation: CuriosityCamerasImplementation = CuriosityCamerasImplementation()
+) :
     ViewModel() {
 
     val atNearlyLastImageAtLastSolPage = mutableStateOf(false)
@@ -117,6 +121,6 @@ class CuriosityCamerasVM(private val curiosityCamerasImplementation: CuriosityCa
     }
 
     enum class CuriosityCameras {
-        FHAZ, RHAZ, MAST, CHEMCAM, MAHLI, MARDI, NAVCAM
+        FHAZ, RHAZ, MAST, CHEMCAM, MAHLI, MARDI, NAVCAM, RANDOM
     }
 }

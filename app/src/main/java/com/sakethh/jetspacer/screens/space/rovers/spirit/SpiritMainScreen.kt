@@ -21,13 +21,12 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestForCuriosityVM
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.OpportunityCamerasVM
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun SpiritRoverScreen() {
+fun SpiritRoverMainScreen() {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
     val manifestForCuriosityVM: ManifestForCuriosityVM = viewModel()

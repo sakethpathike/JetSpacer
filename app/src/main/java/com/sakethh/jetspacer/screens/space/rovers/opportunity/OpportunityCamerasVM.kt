@@ -4,23 +4,30 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.sakethh.jetspacer.screens.space.rovers.RoverCameras
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.fhaz.FHAZOpportunityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.minites.MinitesOpportunityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.pancam.PANCAMOpportunityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.navcam.NAVCAMOpportunityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.random.RandomOpportunityCameraScreen
-import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.rhaz.RHAZOpportunityCameraScreen
+import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.OpportunityRoverSubScreen
 
 class OpportunityCamerasVM(private val opportunityCamerasImplementation: OpportunityCamerasImplementation = OpportunityCamerasImplementation()) :
     ViewModel() {
 
     val opportunityRoverCameras = listOf(
-        RoverCameras(name = "Random", composable = { RandomOpportunityCameraScreen() }),
-        RoverCameras(name = "FHAZ", composable = { FHAZOpportunityCameraScreen() }),
-        RoverCameras(name = "RHAZ", composable = { RHAZOpportunityCameraScreen() }),
-        RoverCameras(name = "NAVCAM", composable = { NAVCAMOpportunityCameraScreen() }),
-        RoverCameras(name = "PANCAM", composable = { PANCAMOpportunityCameraScreen() }),
-        RoverCameras(name = "MINITES", composable = { MinitesOpportunityCameraScreen() }),
+        RoverCameras(
+            name = "Random",
+            composable = { OpportunityRoverSubScreen(cameraName = OpportunityCameras.RANDOM) }),
+        RoverCameras(
+            name = "FHAZ",
+            composable = { OpportunityRoverSubScreen(cameraName = OpportunityCameras.FHAZ) }),
+        RoverCameras(
+            name = "RHAZ",
+            composable = { OpportunityRoverSubScreen(cameraName = OpportunityCameras.RHAZ) }),
+        RoverCameras(
+            name = "NAVCAM",
+            composable = { OpportunityRoverSubScreen(cameraName = OpportunityCameras.NAVCAM) }),
+        RoverCameras(
+            name = "PANCAM",
+            composable = { OpportunityRoverSubScreen(cameraName = OpportunityCameras.PANCAM) }),
+        RoverCameras(
+            name = "MINITES",
+            composable = { OpportunityRoverSubScreen(cameraName = OpportunityCameras.MINITES) }),
     )
 
     val _randomCameraData = mutableStateOf<List<Photo>>(emptyList())
@@ -78,7 +85,8 @@ class OpportunityCamerasVM(private val opportunityCamerasImplementation: Opportu
                 isPancamDataLoaded.value = true
             }
             OpportunityCameras.RANDOM -> {
-                _randomCameraData.value = opportunityCamerasImplementation.getRandomCamerasData(sol, page).photos
+                _randomCameraData.value =
+                    opportunityCamerasImplementation.getRandomCamerasData(sol, page).photos
                 randomCameraDataFromAPI.value += _randomCameraData.value
                 isRandomCamerasDataLoaded.value = true
             }
