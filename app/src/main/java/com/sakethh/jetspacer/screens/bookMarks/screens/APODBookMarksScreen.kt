@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.screens.bookMarks.screens
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,20 +12,30 @@ import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
 import com.sakethh.jetspacer.navigation.NavigationRoutes
+import com.sakethh.jetspacer.screens.Status
+import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.APODCardComposable
+import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RoverBottomSheetContent
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalLifecycleComposeApi::class)
 @Composable
 fun APODBookMarksScreen(navController: NavController) {
     val coroutineScope = rememberCoroutineScope()
@@ -42,12 +53,13 @@ fun APODBookMarksScreen(navController: NavController) {
     }
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val bookMarksVM: BookMarksVM = viewModel()
-    val bookMarksFromAPODDB = bookMarksVM.bookMarksFromAPODDB.collectAsState().value
+    val bookMarksFromAPODDB = bookMarksVM.bookMarksFromAPODDB.collectAsStateWithLifecycle().value
     val apodURL = remember { mutableStateOf("") }
     val apodMediaType = remember { mutableStateOf("") }
     val apodDescription = remember { mutableStateOf("") }
     val apodTitle = remember { mutableStateOf("") }
     val apodDate = remember { mutableStateOf("") }
+    val context = LocalContext.current
     ModalBottomSheetLayout(
         sheetContent = {
             APODBottomSheetContent(
@@ -56,44 +68,77 @@ fun APODBookMarksScreen(navController: NavController) {
                 apodTitle = apodTitle.value,
                 apodDate = apodDate.value,
                 apodDescription = apodDescription.value,
-                apodMediaType = apodMediaType.value
+                apodMediaType = apodMediaType.value,
+                onBookMarkClick = {
+
+                }
             )
         },
         sheetState = bottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
         sheetBackgroundColor = MaterialTheme.colorScheme.primary
     ) {
-        LazyColumn {
-            items(bookMarksFromAPODDB) { apodBookMarkedItem ->
-                APODCardComposable(
-                    homeScreenViewModel = homeScreenViewModel,
-                    imageURL = apodBookMarkedItem.imageURL,
-                    apodDate = apodBookMarkedItem.datePublished,
-                    apodDescription = apodBookMarkedItem.description,
-                    apodTitle = apodBookMarkedItem.title,
-                    inBookMarkScreen = true,
-                    imageOnClick = {
-                        apodURL.value = apodBookMarkedItem.imageURL
-                        apodTitle.value = apodBookMarkedItem.title
-                        apodDate.value = apodBookMarkedItem.datePublished
-                        apodDescription.value = apodBookMarkedItem.description
-                        apodMediaType.value = apodBookMarkedItem.mediaType
-                        coroutineScope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
-                    apodMediaType = apodBookMarkedItem.mediaType,
-                    saveToMarsRoversDB = false,
-                    saveToAPODDB = true,
-                    inAPODBottomSheetContent = false,
-                    roverDBDTO = null
-                )
-            }
+        if (bookMarksFromAPODDB.isEmpty()) {
+            StatusScreen(
+                title = "No bookmarks found",
+                description = "Add images to your APOD bookmarks by clicking the bookmark icon from the APOD UI section(s) respectively",
+                status = Status.BOOKMARKS_EMPTY
+            )
+        } else {
+            LazyColumn {
+                items(bookMarksFromAPODDB) { apodBookMarkedItem ->
+                    APODCardComposable(
+                        homeScreenViewModel = homeScreenViewModel,
+                        imageURL = apodBookMarkedItem.imageURL,
+                        apodDate = apodBookMarkedItem.datePublished,
+                        apodDescription = apodBookMarkedItem.description,
+                        apodTitle = apodBookMarkedItem.title,
+                        inBookMarkScreen = true,
+                        imageOnClick = {
+                            apodURL.value = apodBookMarkedItem.imageURL
+                            apodTitle.value = apodBookMarkedItem.title
+                            apodDate.value = apodBookMarkedItem.datePublished
+                            apodDescription.value = apodBookMarkedItem.description
+                            apodMediaType.value = apodBookMarkedItem.mediaType
+                            coroutineScope.launch {
+                                bottomSheetState.show()
+                            }
+                        },
+                        bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                        apodMediaType = apodBookMarkedItem.mediaType,
+                        inAPODBottomSheetContent = false,
+                        onBookMarkButtonClick = {
+                            apodURL.value = apodBookMarkedItem.imageURL
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                true
+                        },
+                        capturedOnSol = "",
+                        capturedBy = "",
+                        roverName = "",
+                        onConfirmButtonClick = {
+                            triggerHapticFeedback(context = context)
 
-            this.item {
-                Spacer(modifier = Modifier.height(80.dp))
+
+                                    coroutineScope.launch(Dispatchers.Main) {
+                                        if (bookMarksVM.deleteDataFromAPODDB(imageURL = apodBookMarkedItem.imageURL)) {
+                                            Toast.makeText(
+                                                context,
+                                                "Removed from bookmarks:)",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                                        false
+                        }
+                    )
+                }
+
+                this.item {
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
             }
         }
     }
+
 }

@@ -52,7 +52,10 @@ import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.localDB.*
+import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB
+import com.sakethh.jetspacer.screens.home.HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB
 import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.dto.IPGeoLocationDTO
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.ISSLocationDTO
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.IssPosition
@@ -62,6 +65,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+@SuppressLint("SimpleDateFormat")
 @OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen() {
@@ -176,12 +180,14 @@ fun HomeScreen() {
             initialValue = IPGeoLocationDTO()
         ).value.sunset.toString()
 
-
+    val context = LocalContext.current
     val apodURL = homeScreenViewModel.apodDataFromAPI.value.url.toString()
     val apodTitle = homeScreenViewModel.apodDataFromAPI.value.title.toString()
     val apodDescription = homeScreenViewModel.apodDataFromAPI.value.explanation.toString()
     val apodDate = homeScreenViewModel.apodDataFromAPI.value.date.toString()
     val apodMediaType = homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
+    val bookMarksVM: BookMarksVM = viewModel()
+    var didDataGetAddedInDB = false
     ModalBottomSheetLayout(
         sheetContent = {
             APODBottomSheetContent(
@@ -190,7 +196,29 @@ fun HomeScreen() {
                 apodTitle = apodTitle,
                 apodDate = apodDate,
                 apodDescription = apodDescription,
-                apodMediaType = apodMediaType
+                apodMediaType = apodMediaType,
+                onBookMarkClick = {
+                    coroutineScope.launch {
+                        val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                        val formattedDate = dateFormat.format(Date())
+                        didDataGetAddedInDB = bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                            this.title = apodTitle
+                            this.datePublished = apodDate
+                            this.description = apodDescription
+                            this.imageURL = apodURL
+                            this.mediaType = "image"
+                            this.isBookMarked = true
+                            this.category = "APOD"
+                            this.addedToLocalDBOn = formattedDate
+                        })
+                    }.invokeOnCompletion {
+                        if (didDataGetAddedInDB) {
+                            Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT).show()
+                        } else {
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                        }
+                    }
+                }
             )
         },
         sheetState = bottomSheetState,
@@ -279,15 +307,21 @@ fun HomeScreen() {
                                 bottom = 15.dp
                             )
                         )
-                        Text(
-                            text = "I.P address : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.ip}\nLocation : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.district}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.city}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.country_name}.",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 16.sp,
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier
-                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                            lineHeight = 18.sp,
-                            textAlign = TextAlign.Start
+                        CardForRowGridRaw(
+                            title = "I.P address",
+                            value = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.ip.toString(),
+                            cardModifier = Modifier
+                                .wrapContentHeight()
+                                .fillMaxWidth()
+                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+                        )
+                        CardForRowGridRaw(
+                            title = "Location",
+                            value = "${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.district}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.city}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.country_name}",
+                            cardModifier = Modifier
+                                .wrapContentHeight()
+                                .fillMaxWidth()
+                                .padding(15.dp)
                         )
                         Divider(
                             thickness = 0.dp,
@@ -299,17 +333,29 @@ fun HomeScreen() {
                                 bottom = 15.dp
                             )
                         )
-                        Text(
-                            text = "Zip code : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.zipcode}\n" +
-                                    "Latitude and Longitude of the city : ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.latitude}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude}",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 16.sp,
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier
-                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                            lineHeight = 18.sp,
-                            textAlign = TextAlign.Start
+                        CardForRowGridRaw(
+                            title = "Zip code",
+                            value = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.zipcode.toString(),
+                            cardModifier = Modifier
+                                .wrapContentHeight()
+                                .fillMaxWidth()
+                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
                         )
+                        CardForRowGridRaw(
+                            title = "Location",
+                            value = "${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.district}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.city}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.country_name}",
+                            cardModifier = Modifier
+                                .wrapContentHeight()
+                                .fillMaxWidth()
+                                .padding(15.dp)
+                        )
+                        CardRowGrid(
+                            lhsCardTitle = "Latitude",
+                            lhsCardValue = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.latitude.toString(),
+                            rhsCardTitle = "Longitude",
+                            rhsCardValue = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude.toString()
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
                     }
                 }
             }
@@ -405,10 +451,43 @@ fun HomeScreen() {
                         }
                     },
                     apodMediaType = apodMediaType,
-                    saveToAPODDB = true,
-                    saveToMarsRoversDB = false,
-                    roverDBDTO = null,
-                    inAPODBottomSheetContent = false
+                    inAPODBottomSheetContent = false,
+                    bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                    onBookMarkButtonClick = {
+                        triggerHapticFeedback(context = context)
+                        coroutineScope.launch {
+                            val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                            val formattedDate = dateFormat.format(Date())
+                            didDataGetAddedInDB = bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                this.title = apodTitle
+                                this.datePublished = apodDate
+                                this.description = apodDescription
+                                this.imageURL = apodURL
+                                this.mediaType = "image"
+                                this.isBookMarked = true
+                                this.category = "APOD"
+                                this.addedToLocalDBOn = formattedDate
+                            })
+                        }.invokeOnCompletion {
+                            if (didDataGetAddedInDB) {
+                                Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT).show()
+                            } else {
+                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                            }
+                        }
+                        homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+                    },
+                    capturedOnSol = "",
+                    capturedBy = "",
+                    roverName = "",
+                    onConfirmButtonClick = {
+                        triggerHapticFeedback(context = context)
+                        coroutineScope.launch {
+
+                        }
+                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                            false
+                    }
                 )
             }
             /*Astronomical Data*/
@@ -697,10 +776,12 @@ fun APODCardComposable(
     imageOnClick: () -> Unit = {},
     bookMarkedCategory: String = "",
     changeDateChipOnClick: () -> Unit = {},
-    roverDBDTO: MarsRoversDBDTO?,
     inAPODBottomSheetContent: Boolean,
-    saveToAPODDB: Boolean,
-    saveToMarsRoversDB: Boolean
+    onBookMarkButtonClick: () -> Unit,
+    capturedOnSol: String,
+    capturedBy: String,
+    roverName: String,
+    onConfirmButtonClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val isIconDownwards = rememberSaveable {
@@ -732,17 +813,14 @@ fun APODCardComposable(
                 APODMediaLayout(
                     homeScreenViewModel = homeScreenViewModel,
                     imageURL = imageURL,
-                    apodTitle = apodTitle,
-                    apodDate = apodDate,
-                    apodDescription = apodDescription,
                     imageOnClick = {
                         imageOnClick()
                     },
                     apodMediaType = apodMediaType,
-                    saveToAPODDB = saveToAPODDB,
-                    saveToMarsRoversDB = saveToMarsRoversDB,
                     inAPODBottomSheetContent = inAPODBottomSheetContent,
-                    marsRoversDBDTO = roverDBDTO
+                    onBookMarkButtonClick = {
+                        onBookMarkButtonClick()
+                    }
                 )
                 Icon(
                     imageVector = Icons.Default.Image,
@@ -772,7 +850,7 @@ fun APODCardComposable(
                     if (bookMarkedCategory != Constants.SAVED_IN_ROVERS_DB) {
                         "Astronomy Picture Of The Day\non $apodDate"
                     } else {
-                        "Sol : ${roverDBDTO?.sol}"
+                        "Sol : $capturedOnSol"
                     }
                 Text(
                     text = descriptionForTitle,
@@ -856,7 +934,7 @@ fun APODCardComposable(
             } else {
                 CardForRowGridRaw(
                     title = "Captured by",
-                    value = roverDBDTO?.capturedBy.toString(),
+                    value = capturedBy,
                     cardModifier = Modifier
                         .wrapContentHeight()
                         .fillMaxWidth()
@@ -876,94 +954,17 @@ fun APODCardComposable(
                     textAlign = TextAlign.Start
                 )
             }
-            val dialogText: String = if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
-                "Are you sure want to remove this image captured by the rover from bookmarks which is stored locally on your device? This can't be undone."
-            } else {
-                "Are you sure want to remove this APOD publication from bookmarks which is stored locally on your device? This can't be undone."
-            }
             if (isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
-                AlertDialog(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    onDismissRequest = { isAlertDialogEnabledForAPODDB.value = false },
-                    title = {
-                        Text(
-                            text = "Wait a minute!",
-                            style = MaterialTheme.typography.headlineLarge,
-                            color = MaterialTheme.colorScheme.onSecondary,
-                            fontSize = 18.sp
-                        )
-                    }, text = {
-                        Text(
-                            text = dialogText,
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSecondary,
-                            lineHeight = 18.sp
-                        )
-                    }, confirmButton = {
-                        Button(
-                            onClick = {
-                                isAlertDialogEnabledForAPODDB.value = false
-                                coroutineScope.launch {
-                                    if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
-                                        homeScreenViewModel.doesThisExistsInRoverDBIconTxt(
-                                            imageURL
-                                        )
-                                    } else {
-                                        homeScreenViewModel.doesThisExistsInAPODIconTxt(
-                                            imageURL
-                                        )
-                                    }
-                                    homeScreenViewModel.dbImplementation.deleteFromAPODDB(
-                                        imageURL
-                                    )
-
-                                    if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(
-                                            imageURL
-                                        )
-                                    ) {
-                                        Toast.makeText(
-                                            context,
-                                            "Removed the APOD publication from bookmarks",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Something went wrong:(",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                        ) {
-                            Text(
-                                text = "Remove it ASAP!",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }, dismissButton = {
-                        OutlinedButton(
-                            onClick = { isAlertDialogEnabledForAPODDB.value = false },
-                            border = BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.onSecondary
-                            )
-                        ) {
-                            Text(
-                                text = "Um-mm, Never mind",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSecondary
-                            )
-                        }
-                    })
+                AlertDialogForDeletingFromDB(
+                    bookMarkedCategory = bookMarkedCategory,
+                    onConfirmBtnClick = onConfirmButtonClick
+                )
             }
             val categoryChipText: String =
                 if (bookMarkedCategory == Constants.SAVED_IN_APOD_DB) {
                     "APOD"
                 } else if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
-                    roverDBDTO?.roverName.toString()
+                    roverName
                 } else {
                     ""
                 }
@@ -985,6 +986,72 @@ fun APODCardComposable(
             }
 
         }
+    }
+}
+
+@Composable
+fun AlertDialogForDeletingFromDB(bookMarkedCategory: String, onConfirmBtnClick: () -> Unit) {
+
+    val dialogText: String = if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
+        "Are you sure want to remove this image captured by the rover from bookmarks which is stored locally on your device? This can't be undone."
+    } else {
+        "Are you sure want to remove this APOD publication from bookmarks which is stored locally on your device? This can't be undone."
+    }
+    AppTheme {
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            onDismissRequest = {
+                isAlertDialogEnabledForRoversDB.value = false;isAlertDialogEnabledForAPODDB.value =
+                false
+            },
+            title = {
+                Text(
+                    text = "Wait a minute!",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = 18.sp
+                )
+            }, text = {
+                Text(
+                    text = dialogText,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    lineHeight = 18.sp
+                )
+            }, confirmButton = {
+                Button(
+                    onClick = {
+                        isAlertDialogEnabledForRoversDB.value = false
+                        isAlertDialogEnabledForAPODDB.value = false
+                        onConfirmBtnClick()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                ) {
+                    Text(
+                        text = "Remove it ASAP!",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }, dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        isAlertDialogEnabledForRoversDB.value =
+                            false;isAlertDialogEnabledForAPODDB.value = false
+                    },
+                    border = BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.onSecondary
+                    )
+                ) {
+                    Text(
+                        text = "Um-mm, Never mind",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+                }
+            })
+
     }
 }
 
@@ -1040,17 +1107,13 @@ fun DropDownMenuItemModified(text: String, onClick: () -> Unit, imageVector: Ima
 fun APODMediaLayout(
     homeScreenViewModel: HomeScreenViewModel,
     imageURL: String,
-    apodTitle: String,
-    apodDate: String,
-    apodDescription: String,
-    saveToAPODDB: Boolean,
-    saveToMarsRoversDB: Boolean,
+    onBookMarkButtonClick: () -> Unit,
     inAPODBottomSheetContent: Boolean,
     imageOnClick: () -> Unit = {},
     apodMediaType: String,
-    marsRoversDBDTO: MarsRoversDBDTO?
 ) {
 
+    homeScreenViewModel.doesThisExistsInAPODIconTxt(imageURL)
     val context = LocalContext.current
     val localClipboardManager = LocalClipboardManager.current
     val localUriHandler = LocalUriHandler.current
@@ -1151,63 +1214,7 @@ fun APODMediaLayout(
                     DropDownMenuItemModified(
                         text = homeScreenViewModel.bookMarkText.value,
                         onClick = {
-                            if (saveToMarsRoversDB) {
-                                coroutineScope.launch {
-                                    homeScreenViewModel.addNewBookMarkToRoverDB(
-                                        marsRoverDBDTO = MarsRoversDBDTO().apply {
-                                            this.imageURL = marsRoversDBDTO?.imageURL.toString()
-                                            this.capturedBy = marsRoversDBDTO?.capturedBy.toString()
-                                            this.sol = marsRoversDBDTO?.sol.toString()
-                                            this.earthDate = marsRoversDBDTO?.earthDate.toString()
-                                            this.roverName = marsRoversDBDTO?.roverName.toString()
-                                            this.roverStatus =
-                                                marsRoversDBDTO?.roverStatus.toString()
-                                            this.launchingDate =
-                                                marsRoversDBDTO?.launchingDate.toString()
-                                            this.landingDate =
-                                                marsRoversDBDTO?.landingDate.toString()
-                                            this.isBookMarked = true
-                                            this.category = marsRoversDBDTO?.category.toString()
-                                            this.id = marsRoversDBDTO?.imageURL.toString()
-                                            this.addedToLocalDBOn = currentDate
-                                        })
-                                }
-                                if (!homeScreenViewModel.dbUtils.doesThisExistsInDBRover(
-                                        marsRoversDBDTO?.imageURL.toString()
-                                    )
-                                ) {
-                                    Toast.makeText(
-                                        context,
-                                        "Added to bookmarks:)",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            } else if (saveToAPODDB) {
-                                coroutineScope.launch {
-                                    homeScreenViewModel.addNewBookMarkToAPODDB(
-                                        apodDbDto = APOD_DB_DTO().apply {
-                                            this.title = apodTitle
-                                            this.datePublished = apodDate
-                                            this.description = apodDescription
-                                            this.imageURL = imageURL
-                                            this.mediaType = apodMediaType
-                                            this.isBookMarked = true
-                                            this.category = "APOD"
-                                            this.addedToLocalDBOn = currentDate
-                                            this.id = imageURL
-                                        })
-                                }
-                                if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(
-                                        imageURL
-                                    )
-                                ) {
-                                    Toast.makeText(
-                                        context,
-                                        "Added to bookmarks:)",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            }
+                            onBookMarkButtonClick()
                             isMoreClicked.value = false
                         },
                         imageVector = homeScreenViewModel.bookMarkIcons.value
@@ -1244,66 +1251,7 @@ fun APODMediaLayout(
                 APODSideIconButton(
                     imageVector = homeScreenViewModel.bookMarkIcons.value,
                     onClick = {
-                        if (saveToMarsRoversDB) {
-                            coroutineScope.launch {
-                                homeScreenViewModel.addNewBookMarkToRoverDB(
-                                    marsRoverDBDTO = MarsRoversDBDTO().apply {
-                                        this.imageURL = marsRoversDBDTO?.imageURL.toString()
-                                        this.capturedBy = marsRoversDBDTO?.capturedBy.toString()
-                                        this.sol = marsRoversDBDTO?.sol.toString()
-                                        this.earthDate = marsRoversDBDTO?.earthDate.toString()
-                                        this.roverName = marsRoversDBDTO?.roverName.toString()
-                                        this.roverStatus = marsRoversDBDTO?.roverStatus.toString()
-                                        this.launchingDate =
-                                            marsRoversDBDTO?.launchingDate.toString()
-                                        this.landingDate = marsRoversDBDTO?.landingDate.toString()
-                                        this.isBookMarked = true
-                                        this.category = marsRoversDBDTO?.category.toString()
-                                        this.addedToLocalDBOn = currentDate
-                                        this.id = marsRoversDBDTO?.imageURL.toString()
-                                    })
-                            }
-                            homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imageURL)
-                            if (!homeScreenViewModel.dbUtils.doesThisExistsInDBRover(
-                                    marsRoversDBDTO?.imageURL.toString()
-                                )
-                            ) {
-                                Toast.makeText(
-                                    context,
-                                    "Added to bookmarks:)",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        } else if (saveToAPODDB) {
-                            coroutineScope.launch {
-                                homeScreenViewModel.addNewBookMarkToAPODDB(
-                                    apodDbDto = APOD_DB_DTO().apply {
-                                        this.title = apodTitle
-                                        this.datePublished = apodDate
-                                        this.description = apodDescription
-                                        this.imageURL = imageURL
-                                        this.mediaType = apodMediaType
-                                        this.isBookMarked = true
-                                        this.category = "APOD"
-                                        this.addedToLocalDBOn = currentDate
-
-                                        this.id = imageURL
-                                    })
-
-                                    homeScreenViewModel.doesThisExistsInAPODIconTxt(imageURL)
-
-                            }
-                            if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(
-                                    imageURL
-                                )
-                            ) {
-                                Toast.makeText(
-                                    context,
-                                    "Added to bookmarks:)",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
+                        onBookMarkButtonClick()
                     },
                     iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
                         apodIconButtonTransparencyValue

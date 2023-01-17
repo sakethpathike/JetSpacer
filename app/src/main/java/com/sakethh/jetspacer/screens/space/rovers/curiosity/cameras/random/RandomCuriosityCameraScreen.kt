@@ -1,6 +1,7 @@
 package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -31,20 +32,25 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.R
+import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
+import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestForCuriosityVM
 import com.sakethh.jetspacer.ui.theme.AppTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class,
+@OptIn(
+    ExperimentalLifecycleComposeApi::class, ExperimentalMaterial3Api::class,
     ExperimentalFoundationApi::class
 )
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -242,21 +248,21 @@ fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
 @Composable
 fun RoverBottomSheetContent(
     imgURL: String,
-    capturedOn: String,
     cameraName: String,
     sol: String,
     earthDate: String,
     roverName: String,
     roverStatus: String,
     launchingDate: String,
-    landingDate: String
+    landingDate: String,
+    capturedBy: String
 ) {
     val coroutineScope = rememberCoroutineScope()
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
-    coroutineScope.launch {
-        homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imgURL)
-    }
+    homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imgURL)
     val context = LocalContext.current
+    val bookMarksVM: BookMarksVM = viewModel()
+    var didDataAddedToDB = false
 
     @SuppressLint("SimpleDateFormat")
     val dateFormat = SimpleDateFormat("dd-MM-yyyy")
@@ -267,26 +273,37 @@ fun RoverBottomSheetContent(
                 APODMediaLayout(
                     homeScreenViewModel = homeScreenViewModel,
                     imageURL = imgURL,
-                    apodTitle = "",
-                    apodDate = capturedOn,
-                    apodDescription = "",
-                    saveToMarsRoversDB = true,
                     apodMediaType = "image",
-                    saveToAPODDB = false,
                     inAPODBottomSheetContent = false,
-                    marsRoversDBDTO = MarsRoversDBDTO().apply {
-                        this.addedToLocalDBOn = currentDate
-                        this.capturedBy = cameraName
-                        this.category = Constants.SAVED_IN_ROVERS_DB
-                        this.earthDate = earthDate
-                        this.roverStatus = roverStatus
-                        this.roverName = roverName
-                        this.id = imgURL
-                        this.imageURL = imgURL
-                        this.isBookMarked = true
-                        this.landingDate = landingDate
-                        this.launchingDate = launchingDate
-                        this.sol = sol
+                    onBookMarkButtonClick = {
+                        triggerHapticFeedback(context = context)
+                        coroutineScope.launch {
+                            didDataAddedToDB = bookMarksVM.addDataToMarsDB(MarsRoversDBDTO().apply {
+                                this.imageURL = imgURL
+                                this.capturedBy = capturedBy
+                                this.sol = sol
+                                this.earthDate = earthDate
+                                this.roverName = roverName
+                                this.roverStatus = roverStatus
+                                this.launchingDate = launchingDate
+                                this.landingDate = landingDate
+                                this.isBookMarked = true
+                                this.category = "Rover"
+                                this.addedToLocalDBOn = currentDate
+                            })
+                        }.invokeOnCompletion {
+                            if (didDataAddedToDB) {
+                                Toast.makeText(
+                                    context,
+                                    "Added to bookmarks:)",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                                    true
+                            }
+                        }
+                        homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imgURL)
                     }
                 )
             }
@@ -366,7 +383,25 @@ fun RoverBottomSheetContent(
             )
         }
     }
-    coroutineScope.launch {
-        homeScreenViewModel.doesThisExistsInAPODIconTxt(imageURL = imgURL)
+    homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imageURL = imgURL)
+    if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+        AlertDialogForDeletingFromDB(
+            bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+            onConfirmBtnClick = {
+                triggerHapticFeedback(context = context)
+
+                    coroutineScope.launch(Dispatchers.Main) {
+                        if (bookMarksVM.deleteDataFromAPODDB(imageURL = imgURL)) {
+                            Toast.makeText(
+                                context,
+                                "Removed from bookmarks:)",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+            }
+        )
     }
+    homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imgURL)
 }

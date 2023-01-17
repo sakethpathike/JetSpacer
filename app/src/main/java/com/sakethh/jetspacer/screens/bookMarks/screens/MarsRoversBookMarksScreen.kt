@@ -1,5 +1,11 @@
 package com.sakethh.jetspacer.screens.bookMarks.screens
 
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.view.HapticFeedbackConstants
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,21 +18,28 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.localDB.MarsRoversDB
 import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
 import com.sakethh.jetspacer.navigation.NavigationRoutes
+import com.sakethh.jetspacer.screens.Status
+import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.APODCardComposable
+import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RoverBottomSheetContent
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -36,7 +49,7 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
-
+    val context = LocalContext.current
     BackHandler {
         if (bottomSheetState.isVisible) {
             coroutineScope.launch {
@@ -54,65 +67,87 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
         sheetContent = {
             RoverBottomSheetContent(
                 imgURL = roversDBDTO.imageURL.value,
-                capturedOn = roversDBDTO.sol.value,
                 cameraName = roversDBDTO.capturedBy.value,
                 sol = roversDBDTO.sol.value,
                 earthDate = roversDBDTO.earthDate.value,
                 roverName = roversDBDTO.roverName.value,
                 roverStatus = roversDBDTO.roverStatus.value,
                 launchingDate = roversDBDTO.launchingDate.value,
-                landingDate = roversDBDTO.landingDate.value
+                landingDate = roversDBDTO.landingDate.value,
+                capturedBy = roversDBDTO.capturedBy.value
             )
         },
         sheetState = bottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
         sheetBackgroundColor = MaterialTheme.colorScheme.primary
     ) {
-        LazyColumn {
-            items(bookMarksFromRoversDB) { roverBookMarkedItem ->
-                APODCardComposable(
-                    homeScreenViewModel = homeScreenViewModel,
-                    bookMarkedCategory = Constants.SAVED_IN_ROVERS_DB,
-                    inBookMarkScreen = true,
-                    imageURL = roverBookMarkedItem.imageURL,
-                    apodMediaType = "image",
-                    roverDBDTO = MarsRoversDBDTO().apply {
-                        this.addedToLocalDBOn = roverBookMarkedItem.addedToLocalDBOn
-                        this.capturedBy = roverBookMarkedItem.capturedBy
-                        this.category = Constants.SAVED_IN_ROVERS_DB
-                        this.earthDate = roverBookMarkedItem.earthDate
-                        this.roverStatus = roverBookMarkedItem.roverStatus
-                        this.roverName = roverBookMarkedItem.roverName
-                        this.id = roverBookMarkedItem.imageURL
-                        this.imageURL = roverBookMarkedItem.imageURL
-                        this.isBookMarked = true
-                        this.landingDate = roverBookMarkedItem.landingDate
-                        this.launchingDate = roverBookMarkedItem.launchingDate
-                        this.sol = roverBookMarkedItem.sol
-                    },
-                    imageOnClick = {
-                        roversDBDTO.imageURL.value = roverBookMarkedItem.imageURL
-                        roversDBDTO.sol.value = roverBookMarkedItem.sol
-                        roversDBDTO.capturedBy.value = roverBookMarkedItem.capturedBy
-                        roversDBDTO.earthDate.value = roverBookMarkedItem.earthDate
-                        roversDBDTO.roverName.value = roverBookMarkedItem.roverName
-                        roversDBDTO.roverStatus.value = roverBookMarkedItem.roverStatus
-                        roversDBDTO.launchingDate.value = roverBookMarkedItem.launchingDate
-                        roversDBDTO.landingDate.value = roverBookMarkedItem.landingDate
-                        coroutineScope.launch {
-                            bottomSheetState.show()
+        if (bookMarksFromRoversDB.isEmpty()) {
+            StatusScreen(
+                title = "No bookmarks found",
+                description = "Add images to your MARS ROVER bookmarks by clicking the bookmark icon from the MARS ROVER UI section(s) respectively",
+                status = Status.BOOKMARKS_EMPTY
+            )
+        } else {
+            LazyColumn {
+                items(bookMarksFromRoversDB) { roverBookMarkedItem ->
+                    APODCardComposable(
+                        homeScreenViewModel = homeScreenViewModel,
+                        bookMarkedCategory = Constants.SAVED_IN_ROVERS_DB,
+                        inBookMarkScreen = true,
+                        imageURL = roverBookMarkedItem.imageURL,
+                        apodMediaType = "image",
+                        imageOnClick = {
+                            triggerHapticFeedback(context = context)
+                            roversDBDTO.imageURL.value = roverBookMarkedItem.imageURL
+                            roversDBDTO.sol.value = roverBookMarkedItem.sol
+                            roversDBDTO.capturedBy.value = roverBookMarkedItem.capturedBy
+                            roversDBDTO.earthDate.value = roverBookMarkedItem.earthDate
+                            roversDBDTO.roverName.value = roverBookMarkedItem.roverName
+                            roversDBDTO.roverStatus.value = roverBookMarkedItem.roverStatus
+                            roversDBDTO.launchingDate.value = roverBookMarkedItem.launchingDate
+                            roversDBDTO.landingDate.value = roverBookMarkedItem.landingDate
+                            coroutineScope.launch {
+                                bottomSheetState.show()
+                            }
+                        },
+                        onBookMarkButtonClick = {
+                            triggerHapticFeedback(context = context)
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                                true
+                        },
+                        capturedOnSol = roverBookMarkedItem.sol,
+                        capturedBy = roverBookMarkedItem.capturedBy,
+                        roverName = roverBookMarkedItem.roverName,
+                        inAPODBottomSheetContent = false,
+                        onConfirmButtonClick = {
+                            triggerHapticFeedback(context = context)
+                            coroutineScope.launch(Dispatchers.Main) {
+                                if (bookMarksVM.deleteDataFromAPODDB(imageURL = roverBookMarkedItem.imageURL)) {
+                                    Toast.makeText(
+                                        context,
+                                        "Removed from bookmarks:)",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
                         }
-                    },
-                    saveToAPODDB = false,
-                    saveToMarsRoversDB = true,
-                    inAPODBottomSheetContent = false
-                )
-            }
+                    )
+                }
 
-            item {
-                Spacer(modifier = Modifier.height(80.dp))
+                item {
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
             }
         }
     }
+}
 
+fun triggerHapticFeedback(context: Context) {
+    val hapticFeedback = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    if (Build.VERSION.SDK_INT >= 26) {
+        hapticFeedback.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+    } else {
+        hapticFeedback.vibrate(50)
+    }
 }

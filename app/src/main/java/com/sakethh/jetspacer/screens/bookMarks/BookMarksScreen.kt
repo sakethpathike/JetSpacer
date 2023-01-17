@@ -52,41 +52,14 @@ fun BookMarksScreen(navController: NavController) {
         }
 
     }
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val systemUIController = rememberSystemUiController()
     systemUIController.setStatusBarColor(MaterialTheme.colorScheme.surface)
     systemUIController.setNavigationBarColor(MaterialTheme.colorScheme.primaryContainer)
-
-
-    val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val bookMarksVM: BookMarksVM = viewModel()
-
-
     val selectedChipIndex = rememberSaveable { mutableStateOf(0) }
 
-    val apodURL = rememberSaveable { mutableStateOf("") }
-    val apodTitle = rememberSaveable { mutableStateOf("") }
-    val apodDate = rememberSaveable { mutableStateOf("") }
-    val apodDescription = rememberSaveable { mutableStateOf("") }
-    val apodMediaType = rememberSaveable { mutableStateOf("") }
-
     AppTheme {
-        ModalBottomSheetLayout(
-            sheetContent = {
-                APODBottomSheetContent(
-                    homeScreenViewModel = homeScreenViewModel,
-                    apodURL = apodURL.value,
-                    apodTitle = apodTitle.value,
-                    apodDate = apodDate.value,
-                    apodDescription = apodDescription.value,
-                    apodMediaType = apodMediaType.value
-                )
-            },
-            sheetState = bottomSheetState,
-            sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
-            sheetBackgroundColor = MaterialTheme.colorScheme.primary
-        ) {
-            Column {
+        Column {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -120,7 +93,7 @@ fun BookMarksScreen(navController: NavController) {
                                 label = {
                                     Text(
                                         text = bookMarksScreensData.screenName,
-                                        color = if(selectedChipIndex.value == index)MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                        color = if (selectedChipIndex.value == index) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                                         style = MaterialTheme.typography.headlineMedium
                                     )
                                 },
@@ -135,8 +108,8 @@ fun BookMarksScreen(navController: NavController) {
                 }
             }
             bookMarksVM.bookMarksScreensData[selectedChipIndex.value].screenComposable(navController)
-            }
         }
+
 
     }
 }

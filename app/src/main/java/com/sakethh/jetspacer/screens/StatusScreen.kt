@@ -40,7 +40,7 @@ fun StatusScreen(title:String, description: String, status: Status) {
                 style = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
                 color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Start,
-                lineHeight = 27.sp,
+                lineHeight = 30.sp,
                 softWrap = true,
                 modifier =Modifier.padding(top = 15.dp, start = 25.dp, end = 20.dp)
             )
@@ -58,5 +58,6 @@ fun StatusScreen(title:String, description: String, status: Status) {
 
 enum class Status {
     FOURO4InMarsScreen,
-    LOADING
+    LOADING,
+    BOOKMARKS_EMPTY
 }

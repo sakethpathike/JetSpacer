@@ -43,16 +43,23 @@ import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
+import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
+import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.atLastIndex
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
+@SuppressLint(
+    "UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition",
+    "SimpleDateFormat"
+)
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
     ExperimentalLifecycleComposeApi::class, ExperimentalMaterialApi::class
@@ -99,6 +106,9 @@ fun APODScreen(navController: NavController) {
                 )
             )
         }) {
+            var didDataGetAddedInDB = false
+            val bookMarksVM: BookMarksVM = viewModel()
+            val context = LocalContext.current
             if (apodScreenVM.isDataForAPODPaginationLoaded.value) {
                 ModalBottomSheetLayout(
                     sheetContent = {
@@ -108,7 +118,34 @@ fun APODScreen(navController: NavController) {
                             apodTitle = apodTitle.value,
                             apodDate = apodDate.value,
                             apodDescription = apodDescription.value,
-                            apodMediaType = apodMediaType.value
+                            apodMediaType = apodMediaType.value,
+                            onBookMarkClick = {
+                                coroutineScope.launch {
+                                    val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                                    val formattedDate = dateFormat.format(Date())
+                                    didDataGetAddedInDB =
+                                        bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                            this.title = apodTitle.value
+                                            this.datePublished = apodDate.value
+                                            this.description = apodDescription.value
+                                            this.imageURL = apodURL.value
+                                            this.mediaType = "image"
+                                            this.isBookMarked = true
+                                            this.category = "APOD"
+                                            this.addedToLocalDBOn = formattedDate
+                                        })
+                                }.invokeOnCompletion {
+                                    if (didDataGetAddedInDB) {
+                                        Toast.makeText(
+                                            context,
+                                            "Added to bookmarks:)",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                                    }
+                                }
+                            }
                         )
                     },
                     sheetState = bottomSheetState,
@@ -170,7 +207,7 @@ fun APODScreen(navController: NavController) {
     }
 }
 
-@SuppressLint("CoroutineCreationDuringComposition")
+@SuppressLint("CoroutineCreationDuringComposition", "SimpleDateFormat")
 @Composable
 fun APODBottomSheetContent(
     homeScreenViewModel: HomeScreenViewModel,
@@ -179,13 +216,13 @@ fun APODBottomSheetContent(
     apodDate: String,
     apodDescription: String,
     apodMediaType: String,
+    onBookMarkClick: () -> Unit,
 ) {
+    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    coroutineScope.launch {
-        homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
-    }
     @SuppressLint("SimpleDateFormat")
     val dateFormat = SimpleDateFormat("dd-MM-yyyy")
     val currentDate = dateFormat.format(Calendar.getInstance().time)
@@ -196,14 +233,9 @@ fun APODBottomSheetContent(
                 APODMediaLayout(
                     homeScreenViewModel = homeScreenViewModel,
                     imageURL = apodURL,
-                    apodTitle = apodTitle,
-                    apodDate = apodDate,
-                    apodDescription = apodDescription,
-                    saveToAPODDB = true,
                     apodMediaType = apodMediaType,
-                    saveToMarsRoversDB = false,
                     inAPODBottomSheetContent = true,
-                    marsRoversDBDTO = null
+                    onBookMarkButtonClick = onBookMarkClick
                 )
             }
         }
@@ -223,35 +255,44 @@ fun APODBottomSheetContent(
                         .width(150.dp)
                         .align(CenterVertically)
                 )
+                var didDataGetAddedInDB = false
+                val bookMarksVM: BookMarksVM = viewModel()
                 Column(
                     modifier = Modifier.height(85.dp),
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
                     APODBottomSheetChip(
                         onClick = {
+                            homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
                             coroutineScope.launch {
-                                homeScreenViewModel.dbImplementation.addNewBookMarkToAPODDB(
-                                    APOD_DB_DTO().apply {
-                                        this.title = apodTitle
-                                        this.datePublished = apodDate
-                                        this.description = apodDescription
-                                        this.imageURL = apodURL
-                                        this.mediaType = apodMediaType
-                                        this.isBookMarked = true
-                                        this.category = "APOD"
-                                        this.addedToLocalDBOn = currentDate
-                                        this.id = apodURL
+                                coroutineScope.launch {
+                                    val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                                    val formattedDate = dateFormat.format(Date())
+                                    didDataGetAddedInDB =
+                                        bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                            this.title = apodTitle
+                                            this.datePublished = apodDate
+                                            this.description = apodDescription
+                                            this.imageURL = apodURL
+                                            this.mediaType = "image"
+                                            this.isBookMarked = true
+                                            this.category = "APOD"
+                                            this.addedToLocalDBOn = formattedDate
+                                        })
+                                }.invokeOnCompletion {
+                                    if (didDataGetAddedInDB) {
+                                        Toast.makeText(
+                                            context,
+                                            "Added to bookmarks:)",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
                                     }
-                                )
+                                }
                             }
                             homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
-                            if (!homeScreenViewModel.dbUtils.doesThisExistsInDBAPOD(apodURL)) {
-                                Toast.makeText(
-                                    context,
-                                    "Added to bookmarks:)",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+
                         },
                         imageVector = homeScreenViewModel.bookMarkIcons.value,
                         iconColor = MaterialTheme.colorScheme.onPrimary,
@@ -330,8 +371,26 @@ fun APODBottomSheetContent(
             )
         }
     }
-    coroutineScope.launch {
-        homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+    val bookMarksVM: BookMarksVM = viewModel()
+    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+    if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+        AlertDialogForDeletingFromDB(
+            bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+            onConfirmBtnClick = {
+                triggerHapticFeedback(context = context)
+                coroutineScope.launch(Dispatchers.Main) {
+                    if (bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL)) {
+                        Toast.makeText(
+                            context,
+                            "Removed from bookmarks:)",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                    false
+            }
+        )
     }
 }
 

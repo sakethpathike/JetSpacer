@@ -169,14 +169,14 @@ fun RoversScreen(navController: NavController) {
                         sheetContent = {
                             RoverBottomSheetContent(
                                 imgURL = roversScreenVM.imgURL.value,
-                                capturedOn = roversScreenVM.capturedOn.value,
                                 cameraName = roversScreenVM.cameraName.value,
                                 sol = roversScreenVM.sol.value,
                                 earthDate = roversScreenVM.earthDate.value,
                                 roverName = roversScreenVM.roverName.value,
                                 roverStatus = roversScreenVM.roverStatus.value,
                                 launchingDate = roversScreenVM.launchingDate.value,
-                                landingDate = roversScreenVM.landingDate.value
+                                landingDate = roversScreenVM.landingDate.value,
+                                capturedBy = roversScreenVM.cameraName.value
                             )
                         },
                         sheetState = bottomSheetState,

@@ -14,7 +14,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.localDB.DBImplementation
-import com.sakethh.jetspacer.localDB.DBUtils
 import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODFetching
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
@@ -32,9 +31,7 @@ class HomeScreenViewModel(
     private val ipGeolocationFetching: IPGeolocationFetching = IPGeolocationFetching(),
     private val issLocationFetching: ISSLocationFetching = ISSLocationFetching(),
     private val apodFetching: APODFetching = APODFetching(),
-    val dbUtils: DBUtils = DBUtils()
 ) : ViewModel() {
-    val dbImplementation = DBImplementation()
     var currentPhaseOfDay: String = ""
     private val coroutineExceptionalHandler =
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
@@ -91,13 +88,6 @@ class HomeScreenViewModel(
                 this@HomeScreenViewModel._astronomicalDataFromAPIFlow.emit(ipGeolocationData)
             }
         }
-        if (!dbUtils.doesThisExistsInDBAPOD(apodDataFromAPI.value.url.toString())) {
-            bookMarkText.value = "Add to bookmarks"
-            bookMarkIcons.value = Icons.Outlined.BookmarkAdd
-        } else {
-            bookMarkText.value = "Remove from bookmarks"
-            bookMarkIcons.value = Icons.Outlined.BookmarkRemove
-        }
 
         if (apodDataFromAPI.value.url.toString().contains(regex = Regex("/apod.nasa.gov/"))) {
             doesThisExistsInAPODIconTxt(apodDataFromAPI.value.url.toString())
@@ -105,7 +95,7 @@ class HomeScreenViewModel(
     }
 
     fun doesThisExistsInAPODIconTxt(imageURL: String) {
-        if (!dbUtils.doesThisExistsInDBAPOD(imageURL = imageURL)) {
+        if (true) {
             bookMarkText.value = "Add to bookmarks"
             bookMarkIcons.value = Icons.Outlined.BookmarkAdd
         } else {
@@ -114,7 +104,7 @@ class HomeScreenViewModel(
         }
     }
     fun doesThisExistsInRoverDBIconTxt(imageURL: String) {
-        if (!dbUtils.doesThisExistsInDBRover(imageURL = imageURL)) {
+        if (true) {
             bookMarkText.value = "Add to bookmarks"
             bookMarkIcons.value = Icons.Outlined.BookmarkAdd
         } else {
@@ -123,15 +113,8 @@ class HomeScreenViewModel(
         }
     }
 
-    suspend fun addNewBookMarkToRoverDB(marsRoverDBDTO: MarsRoversDBDTO) {
-        dbImplementation.addNewBookMarkToRoverDB(
-            marsRoverDbDto = marsRoverDBDTO
-        )
-    }
 
-    suspend fun addNewBookMarkToAPODDB(apodDbDto: APOD_DB_DTO) {
-        dbImplementation.addNewBookMarkToAPODDB(apodDbDto = apodDbDto)
-    }
+
 
     object BookMarkUtils {
         val isAlertDialogEnabledForAPODDB = mutableStateOf(false)
