@@ -70,7 +70,8 @@ fun APODBookMarksScreen(navController: NavController) {
                 apodDescription = apodDescription.value,
                 apodMediaType = apodMediaType.value,
                 onBookMarkClick = {
-
+                    triggerHapticFeedback(context = context)
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = true
                 }
             )
         },
@@ -117,10 +118,8 @@ fun APODBookMarksScreen(navController: NavController) {
                         roverName = "",
                         onConfirmButtonClick = {
                             triggerHapticFeedback(context = context)
-
-
                                     coroutineScope.launch(Dispatchers.Main) {
-                                        if (bookMarksVM.deleteDataFromAPODDB(imageURL = apodBookMarkedItem.imageURL)) {
+                                        if (bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL.value)) {
                                             Toast.makeText(
                                                 context,
                                                 "Removed from bookmarks:)",
@@ -128,8 +127,7 @@ fun APODBookMarksScreen(navController: NavController) {
                                             ).show()
                                         }
                                     }
-                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                                        false
+                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
                         }
                     )
                 }

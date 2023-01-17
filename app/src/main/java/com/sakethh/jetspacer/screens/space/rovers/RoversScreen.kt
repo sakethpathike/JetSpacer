@@ -2,6 +2,8 @@ package com.sakethh.jetspacer.screens.space.rovers
 
 import android.annotation.SuppressLint
 import android.util.LayoutDirection
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,8 +35,13 @@ import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.space.apod.APODScreen
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.R
+import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
+import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RoverBottomSheetContent
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 @SuppressLint("CoroutineCreationDuringComposition", "UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -43,9 +50,13 @@ fun RoversScreen(navController: NavController) {
     val navigationDrawerState =
         androidx.compose.material3.rememberDrawerState(initialValue = androidx.compose.material3.DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
+    @SuppressLint("SimpleDateFormat")
+    val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+    val currentDate = dateFormat.format(Calendar.getInstance().time)
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val roversScreenVM: RoversScreenVM = viewModel()
+    val bookMarksVM: BookMarksVM = viewModel()
     BackHandler {
         if (navigationDrawerState.isOpen) {
             coroutineScope.launch {
@@ -176,7 +187,25 @@ fun RoversScreen(navController: NavController) {
                                 roverStatus = roversScreenVM.roverStatus.value,
                                 launchingDate = roversScreenVM.launchingDate.value,
                                 landingDate = roversScreenVM.landingDate.value,
-                                capturedBy = roversScreenVM.cameraName.value
+                                onBookMarkButtonClick = {
+                                    val marsRoverData=MarsRoversDBDTO().apply {
+                                        this.imageURL = roversScreenVM.imgURL.value
+                                        this.capturedBy = roversScreenVM.cameraName.value
+                                        this.sol = roversScreenVM.sol.value
+                                        this.earthDate = roversScreenVM.earthDate.value
+                                        this.roverName = roversScreenVM.roverName.value
+                                        this.roverStatus = roversScreenVM.roverStatus.value
+                                        this.launchingDate = roversScreenVM.launchingDate.value
+                                        this.landingDate = roversScreenVM.landingDate.value
+                                        this.isBookMarked = true
+                                        this.category = "Rover"
+                                        this.addedToLocalDBOn = currentDate
+                                    }
+                                    coroutineScope.launch {
+                                        bookMarksVM.addDataToMarsDB(marsRoversDBDTO = marsRoverData)
+                                    }
+                                }
+
                             )
                         },
                         sheetState = bottomSheetState,

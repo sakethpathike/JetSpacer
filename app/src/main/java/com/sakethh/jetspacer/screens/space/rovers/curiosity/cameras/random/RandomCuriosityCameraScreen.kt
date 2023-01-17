@@ -255,7 +255,7 @@ fun RoverBottomSheetContent(
     roverStatus: String,
     launchingDate: String,
     landingDate: String,
-    capturedBy: String
+    onBookMarkButtonClick:()->Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
@@ -264,9 +264,6 @@ fun RoverBottomSheetContent(
     val bookMarksVM: BookMarksVM = viewModel()
     var didDataAddedToDB = false
 
-    @SuppressLint("SimpleDateFormat")
-    val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-    val currentDate = dateFormat.format(Calendar.getInstance().time)
     LazyColumn {
         item {
             ConstraintLayout(constraintSet = constraintSet) {
@@ -277,32 +274,7 @@ fun RoverBottomSheetContent(
                     inAPODBottomSheetContent = false,
                     onBookMarkButtonClick = {
                         triggerHapticFeedback(context = context)
-                        coroutineScope.launch {
-                            didDataAddedToDB = bookMarksVM.addDataToMarsDB(MarsRoversDBDTO().apply {
-                                this.imageURL = imgURL
-                                this.capturedBy = capturedBy
-                                this.sol = sol
-                                this.earthDate = earthDate
-                                this.roverName = roverName
-                                this.roverStatus = roverStatus
-                                this.launchingDate = launchingDate
-                                this.landingDate = landingDate
-                                this.isBookMarked = true
-                                this.category = "Rover"
-                                this.addedToLocalDBOn = currentDate
-                            })
-                        }.invokeOnCompletion {
-                            if (didDataAddedToDB) {
-                                Toast.makeText(
-                                    context,
-                                    "Added to bookmarks:)",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                                    true
-                            }
-                        }
+                        onBookMarkButtonClick()
                         homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imgURL)
                     }
                 )

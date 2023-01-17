@@ -63,6 +63,7 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
     val bookMarksVM: BookMarksVM = viewModel()
     val bookMarksFromRoversDB = bookMarksVM.bookMarksFromRoversDB.collectAsState().value
     val roversDBDTO = MarsRoversDB().copy()
+    val imgURL = remember { mutableStateOf("") }
     ModalBottomSheetLayout(
         sheetContent = {
             RoverBottomSheetContent(
@@ -74,7 +75,12 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                 roverStatus = roversDBDTO.roverStatus.value,
                 launchingDate = roversDBDTO.launchingDate.value,
                 landingDate = roversDBDTO.landingDate.value,
-                capturedBy = roversDBDTO.capturedBy.value
+                onBookMarkButtonClick = {
+                    imgURL.value = roversDBDTO.imageURL.value
+                    triggerHapticFeedback(context = context)
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                        true
+                }
             )
         },
         sheetState = bottomSheetState,
@@ -111,6 +117,7 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                             }
                         },
                         onBookMarkButtonClick = {
+                            imgURL.value = roverBookMarkedItem.imageURL
                             triggerHapticFeedback(context = context)
                             HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                                 true
@@ -122,7 +129,7 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                         onConfirmButtonClick = {
                             triggerHapticFeedback(context = context)
                             coroutineScope.launch(Dispatchers.Main) {
-                                if (bookMarksVM.deleteDataFromAPODDB(imageURL = roverBookMarkedItem.imageURL)) {
+                                if (bookMarksVM.deleteDataFromMARSDB(imageURL = imgURL.value)) {
                                     Toast.makeText(
                                         context,
                                         "Removed from bookmarks:)",
@@ -130,7 +137,8 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                                     ).show()
                                 }
                             }
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                                false
                         }
                     )
                 }

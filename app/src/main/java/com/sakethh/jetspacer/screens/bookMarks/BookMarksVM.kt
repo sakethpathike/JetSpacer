@@ -47,6 +47,8 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
             dbImplementation.localDBData().getBookMarkedAPODDBDATA().collect {
                 _bookMarksFromAPODDB.emit(it)
             }
+        }
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
             dbImplementation.localDBData().getBookMarkedRoverDBDATA().collect {
                 _bookMarksFromRoversDB.emit(it)
             }
@@ -86,8 +88,7 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
             false
         } else {
             dbImplementation.localDBData().addNewBookMarkToRoverDB(marsRoverDbDto = marsRoversDBDTO)
-            dbImplementation.localDBData()
-                .doesThisExistsInRoversDB(imageURL = marsRoversDBDTO.imageURL)
+            dbImplementation.localDBData().doesThisExistsInRoversDB(imageURL = marsRoversDBDTO.imageURL)
         }
     }
 }
