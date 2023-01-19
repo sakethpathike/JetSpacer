@@ -255,13 +255,14 @@ fun RoverBottomSheetContent(
     roverStatus: String,
     launchingDate: String,
     landingDate: String,
-    onBookMarkButtonClick:()->Unit
+    onBookMarkButtonClick: () -> Unit,
+    onConfirmBookMarkDeletionButtonClick: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val homeScreenViewModel: HomeScreenViewModel = viewModel()
-    homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imgURL)
-    val context = LocalContext.current
     val bookMarksVM: BookMarksVM = viewModel()
+    val homeScreenViewModel: HomeScreenViewModel = viewModel()
+    bookMarksVM.doesThisExistsInRoverDBIconTxt(imgURL)
+    val context = LocalContext.current
     var didDataAddedToDB = false
 
     LazyColumn {
@@ -275,7 +276,7 @@ fun RoverBottomSheetContent(
                     onBookMarkButtonClick = {
                         triggerHapticFeedback(context = context)
                         onBookMarkButtonClick()
-                        homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imgURL)
+                        bookMarksVM.doesThisExistsInRoverDBIconTxt(imgURL)
                     }
                 )
             }
@@ -355,25 +356,17 @@ fun RoverBottomSheetContent(
             )
         }
     }
-    homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imageURL = imgURL)
+    bookMarksVM.doesThisExistsInRoverDBIconTxt(imageURL = imgURL)
     if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
         AlertDialogForDeletingFromDB(
             bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
             onConfirmBtnClick = {
                 triggerHapticFeedback(context = context)
-
-                    coroutineScope.launch(Dispatchers.Main) {
-                        if (bookMarksVM.deleteDataFromAPODDB(imageURL = imgURL)) {
-                            Toast.makeText(
-                                context,
-                                "Removed from bookmarks:)",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
+                onConfirmBookMarkDeletionButtonClick()
                 HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
             }
         )
     }
-    homeScreenViewModel.doesThisExistsInRoverDBIconTxt(imgURL)
+    bookMarksVM.doesThisExistsInRoverDBIconTxt(imgURL)
 }

@@ -1,8 +1,6 @@
 package com.sakethh.jetspacer.screens.space.rovers
 
 import android.annotation.SuppressLint
-import android.util.LayoutDirection
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -10,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.DrawerValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Menu
@@ -21,22 +18,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.sakethh.jetspacer.screens.bookMarks.BookMarksScreen
 import com.sakethh.jetspacer.navigation.NavigationRoutes
-import com.sakethh.jetspacer.screens.space.apod.APODScreen
 import com.sakethh.jetspacer.ui.theme.AppTheme
-import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RoverBottomSheetContent
 import kotlinx.coroutines.launch
@@ -50,6 +44,7 @@ fun RoversScreen(navController: NavController) {
     val navigationDrawerState =
         androidx.compose.material3.rememberDrawerState(initialValue = androidx.compose.material3.DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
+
     @SuppressLint("SimpleDateFormat")
     val dateFormat = SimpleDateFormat("dd-MM-yyyy")
     val currentDate = dateFormat.format(Calendar.getInstance().time)
@@ -57,6 +52,9 @@ fun RoversScreen(navController: NavController) {
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val roversScreenVM: RoversScreenVM = viewModel()
     val bookMarksVM: BookMarksVM = viewModel()
+    val homeScreenViewModel:HomeScreenViewModel= viewModel()
+    val context = LocalContext.current
+    var didDataGetAddedInDB = false
     BackHandler {
         if (navigationDrawerState.isOpen) {
             coroutineScope.launch {
@@ -188,7 +186,9 @@ fun RoversScreen(navController: NavController) {
                                 launchingDate = roversScreenVM.launchingDate.value,
                                 landingDate = roversScreenVM.landingDate.value,
                                 onBookMarkButtonClick = {
-                                    val marsRoverData=MarsRoversDBDTO().apply {
+                                    triggerHapticFeedback(context = context)
+                                    bookMarksVM.imgURL = roversScreenVM.imgURL.value
+                                    val marsRoverData = MarsRoversDBDTO().apply {
                                         this.imageURL = roversScreenVM.imgURL.value
                                         this.capturedBy = roversScreenVM.cameraName.value
                                         this.sol = roversScreenVM.sol.value
@@ -202,7 +202,43 @@ fun RoversScreen(navController: NavController) {
                                         this.addedToLocalDBOn = currentDate
                                     }
                                     coroutineScope.launch {
-                                        bookMarksVM.addDataToMarsDB(marsRoversDBDTO = marsRoverData)
+                                        didDataGetAddedInDB =
+                                            bookMarksVM.addDataToMarsDB(marsRoversDBDTO = marsRoverData)
+                                    }.invokeOnCompletion {
+                                        if (didDataGetAddedInDB) {
+                                            Toast.makeText(
+                                                context,
+                                                "Added to bookmarks:)",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                                .show()
+                                        } else {
+                                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                                        }
+                                        bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
+                                    }
+                                },
+                                onConfirmBookMarkDeletionButtonClick = {
+                                    coroutineScope.launch {
+                                        didDataGetAddedInDB =
+                                            bookMarksVM.deleteDataFromMARSDB(imageURL = bookMarksVM.imgURL)
+                                    }.invokeOnCompletion {
+                                        if (didDataGetAddedInDB) {
+                                            Toast.makeText(
+                                                context,
+                                                "Bookmark didn't got removed as expected, report it:(",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                                .show()
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Removed from bookmarks:)",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                                .show()
+                                        }
+                                        bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
                                     }
                                 }
 

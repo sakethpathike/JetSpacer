@@ -77,6 +77,7 @@ fun APODScreen(navController: NavController) {
     val homeScreenVM: HomeScreenViewModel = viewModel()
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val bookMarksVM: BookMarksVM = viewModel()
     BackHandler {
         if (bottomSheetState.isVisible) {
             coroutineScope.launch {
@@ -120,6 +121,8 @@ fun APODScreen(navController: NavController) {
                             apodDescription = apodDescription.value,
                             apodMediaType = apodMediaType.value,
                             onBookMarkClick = {
+                                triggerHapticFeedback(context = context)
+                                bookMarksVM.imgURL = apodURL.value
                                 coroutineScope.launch {
                                     val dateFormat = SimpleDateFormat("dd-MM-yyyy")
                                     val formattedDate = dateFormat.format(Date())
@@ -144,6 +147,7 @@ fun APODScreen(navController: NavController) {
                                     } else {
                                         HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
                                     }
+                                    bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                                 }
                             }
                         )
@@ -217,8 +221,10 @@ fun APODBottomSheetContent(
     apodDescription: String,
     apodMediaType: String,
     onBookMarkClick: () -> Unit,
+    inBookMarkScreen: Boolean? = null
 ) {
-    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+    val bookMarksVM: BookMarksVM = viewModel()
+    bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
 
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -263,8 +269,11 @@ fun APODBottomSheetContent(
                 ) {
                     APODBottomSheetChip(
                         onClick = {
-                            homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
-                            coroutineScope.launch {
+                            bookMarksVM.imgURL = apodURL
+                            bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
+                            if (inBookMarkScreen == true) {
+                                onBookMarkClick()
+                            } else {
                                 coroutineScope.launch {
                                     val dateFormat = SimpleDateFormat("dd-MM-yyyy")
                                     val formattedDate = dateFormat.format(Date())
@@ -289,12 +298,11 @@ fun APODBottomSheetContent(
                                     } else {
                                         HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
                                     }
+                                    bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                                 }
                             }
-                            homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
-
                         },
-                        imageVector = homeScreenViewModel.bookMarkIcons.value,
+                        imageVector = bookMarksVM.bookMarkIcons.value,
                         iconColor = MaterialTheme.colorScheme.onPrimary,
                         text = "Bookmark",
                         textColor = MaterialTheme.colorScheme.onPrimary
@@ -371,23 +379,36 @@ fun APODBottomSheetContent(
             )
         }
     }
-    val bookMarksVM: BookMarksVM = viewModel()
-    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
+    var doesExistsInDB = false
     if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
         AlertDialogForDeletingFromDB(
             bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
             onConfirmBtnClick = {
                 triggerHapticFeedback(context = context)
-                coroutineScope.launch(Dispatchers.Main) {
-                    if (bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL)) {
+                coroutineScope.launch {
+                    doesExistsInDB =
+                        bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                }.invokeOnCompletion {
+                    if (doesExistsInDB) {
+                        Toast.makeText(
+                            context,
+                            "Bookmark didn't got removed as expected, report it:(",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    } else {
                         Toast.makeText(
                             context,
                             "Removed from bookmarks:)",
                             Toast.LENGTH_SHORT
-                        ).show()
+                        )
+                            .show()
                     }
+                    bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                 }
                 HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                    false
+                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
                     false
             }
         )

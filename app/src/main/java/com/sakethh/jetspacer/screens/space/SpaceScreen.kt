@@ -72,7 +72,7 @@ fun SpaceScreen(navController: NavController) {
     val marsWeatherData = spaceScreenVM.marsWeatherDTO.value
     val bookMarksVM:BookMarksVM= viewModel()
     var didDataGetAddedInDB=false
-    homeScreenViewModel.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
+    bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
     AppTheme {
         ModalBottomSheetLayout(
             sheetContent = {
@@ -84,6 +84,8 @@ fun SpaceScreen(navController: NavController) {
                     apodDescription = apodData.value.explanation.toString(),
                     apodMediaType = apodData.value.media_type.toString(),
                     onBookMarkClick = {
+                        triggerHapticFeedback(context = context)
+                        bookMarksVM.imgURL=apodData.value.url.toString()
                         coroutineScope.launch {
                             val dateFormat = SimpleDateFormat("dd-MM-yyyy")
                             val formattedDate = dateFormat.format(Date())
@@ -103,6 +105,7 @@ fun SpaceScreen(navController: NavController) {
                             } else {
                                 HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
                             }
+                            bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                         }
                     }
                 )
@@ -132,6 +135,7 @@ fun SpaceScreen(navController: NavController) {
 
                 }
                 item {
+                    bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
                     APODCardComposable(
                         homeScreenViewModel = homeScreenViewModel,
                         imageURL = apodData.value.url.toString(),
@@ -141,6 +145,8 @@ fun SpaceScreen(navController: NavController) {
                         imageOnClick = {
                             coroutineScope.launch {
                                 bottomSheetState.show()
+                            }.invokeOnCompletion {
+                                bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
                             }
                         },
                         cardTopPaddingValue = 0.dp,
@@ -151,7 +157,7 @@ fun SpaceScreen(navController: NavController) {
                         apodMediaType = apodData.value.media_type.toString(),
                         inAPODBottomSheetContent = false,
                         onBookMarkButtonClick = {
-                            homeScreenViewModel.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
+                            bookMarksVM.imgURL=apodData.value.url.toString()
                             coroutineScope.launch {
                                 val dateFormat = SimpleDateFormat("dd-MM-yyyy")
                                 val formattedDate = dateFormat.format(Date())
@@ -171,6 +177,7 @@ fun SpaceScreen(navController: NavController) {
                                 } else {
                                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
                                 }
+                                bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
                             }
                         },
                         capturedOnSol = "",
@@ -178,16 +185,29 @@ fun SpaceScreen(navController: NavController) {
                         roverName = "",
                         onConfirmButtonClick = {
                             triggerHapticFeedback(context = context)
-                            coroutineScope.launch(Dispatchers.Main) {
-                                if (bookMarksVM.deleteDataFromAPODDB(imageURL = apodData.value.url.toString())) {
+                            coroutineScope.launch {
+                                didDataGetAddedInDB =
+                                    bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL.value)
+                            }.invokeOnCompletion {
+                                if (didDataGetAddedInDB) {
+                                    Toast.makeText(
+                                        context,
+                                        "Bookmark didn't got removed as expected, report it:(",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                } else {
                                     Toast.makeText(
                                         context,
                                         "Removed from bookmarks:)",
                                         Toast.LENGTH_SHORT
-                                    ).show()
+                                    )
+                                        .show()
                                 }
+                                bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                             }
-
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                false
                             HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                                 false
                         }

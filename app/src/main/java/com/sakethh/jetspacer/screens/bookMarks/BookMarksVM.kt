@@ -2,9 +2,15 @@ package com.sakethh.jetspacer.screens.bookMarks
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BookmarkAdd
+import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,11 +22,12 @@ import com.sakethh.jetspacer.localDB.DBService
 import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
 import com.sakethh.jetspacer.screens.bookMarks.screens.APODBookMarksScreen
 import com.sakethh.jetspacer.screens.bookMarks.screens.MarsRoversBookMarksScreen
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
+import com.sakethh.jetspacer.screens.home.HomeScreen
+import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
+@Suppress("LocalVariableName")
 class BookMarksVM(application: Application) : AndroidViewModel(application) {
     val bookMarksScreensData = listOf(
         BookMarksScreensData(
@@ -30,16 +37,19 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
             screenName = "Mars Rover",
             screenComposable = { MarsRoversBookMarksScreen(navController = it) })
     )
-
+    var imgURL = ""
     private val _bookMarksFromAPODDB = MutableStateFlow<List<APOD_DB_DTO>>(emptyList())
     val bookMarksFromAPODDB = _bookMarksFromAPODDB.asStateFlow()
+
+    val bookMarkIcons = mutableStateOf<ImageVector>(Icons.Outlined.BookmarkAdd)
+    val bookMarkText = mutableStateOf("")
 
     private val _bookMarksFromRoversDB = MutableStateFlow<List<MarsRoversDBDTO>>(emptyList())
     val bookMarksFromRoversDB = _bookMarksFromRoversDB.asStateFlow()
 
     private val coroutineExceptionalHandler =
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
-    private val dbImplementation: DBImplementation =
+    val dbImplementation: DBImplementation =
         DBImplementation.getLocalDB(application.applicationContext)
 
     init {
@@ -57,8 +67,7 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
 
     suspend fun deleteDataFromAPODDB(imageURL: String): Boolean {
         dbImplementation.localDBData().deleteFromAPODDB(imageURL = imageURL)
-        return dbImplementation.localDBData()
-            .doesThisExistsInAPODDB(imageURL = imageURL)
+        return dbImplementation.localDBData().doesThisExistsInAPODDB(imageURL = imageURL)
     }
 
     suspend fun deleteDataFromMARSDB(imageURL: String): Boolean {
@@ -73,24 +82,58 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
         ) {
             false
         } else {
-            dbImplementation.localDBData().addNewBookMarkToAPODDB(apodDbDto = apodDbDto)
+            dbImplementation.localDBData()
+                .addNewBookMarkToAPODDB(apodDbDto = apodDbDto)
             dbImplementation.localDBData()
                 .doesThisExistsInAPODDB(imageURL = apodDbDto.imageURL)
         }
     }
 
-    suspend fun addDataToMarsDB(marsRoversDBDTO: MarsRoversDBDTO): Boolean {
-        return if (dbImplementation.localDBData()
-                .doesThisExistsInRoversDB(
-                    imageURL = marsRoversDBDTO.imageURL
-                )
-        ) {
-            false
+
+suspend fun addDataToMarsDB(marsRoversDBDTO: MarsRoversDBDTO): Boolean {
+    return if (dbImplementation.localDBData()
+            .doesThisExistsInRoversDB(imageURL = marsRoversDBDTO.imageURL)
+    ) {
+        false
+    } else {
+        dbImplementation.localDBData()
+            .addNewBookMarkToRoverDB(marsRoverDbDto = marsRoversDBDTO)
+        dbImplementation.localDBData()
+            .doesThisExistsInRoversDB(imageURL = marsRoversDBDTO.imageURL)
+    }
+}
+
+fun doesThisExistsInAPODIconTxt(imageURL: String) {
+    var doesDataExistsInDB = false
+    viewModelScope.launch {
+        doesDataExistsInDB = dbImplementation.localDBData()
+            .doesThisExistsInAPODDB(imageURL = imageURL)
+    }.invokeOnCompletion {
+        if (!doesDataExistsInDB) {
+            bookMarkText.value = "Add to bookmarks"
+            bookMarkIcons.value = Icons.Outlined.BookmarkAdd
         } else {
-            dbImplementation.localDBData().addNewBookMarkToRoverDB(marsRoverDbDto = marsRoversDBDTO)
-            dbImplementation.localDBData().doesThisExistsInRoversDB(imageURL = marsRoversDBDTO.imageURL)
+            bookMarkText.value = "Remove from bookmarks"
+            bookMarkIcons.value = Icons.Outlined.BookmarkRemove
         }
     }
+}
+
+fun doesThisExistsInRoverDBIconTxt(imageURL: String) {
+    var doesDataExistsInDB = false
+    viewModelScope.launch {
+        doesDataExistsInDB = dbImplementation.localDBData()
+            .doesThisExistsInRoversDB(imageURL = imageURL)
+    }.invokeOnCompletion {
+        if (!doesDataExistsInDB) {
+          bookMarkText.value = "Add to bookmarks"
+          bookMarkIcons.value = Icons.Outlined.BookmarkAdd
+        } else {
+           bookMarkText.value = "Remove from bookmarks"
+           bookMarkIcons.value = Icons.Outlined.BookmarkRemove
+        }
+    }
+}
 }
 
 data class BookMarksScreensData(

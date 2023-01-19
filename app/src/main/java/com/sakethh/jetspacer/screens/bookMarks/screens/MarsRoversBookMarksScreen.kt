@@ -19,6 +19,7 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -63,7 +64,8 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
     val bookMarksVM: BookMarksVM = viewModel()
     val bookMarksFromRoversDB = bookMarksVM.bookMarksFromRoversDB.collectAsState().value
     val roversDBDTO = MarsRoversDB().copy()
-    val imgURL = remember { mutableStateOf("") }
+    val imgURL = rememberSaveable { mutableStateOf("") }
+    var didDataGetAddedInDB = false
     ModalBottomSheetLayout(
         sheetContent = {
             RoverBottomSheetContent(
@@ -80,6 +82,28 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                     triggerHapticFeedback(context = context)
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                         true
+                }, onConfirmBookMarkDeletionButtonClick = {
+                    coroutineScope.launch {
+                        didDataGetAddedInDB =
+                            bookMarksVM.deleteDataFromMARSDB(imageURL = bookMarksVM.imgURL)
+                    }.invokeOnCompletion {
+                        if (didDataGetAddedInDB) {
+                            Toast.makeText(
+                                context,
+                                "Bookmark didn't got removed as expected, report it:(",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Removed from bookmarks:)",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
+                        bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
+                    }
                 }
             )
         },
@@ -128,14 +152,26 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                         inAPODBottomSheetContent = false,
                         onConfirmButtonClick = {
                             triggerHapticFeedback(context = context)
-                            coroutineScope.launch(Dispatchers.Main) {
-                                if (bookMarksVM.deleteDataFromMARSDB(imageURL = imgURL.value)) {
+                            coroutineScope.launch {
+                                didDataGetAddedInDB =
+                                    bookMarksVM.deleteDataFromMARSDB(imageURL = imgURL.value)
+                            }.invokeOnCompletion {
+                                if (didDataGetAddedInDB) {
+                                    Toast.makeText(
+                                        context,
+                                        "Bookmark didn't got removed as expected, report it:(",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                } else {
                                     Toast.makeText(
                                         context,
                                         "Removed from bookmarks:)",
                                         Toast.LENGTH_SHORT
-                                    ).show()
+                                    )
+                                        .show()
                                 }
+                                bookMarksVM.doesThisExistsInRoverDBIconTxt(imgURL.value)
                             }
                             HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                                 false

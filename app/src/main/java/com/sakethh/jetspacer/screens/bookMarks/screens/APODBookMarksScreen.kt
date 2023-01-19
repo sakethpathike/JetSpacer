@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -54,12 +55,13 @@ fun APODBookMarksScreen(navController: NavController) {
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val bookMarksVM: BookMarksVM = viewModel()
     val bookMarksFromAPODDB = bookMarksVM.bookMarksFromAPODDB.collectAsStateWithLifecycle().value
-    val apodURL = remember { mutableStateOf("") }
-    val apodMediaType = remember { mutableStateOf("") }
-    val apodDescription = remember { mutableStateOf("") }
-    val apodTitle = remember { mutableStateOf("") }
-    val apodDate = remember { mutableStateOf("") }
+    val apodURL = rememberSaveable { mutableStateOf("") }
+    val apodMediaType = rememberSaveable { mutableStateOf("") }
+    val apodDescription = rememberSaveable { mutableStateOf("") }
+    val apodTitle = rememberSaveable { mutableStateOf("") }
+    val apodDate = rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
+    var didDataGetAddedInDB=false
     ModalBottomSheetLayout(
         sheetContent = {
             APODBottomSheetContent(
@@ -110,6 +112,7 @@ fun APODBookMarksScreen(navController: NavController) {
                         inAPODBottomSheetContent = false,
                         onBookMarkButtonClick = {
                             apodURL.value = apodBookMarkedItem.imageURL
+                            triggerHapticFeedback(context = context)
                             HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
                                 true
                         },
@@ -118,16 +121,32 @@ fun APODBookMarksScreen(navController: NavController) {
                         roverName = "",
                         onConfirmButtonClick = {
                             triggerHapticFeedback(context = context)
-                                    coroutineScope.launch(Dispatchers.Main) {
-                                        if (bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL.value)) {
-                                            Toast.makeText(
-                                                context,
-                                                "Removed from bookmarks:)",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    }
-                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                            coroutineScope.launch {
+                                didDataGetAddedInDB =
+                                    bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL.value)
+                            }.invokeOnCompletion {
+                                if (didDataGetAddedInDB) {
+                                    Toast.makeText(
+                                        context,
+                                        "Bookmark didn't got removed as expected, report it:(",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Removed from bookmarks:)",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                }
+                                bookMarksVM.doesThisExistsInAPODIconTxt(apodURL.value)
+                                coroutineScope.launch {
+                                    bottomSheetState.hide()
+                                }
+                            }
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                false
                         }
                     )
                 }

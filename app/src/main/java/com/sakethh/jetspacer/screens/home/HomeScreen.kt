@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.accompanist.web.WebView
@@ -61,12 +60,13 @@ import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.ISSLocatio
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.IssPosition
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
+import io.ktor.util.reflect.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
 @SuppressLint("SimpleDateFormat")
-@OptIn(ExperimentalLifecycleComposeApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen() {
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
@@ -74,9 +74,10 @@ fun HomeScreen() {
     systemUIController.setStatusBarColor(MaterialTheme.colorScheme.surface)
     systemUIController.setNavigationBarColor(MaterialTheme.colorScheme.primaryContainer)
     val activity = LocalContext.current as? Activity
-
-    val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = false
+    )
     val coroutineScope = rememberCoroutineScope()
     BackHandler {
         if (bottomSheetState.isVisible) {
@@ -88,96 +89,96 @@ fun HomeScreen() {
         }
     }
     val issInfo = "The \"International Space Station\" is currently over ${
-        homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
+        homeScreenViewModel.issLocationFromAPIFlow.collectAsState(
+            initial = ISSLocationDTO(IssPosition("", ""), "", 0)
         ).value.iss_position.latitude
     }° N, ${
-        homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
+        homeScreenViewModel.issLocationFromAPIFlow.collectAsState(
+            initial = ISSLocationDTO(IssPosition("", ""), "", 0)
         ).value.iss_position.longitude
     }° E"
-    val issLatitude = homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
-        initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
+    val issLatitude = homeScreenViewModel.issLocationFromAPIFlow.collectAsState(
+        initial = ISSLocationDTO(IssPosition("", ""), "", 0)
     ).value.iss_position.latitude
 
-    val issLongitude = homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
-        initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
+    val issLongitude = homeScreenViewModel.issLocationFromAPIFlow.collectAsState(
+        initial = ISSLocationDTO(IssPosition("", ""), "", 0)
     ).value.iss_position.longitude
 
-    val issTimestamp = homeScreenViewModel.issLocationFromAPIFlow.collectAsStateWithLifecycle(
-        initialValue = ISSLocationDTO(IssPosition("", ""), "", 0)
+    val issTimestamp = homeScreenViewModel.issLocationFromAPIFlow.collectAsState(
+        initial = ISSLocationDTO(IssPosition("", ""), "", 0)
     ).value.timestamp.toString()
 
 
     val currentTimeInfo = "Current Time: ${
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.current_time
     }\nDate : ${
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.date
     }\nDay Length : ${
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.day_length
     }"
 
 
     // moon info
     val moonAltitude =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.moon_altitude.toString()
     val moonAzimuthValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.moon_azimuth.toString()
 
     val moonDistanceValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.moon_distance.toString()
     val moonParalyticAngleValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.moon_parallactic_angle.toString()
     val moonRiseValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.moonrise.toString()
     val moonSetValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.moonset.toString()
 
 
 // sun info
     val solarNoonValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.solar_noon.toString()
     val sunAltitudeValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.sun_altitude.toString()
 
     val sunAzimuthValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.sun_azimuth.toString()
 
     val sunDistanceValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.sun_distance.toString()
     val sunRiseValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.sunrise.toString()
     val sunSetValue =
-        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsStateWithLifecycle(
-            initialValue = IPGeoLocationDTO()
+        homeScreenViewModel.astronomicalDataFromAPIFlow.collectAsState(
+            initial = IPGeoLocationDTO()
         ).value.sunset.toString()
 
     val context = LocalContext.current
@@ -190,6 +191,7 @@ fun HomeScreen() {
     var didDataGetAddedInDB = false
     ModalBottomSheetLayout(
         sheetContent = {
+            bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
             APODBottomSheetContent(
                 homeScreenViewModel = homeScreenViewModel,
                 apodURL = apodURL,
@@ -198,6 +200,8 @@ fun HomeScreen() {
                 apodDescription = apodDescription,
                 apodMediaType = apodMediaType,
                 onBookMarkClick = {
+                    triggerHapticFeedback(context = context)
+                    bookMarksVM.imgURL=apodURL
                     coroutineScope.launch {
                         val dateFormat = SimpleDateFormat("dd-MM-yyyy")
                         val formattedDate = dateFormat.format(Date())
@@ -213,10 +217,12 @@ fun HomeScreen() {
                         })
                     }.invokeOnCompletion {
                         if (didDataGetAddedInDB) {
-                            Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT)
+                                .show()
                         } else {
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
                         }
+                        bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                     }
                 }
             )
@@ -438,7 +444,9 @@ fun HomeScreen() {
                 }
             }
             /*APOD*/
+            var doesExistsInDB = false
             item {
+                bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
                 APODCardComposable(
                     homeScreenViewModel = homeScreenViewModel,
                     imageURL = apodURL,
@@ -455,9 +463,10 @@ fun HomeScreen() {
                     bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
                     onBookMarkButtonClick = {
                         triggerHapticFeedback(context = context)
+                        bookMarksVM.imgURL = apodURL
+                        val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                        val formattedDate = dateFormat.format(Date())
                         coroutineScope.launch {
-                            val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                            val formattedDate = dateFormat.format(Date())
                             didDataGetAddedInDB = bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
                                 this.title = apodTitle
                                 this.datePublished = apodDate
@@ -470,12 +479,13 @@ fun HomeScreen() {
                             })
                         }.invokeOnCompletion {
                             if (didDataGetAddedInDB) {
-                                Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT)
+                                    .show()
                             } else {
-                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
                             }
+                            bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                         }
-                        homeScreenViewModel.doesThisExistsInAPODIconTxt(apodURL)
                     },
                     capturedOnSol = "",
                     capturedBy = "",
@@ -483,7 +493,25 @@ fun HomeScreen() {
                     onConfirmButtonClick = {
                         triggerHapticFeedback(context = context)
                         coroutineScope.launch {
-
+                            doesExistsInDB =
+                                bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                        }.invokeOnCompletion {
+                            if (doesExistsInDB) {
+                                Toast.makeText(
+                                    context,
+                                    "Bookmark didn't got removed as expected, report it:(",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Removed from bookmarks:)",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                            bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                         }
                         HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                             false
@@ -784,18 +812,19 @@ fun APODCardComposable(
     onConfirmButtonClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
+
     val isIconDownwards = rememberSaveable {
         mutableStateOf(true)
     }
     val coroutineScope = rememberCoroutineScope()
-
+    val bookMarksVM:BookMarksVM= viewModel()
     coroutineScope.launch {
         if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
-            homeScreenViewModel.doesThisExistsInRoverDBIconTxt(
+            bookMarksVM.doesThisExistsInRoverDBIconTxt(
                 imageURL
             )
         } else {
-            homeScreenViewModel.doesThisExistsInAPODIconTxt(
+            bookMarksVM.doesThisExistsInAPODIconTxt(
                 imageURL
             )
         }
@@ -1112,8 +1141,8 @@ fun APODMediaLayout(
     imageOnClick: () -> Unit = {},
     apodMediaType: String,
 ) {
-
-    homeScreenViewModel.doesThisExistsInAPODIconTxt(imageURL)
+val bookMarksVM:BookMarksVM= viewModel()
+    bookMarksVM.doesThisExistsInAPODIconTxt(imageURL)
     val context = LocalContext.current
     val localClipboardManager = LocalClipboardManager.current
     val localUriHandler = LocalUriHandler.current
@@ -1212,12 +1241,12 @@ fun APODMediaLayout(
                         imageVector = Icons.Outlined.Share
                     )
                     DropDownMenuItemModified(
-                        text = homeScreenViewModel.bookMarkText.value,
+                        text = bookMarksVM.bookMarkText.value,
                         onClick = {
                             onBookMarkButtonClick()
                             isMoreClicked.value = false
                         },
-                        imageVector = homeScreenViewModel.bookMarkIcons.value
+                        imageVector = bookMarksVM.bookMarkIcons.value
                     )
                     DropDownMenuItemModified(
                         text = "Download",
@@ -1249,7 +1278,7 @@ fun APODMediaLayout(
                     iconModifier = Modifier
                 )
                 APODSideIconButton(
-                    imageVector = homeScreenViewModel.bookMarkIcons.value,
+                    imageVector = bookMarksVM.bookMarkIcons.value,
                     onClick = {
                         onBookMarkButtonClick()
                     },
