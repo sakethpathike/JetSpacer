@@ -145,7 +145,7 @@ fun APODScreen(navController: NavController) {
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     } else {
-                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
                                     }
                                     bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                                 }
@@ -208,6 +208,39 @@ fun APODScreen(navController: NavController) {
                 }
             }
         }
+        var didDataGetAddedInDB=false
+        val context= LocalContext.current
+        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+            AlertDialogForDeletingFromDB(
+                bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                onConfirmBtnClick = {
+                    triggerHapticFeedback(context = context)
+                    coroutineScope.launch {
+                        didDataGetAddedInDB =
+                            bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                    }.invokeOnCompletion {
+                        if (didDataGetAddedInDB) {
+                            Toast.makeText(
+                                context,
+                                "Bookmark didn't got removed as expected, report it:(",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Removed from bookmarks:)",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
+                        bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                    }
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                }
+            )
+        }
     }
 }
 
@@ -262,7 +295,6 @@ fun APODBottomSheetContent(
                         .align(CenterVertically)
                 )
                 var didDataGetAddedInDB = false
-                val bookMarksVM: BookMarksVM = viewModel()
                 Column(
                     modifier = Modifier.height(85.dp),
                     verticalArrangement = Arrangement.SpaceEvenly
@@ -296,7 +328,7 @@ fun APODBottomSheetContent(
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     } else {
-                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
                                     }
                                     bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                                 }
@@ -387,7 +419,7 @@ fun APODBottomSheetContent(
                 triggerHapticFeedback(context = context)
                 coroutineScope.launch {
                     doesExistsInDB =
-                        bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                        bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL)
                 }.invokeOnCompletion {
                     if (doesExistsInDB) {
                         Toast.makeText(
@@ -404,12 +436,10 @@ fun APODBottomSheetContent(
                         )
                             .show()
                     }
-                    bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                    bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
                 }
-                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                    false
-                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                    false
+                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
+                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
             }
         )
     }

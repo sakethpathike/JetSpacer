@@ -113,8 +113,7 @@ fun APODBookMarksScreen(navController: NavController) {
                         onBookMarkButtonClick = {
                             apodURL.value = apodBookMarkedItem.imageURL
                             triggerHapticFeedback(context = context)
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                true
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
                         },
                         capturedOnSol = "",
                         capturedBy = "",
@@ -155,6 +154,39 @@ fun APODBookMarksScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(80.dp))
                 }
             }
+        }
+
+        var doesExistsInDB = false
+        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+            AlertDialogForDeletingFromDB(
+                bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                onConfirmBtnClick = {
+                    triggerHapticFeedback(context = context)
+                    coroutineScope.launch {
+                        doesExistsInDB =
+                            bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL.value)
+                    }.invokeOnCompletion {
+                        if (doesExistsInDB) {
+                            Toast.makeText(
+                                context,
+                                "Bookmark didn't got removed as expected, report it:(",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Removed from bookmarks:)",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
+                        bookMarksVM.doesThisExistsInAPODIconTxt(apodURL.value)
+                    }
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                }
+            )
         }
     }
 

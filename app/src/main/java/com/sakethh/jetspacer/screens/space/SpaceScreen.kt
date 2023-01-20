@@ -28,6 +28,7 @@ import androidx.constraintlayout.compose.layoutId
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.commandiron.wheel_picker_compose.WheelDatePicker
+import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.screens.home.*
@@ -103,7 +104,7 @@ fun SpaceScreen(navController: NavController) {
                             if (didDataGetAddedInDB) {
                                 Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT).show()
                             } else {
-                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =true
                             }
                             bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                         }
@@ -175,7 +176,7 @@ fun SpaceScreen(navController: NavController) {
                                 if (didDataGetAddedInDB) {
                                     Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT).show()
                                 } else {
-                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
                                 }
                                 bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
                             }
@@ -187,7 +188,7 @@ fun SpaceScreen(navController: NavController) {
                             triggerHapticFeedback(context = context)
                             coroutineScope.launch {
                                 didDataGetAddedInDB =
-                                    bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL.value)
+                                    bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
                             }.invokeOnCompletion {
                                 if (didDataGetAddedInDB) {
                                     Toast.makeText(
@@ -206,10 +207,8 @@ fun SpaceScreen(navController: NavController) {
                                 }
                                 bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                             }
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                false
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                                false
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
                         }
                     )
                 }
@@ -399,6 +398,37 @@ fun SpaceScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(75.dp))
                 }
             }
+        }
+        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+            AlertDialogForDeletingFromDB(
+                bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                onConfirmBtnClick = {
+                    triggerHapticFeedback(context = context)
+                    coroutineScope.launch {
+                        didDataGetAddedInDB =
+                            bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                    }.invokeOnCompletion {
+                        if (didDataGetAddedInDB) {
+                            Toast.makeText(
+                                context,
+                                "Bookmark didn't got removed as expected, report it:(",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Removed from bookmarks:)",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
+                        bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                    }
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                }
+            )
         }
     }
 }

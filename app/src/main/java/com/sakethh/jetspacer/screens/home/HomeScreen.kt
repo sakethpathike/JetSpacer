@@ -201,7 +201,7 @@ fun HomeScreen() {
                 apodMediaType = apodMediaType,
                 onBookMarkClick = {
                     triggerHapticFeedback(context = context)
-                    bookMarksVM.imgURL=apodURL
+                    bookMarksVM.imgURL = apodURL
                     coroutineScope.launch {
                         val dateFormat = SimpleDateFormat("dd-MM-yyyy")
                         val formattedDate = dateFormat.format(Date())
@@ -220,7 +220,8 @@ fun HomeScreen() {
                             Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT)
                                 .show()
                         } else {
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                true
                         }
                         bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                     }
@@ -482,7 +483,8 @@ fun HomeScreen() {
                                 Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT)
                                     .show()
                             } else {
-                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
+                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                    true
                             }
                             bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                         }
@@ -647,6 +649,37 @@ fun HomeScreen() {
                 Spacer(modifier = Modifier.height(80.dp))
             }
         }
+    }
+    if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+        AlertDialogForDeletingFromDB(
+            bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+            onConfirmBtnClick = {
+                triggerHapticFeedback(context = context)
+                coroutineScope.launch {
+                    didDataGetAddedInDB =
+                        bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL)
+                }.invokeOnCompletion {
+                    if (didDataGetAddedInDB) {
+                        Toast.makeText(
+                            context,
+                            "Bookmark didn't got removed as expected, report it:(",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Removed from bookmarks:)",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                    bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
+                }
+                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
+                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+            }
+        )
     }
 }
 
@@ -817,8 +850,8 @@ fun APODCardComposable(
         mutableStateOf(true)
     }
     val coroutineScope = rememberCoroutineScope()
-    val bookMarksVM:BookMarksVM= viewModel()
-    coroutineScope.launch {
+    val bookMarksVM: BookMarksVM = viewModel()
+
         if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
             bookMarksVM.doesThisExistsInRoverDBIconTxt(
                 imageURL
@@ -828,7 +861,6 @@ fun APODCardComposable(
                 imageURL
             )
         }
-    }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -1013,7 +1045,6 @@ fun APODCardComposable(
                     colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                 )
             }
-
         }
     }
 }
@@ -1141,8 +1172,7 @@ fun APODMediaLayout(
     imageOnClick: () -> Unit = {},
     apodMediaType: String,
 ) {
-val bookMarksVM:BookMarksVM= viewModel()
-    bookMarksVM.doesThisExistsInAPODIconTxt(imageURL)
+    val bookMarksVM: BookMarksVM = viewModel()
     val context = LocalContext.current
     val localClipboardManager = LocalClipboardManager.current
     val localUriHandler = LocalUriHandler.current

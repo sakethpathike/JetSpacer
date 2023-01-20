@@ -80,31 +80,8 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                 onBookMarkButtonClick = {
                     imgURL.value = roversDBDTO.imageURL.value
                     triggerHapticFeedback(context = context)
-                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                        true
-                }, onConfirmBookMarkDeletionButtonClick = {
-                    coroutineScope.launch {
-                        didDataGetAddedInDB =
-                            bookMarksVM.deleteDataFromMARSDB(imageURL = bookMarksVM.imgURL)
-                    }.invokeOnCompletion {
-                        if (didDataGetAddedInDB) {
-                            Toast.makeText(
-                                context,
-                                "Bookmark didn't got removed as expected, report it:(",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Removed from bookmarks:)",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        }
-                        bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
-                    }
-                }
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = true
+                }, onConfirmBookMarkDeletionButtonClick = { }
             )
         },
         sheetState = bottomSheetState,
@@ -136,6 +113,7 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                             roversDBDTO.roverStatus.value = roverBookMarkedItem.roverStatus
                             roversDBDTO.launchingDate.value = roverBookMarkedItem.launchingDate
                             roversDBDTO.landingDate.value = roverBookMarkedItem.landingDate
+                            bookMarksVM.doesThisExistsInRoverDBIconTxt(roversDBDTO.imageURL.value)
                             coroutineScope.launch {
                                 bottomSheetState.show()
                             }
@@ -173,6 +151,7 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                                 }
                                 bookMarksVM.doesThisExistsInRoverDBIconTxt(imgURL.value)
                             }
+                            bookMarksVM.doesThisExistsInRoverDBIconTxt(imgURL.value)
                             HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                                 false
                         }
@@ -183,6 +162,38 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(80.dp))
                 }
             }
+        }
+        var doesExistsInDB = false
+        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+            AlertDialogForDeletingFromDB(
+                bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                onConfirmBtnClick = {
+                    triggerHapticFeedback(context = context)
+                    coroutineScope.launch {
+                        doesExistsInDB =
+                            bookMarksVM.deleteDataFromMARSDB(imageURL = imgURL.value)
+                    }.invokeOnCompletion {
+                        if (doesExistsInDB) {
+                            Toast.makeText(
+                                context,
+                                "Bookmark didn't got removed as expected, report it:(",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Removed from bookmarks:)",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        bookMarksVM.doesThisExistsInRoverDBIconTxt(imgURL.value)
+                    }
+                    bookMarksVM.doesThisExistsInRoverDBIconTxt(imgURL.value)
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                }
+            )
         }
     }
 }

@@ -26,11 +26,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
+import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RoverBottomSheetContent
 import kotlinx.coroutines.launch
@@ -52,7 +54,7 @@ fun RoversScreen(navController: NavController) {
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val roversScreenVM: RoversScreenVM = viewModel()
     val bookMarksVM: BookMarksVM = viewModel()
-    val homeScreenViewModel:HomeScreenViewModel= viewModel()
+    val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val context = LocalContext.current
     var didDataGetAddedInDB = false
     BackHandler {
@@ -176,6 +178,7 @@ fun RoversScreen(navController: NavController) {
                 CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
                     ModalBottomSheetLayout(
                         sheetContent = {
+                            bookMarksVM.doesThisExistsInRoverDBIconTxt(roversScreenVM.imgURL.value)
                             RoverBottomSheetContent(
                                 imgURL = roversScreenVM.imgURL.value,
                                 cameraName = roversScreenVM.cameraName.value,
@@ -213,34 +216,13 @@ fun RoversScreen(navController: NavController) {
                                             )
                                                 .show()
                                         } else {
-                                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value
+                                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
                                         }
                                         bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
                                     }
+                                    bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
                                 },
-                                onConfirmBookMarkDeletionButtonClick = {
-                                    coroutineScope.launch {
-                                        didDataGetAddedInDB =
-                                            bookMarksVM.deleteDataFromMARSDB(imageURL = bookMarksVM.imgURL)
-                                    }.invokeOnCompletion {
-                                        if (didDataGetAddedInDB) {
-                                            Toast.makeText(
-                                                context,
-                                                "Bookmark didn't got removed as expected, report it:(",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                                .show()
-                                        } else {
-                                            Toast.makeText(
-                                                context,
-                                                "Removed from bookmarks:)",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                                .show()
-                                        }
-                                        bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
-                                    }
-                                }
+                                onConfirmBookMarkDeletionButtonClick = {bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL) }
 
                             )
                         },
@@ -287,6 +269,39 @@ fun RoversScreen(navController: NavController) {
                     }
                 }
             }
+        }
+
+        var doesExistsInDB = false
+        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+            AlertDialogForDeletingFromDB(
+                bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                onConfirmBtnClick = {
+                    triggerHapticFeedback(context = context)
+                    coroutineScope.launch {
+                        doesExistsInDB =
+                            bookMarksVM.deleteDataFromMARSDB(imageURL = bookMarksVM.imgURL)
+                    }.invokeOnCompletion {
+                        if (doesExistsInDB) {
+                            Toast.makeText(
+                                context,
+                                "Bookmark didn't got removed as expected, report it:(",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Removed from bookmarks:)",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
+                    }
+                    bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                }
+            )
         }
     }
 }
