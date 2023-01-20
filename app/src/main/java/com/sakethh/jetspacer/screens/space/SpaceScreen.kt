@@ -71,8 +71,8 @@ fun SpaceScreen(navController: NavController) {
     val apodURL = rememberSaveable { mutableStateOf("") }
     val currentDayAPODURL = homeScreenViewModel.apodDataFromAPI.value.url.toString()
     val marsWeatherData = spaceScreenVM.marsWeatherDTO.value
-    val bookMarksVM:BookMarksVM= viewModel()
-    var didDataGetAddedInDB=false
+    val bookMarksVM: BookMarksVM = viewModel()
+    var didDataGetAddedInDB = false
     bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
     AppTheme {
         ModalBottomSheetLayout(
@@ -86,7 +86,7 @@ fun SpaceScreen(navController: NavController) {
                     apodMediaType = apodData.value.media_type.toString(),
                     onBookMarkClick = {
                         triggerHapticFeedback(context = context)
-                        bookMarksVM.imgURL=apodData.value.url.toString()
+                        bookMarksVM.imgURL = apodData.value.url.toString()
                         coroutineScope.launch {
                             val dateFormat = SimpleDateFormat("dd-MM-yyyy")
                             val formattedDate = dateFormat.format(Date())
@@ -102,9 +102,11 @@ fun SpaceScreen(navController: NavController) {
                             })
                         }.invokeOnCompletion {
                             if (didDataGetAddedInDB) {
-                                Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT)
+                                    .show()
                             } else {
-                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =true
+                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                    true
                             }
                             bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                         }
@@ -158,25 +160,31 @@ fun SpaceScreen(navController: NavController) {
                         apodMediaType = apodData.value.media_type.toString(),
                         inAPODBottomSheetContent = false,
                         onBookMarkButtonClick = {
-                            bookMarksVM.imgURL=apodData.value.url.toString()
+                            bookMarksVM.imgURL = apodData.value.url.toString()
                             coroutineScope.launch {
                                 val dateFormat = SimpleDateFormat("dd-MM-yyyy")
                                 val formattedDate = dateFormat.format(Date())
-                                didDataGetAddedInDB = bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
-                                    this.title = apodData.value.title.toString()
-                                    this.datePublished = apodData.value.date.toString()
-                                    this.description = apodData.value.explanation.toString()
-                                    this.imageURL = apodData.value.url.toString()
-                                    this.mediaType = "image"
-                                    this.isBookMarked = true
-                                    this.category = "APOD"
-                                    this.addedToLocalDBOn = formattedDate
-                                })
+                                didDataGetAddedInDB =
+                                    bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                        this.title = apodData.value.title.toString()
+                                        this.datePublished = apodData.value.date.toString()
+                                        this.description = apodData.value.explanation.toString()
+                                        this.imageURL = apodData.value.url.toString()
+                                        this.mediaType = "image"
+                                        this.isBookMarked = true
+                                        this.category = "APOD"
+                                        this.addedToLocalDBOn = formattedDate
+                                    })
                             }.invokeOnCompletion {
                                 if (didDataGetAddedInDB) {
-                                    Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Added to bookmarks:)",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 } else {
-                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
+                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                        true
                                 }
                                 bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
                             }
@@ -207,8 +215,10 @@ fun SpaceScreen(navController: NavController) {
                                 }
                                 bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                             }
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                false
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                                false
                         }
                     )
                 }
@@ -338,48 +348,103 @@ fun SpaceScreen(navController: NavController) {
                         CardRowGrid(
                             lhsCardTitle = "Terrestrial Date",
                             lhsCardValue = marsWeatherData.terrestrial_date,
+                            isLHSShimmerVisible = marsWeatherData.terrestrial_date.isEmpty(),
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                             rhsCardTitle = "Season",
-                            rhsCardValue = marsWeatherData.season
+                            rhsCardValue = marsWeatherData.season,
+                            isRHSShimmerVisible = marsWeatherData.season.isEmpty(),
+                            isLHSShimmering = marsWeatherData.terrestrial_date.isEmpty(),
+                            isRHSShimmering = marsWeatherData.season.isEmpty(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(15.dp))
                         CardRowGrid(
                             lhsCardTitle = "Min Temperature",
                             lhsCardValue = marsWeatherData.min_temp.toString(),
+                            isLHSShimmerVisible = marsWeatherData.min_temp == 0,
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                             rhsCardTitle = "Max Temperature",
-                            rhsCardValue = marsWeatherData.max_temp.toString()
+                            rhsCardValue = marsWeatherData.max_temp.toString(),
+                            isRHSShimmerVisible = marsWeatherData.max_temp == 0,
+                            isLHSShimmering = marsWeatherData.min_temp == 0,
+                            isRHSShimmering = marsWeatherData.max_temp == 0,
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(15.dp))
                         CardRowGrid(
                             lhsCardTitle = "Pressure",
                             lhsCardValue = marsWeatherData.pressure.toString(),
+                            isLHSShimmerVisible = marsWeatherData.pressure == 0,
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                             rhsCardTitle = "Pressure String",
-                            rhsCardValue = marsWeatherData.pressure_string
-                        )
+                            rhsCardValue = marsWeatherData.pressure_string,
+                            isRHSShimmerVisible = marsWeatherData.pressure_string.isBlank(),
+                            isLHSShimmering = marsWeatherData.pressure == 0,
+                            isRHSShimmering = marsWeatherData.pressure_string.isBlank(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+
+                            )
                         Spacer(modifier = Modifier.height(15.dp))
                         CardRowGrid(
                             lhsCardTitle = "Atmosphere",
                             lhsCardValue = marsWeatherData.atmo_opacity,
+                            isLHSShimmerVisible = marsWeatherData.atmo_opacity.toString().isEmpty(),
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                             rhsCardTitle = "Local UV Irradiance",
-                            rhsCardValue = marsWeatherData.local_uv_irradiance_index
-                        )
+                            rhsCardValue = marsWeatherData.local_uv_irradiance_index,
+                            isRHSShimmerVisible = marsWeatherData.local_uv_irradiance_index.isBlank(),
+                            isLHSShimmering = marsWeatherData.atmo_opacity.toString().isEmpty(),
+                            isRHSShimmering = marsWeatherData.local_uv_irradiance_index.isBlank(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+
+                            )
                         Spacer(modifier = Modifier.height(15.dp))
                         CardRowGrid(
                             lhsCardTitle = "Sunrise",
                             lhsCardValue = marsWeatherData.sunrise,
+                            isLHSShimmerVisible = marsWeatherData.sunrise.toString().isEmpty(),
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                             rhsCardTitle = "Sunset",
-                            rhsCardValue = marsWeatherData.sunset
-                        )
+                            rhsCardValue = marsWeatherData.sunset,
+                            isRHSShimmerVisible = marsWeatherData.sunset.isBlank(),
+                            isLHSShimmering = marsWeatherData.sunrise.toString().isEmpty(),
+                            isRHSShimmering = marsWeatherData.sunset.isBlank(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+
+                            )
                         Spacer(modifier = Modifier.height(15.dp))
                         CardRowGrid(
                             lhsCardTitle = "Min GTS Temperature",
                             lhsCardValue = marsWeatherData.min_gts_temp.toString(),
+                            isLHSShimmerVisible = marsWeatherData.min_gts_temp == 0,
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                             rhsCardTitle = "Max GTS Temperature",
-                            rhsCardValue = marsWeatherData.max_gts_temp.toString()
+                            rhsCardValue = marsWeatherData.max_gts_temp.toString(),
+                            isRHSShimmerVisible = marsWeatherData.max_gts_temp.toString().isBlank(),
+                            isLHSShimmering = marsWeatherData.min_gts_temp == 0,
+                            isRHSShimmering = marsWeatherData.max_gts_temp.toString().isBlank(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
                         )
                         Spacer(modifier = Modifier.height(15.dp))
                         CardRowGrid(
                             lhsCardTitle = "Unit Of Measure",
                             lhsCardValue = marsWeatherData.unitOfMeasure,
+                            isLHSShimmerVisible = marsWeatherData.unitOfMeasure.toString()
+                                .isEmpty(),
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            isRHSShimmerVisible = marsWeatherData.TZ_Data.isBlank(),
+                            isLHSShimmering = marsWeatherData.unitOfMeasure.toString().isEmpty(),
+                            isRHSShimmering = marsWeatherData.TZ_Data.isBlank(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
                             rhsCardTitle = "Timezone",
                             rhsCardValue = marsWeatherData.TZ_Data
                         )
@@ -387,6 +452,10 @@ fun SpaceScreen(navController: NavController) {
                         CardRowGrid(
                             lhsCardTitle = "Sol",
                             lhsCardValue = marsWeatherData.sol.toString(),
+                            isLHSShimmerVisible = marsWeatherData.sol == 0,
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            isLHSShimmering = marsWeatherData.sol == 0,
                             rhsCardTitle = "",
                             rhsCardValue = "",
                             rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)

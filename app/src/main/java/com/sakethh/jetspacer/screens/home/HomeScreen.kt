@@ -29,6 +29,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
@@ -42,8 +43,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.placeholder
+import com.google.accompanist.placeholder.shimmer
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
@@ -320,7 +323,12 @@ fun HomeScreen() {
                             cardModifier = Modifier
                                 .wrapContentHeight()
                                 .fillMaxWidth()
-                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                            isShimmering = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.ip.toString()=="null",
+                            visible = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.ip.toString()=="null",
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            shimmerHighLightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            singleRawCard = true
                         )
                         CardForRowGridRaw(
                             title = "Location",
@@ -328,7 +336,12 @@ fun HomeScreen() {
                             cardModifier = Modifier
                                 .wrapContentHeight()
                                 .fillMaxWidth()
-                                .padding(15.dp)
+                                .padding(15.dp),
+                            isShimmering = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov.toString()=="null",
+                            visible = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov.toString()=="null",
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            shimmerHighLightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            singleRawCard = true
                         )
                         Divider(
                             thickness = 0.dp,
@@ -346,22 +359,29 @@ fun HomeScreen() {
                             cardModifier = Modifier
                                 .wrapContentHeight()
                                 .fillMaxWidth()
-                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
-                        )
-                        CardForRowGridRaw(
-                            title = "Location",
-                            value = "${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.district}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.city}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.country_name}",
-                            cardModifier = Modifier
-                                .wrapContentHeight()
-                                .fillMaxWidth()
-                                .padding(15.dp)
+                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                                    isShimmering = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.zipcode.toString()=="null",
+                            visible = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.zipcode.toString()=="null",
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            shimmerHighLightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            singleRawCard = true
+
                         )
                         CardRowGrid(
                             lhsCardTitle = "Latitude",
                             lhsCardValue = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.latitude.toString(),
+                            isLHSShimmerVisible = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.latitude.toString().isEmpty(),
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                             rhsCardTitle = "Longitude",
-                            rhsCardValue = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude.toString()
-                        )
+                            rhsCardValue = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude.toString(),
+                                    isRHSShimmerVisible = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude.toString().isEmpty(),
+                            isLHSShimmering = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.latitude.toString().isEmpty(),
+                            isRHSShimmering = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude.toString().isEmpty(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+
+                            )
                         Spacer(modifier = Modifier.height(15.dp))
                     }
                 }
@@ -429,6 +449,16 @@ fun HomeScreen() {
                         CardRowGrid(
                             lhsCardTitle = "Latitude",
                             lhsCardValue = issLatitude,
+                            isLHSShimmerVisible = issLatitude.isEmpty(),
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+
+                            isRHSShimmerVisible = issLongitude.isEmpty(),
+                            isLHSShimmering = issLatitude.isEmpty(),
+                            isRHSShimmering = issLongitude.isEmpty(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+
                             rhsCardTitle = "Longitude",
                             rhsCardValue = issLongitude
                         )
@@ -436,6 +466,11 @@ fun HomeScreen() {
                         CardRowGrid(
                             lhsCardTitle = "Time Stamp",
                             lhsCardValue = issTimestamp,
+
+                            isLHSShimmering = issTimestamp.toInt()==0,
+                            isLHSShimmerVisible = issTimestamp.toInt()==0,
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                             rhsCardTitle = "",
                             rhsCardValue = "",
                             rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -594,21 +629,45 @@ fun HomeScreen() {
                             lhsCardTitle = "Moon Altitude",
                             lhsCardValue = moonAltitude,
                             rhsCardTitle = "Moon Azimuth",
-                            rhsCardValue = moonAzimuthValue
-                        )
+                            rhsCardValue = moonAzimuthValue,
+                                    isLHSShimmerVisible = moonAltitude=="null",
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            isRHSShimmerVisible = moonAzimuthValue=="null",
+                            isLHSShimmering = moonAltitude=="null",
+                            isRHSShimmering = moonAzimuthValue=="null",
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            )
                         Spacer(modifier = Modifier.height(15.dp))
                         CardRowGrid(
                             lhsCardTitle = "Moon Distance",
                             lhsCardValue = moonDistanceValue,
                             rhsCardTitle = "Moon Paralytic Angle",
-                            rhsCardValue = moonParalyticAngleValue
+                            rhsCardValue = moonParalyticAngleValue,
+                            isLHSShimmerVisible = moonDistanceValue=="null",
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            isRHSShimmerVisible = moonParalyticAngleValue=="null",
+                            isLHSShimmering = moonDistanceValue=="null",
+                            isRHSShimmering = moonParalyticAngleValue=="null",
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(15.dp))
                         CardRowGrid(
                             lhsCardTitle = "Moon Rise",
                             lhsCardValue = moonRiseValue,
                             rhsCardTitle = "Moon Set",
-                            rhsCardValue = moonSetValue
+                            rhsCardValue = moonSetValue,
+                            isLHSShimmerVisible = moonRiseValue.isEmpty(),
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            isRHSShimmerVisible = moonSetValue.isEmpty(),
+                            isLHSShimmering = moonRiseValue.isEmpty(),
+                            isRHSShimmering = moonSetValue.isEmpty(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(15.dp))
                         Divider(
@@ -627,7 +686,15 @@ fun HomeScreen() {
                             lhsCardTitle = "Sun Altitude",
                             lhsCardValue = sunAltitudeValue,
                             rhsCardTitle = "Sun Azimuth",
-                            rhsCardValue = sunAzimuthValue
+                            rhsCardValue = sunAzimuthValue,
+                            isLHSShimmerVisible = sunAltitudeValue=="null",
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            isRHSShimmerVisible = sunAzimuthValue=="null",
+                            isLHSShimmering = sunAltitudeValue=="null",
+                            isRHSShimmering = sunAzimuthValue=="null",
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(15.dp))
                         CardRowGrid(
@@ -641,7 +708,15 @@ fun HomeScreen() {
                             lhsCardTitle = "Sun Set",
                             lhsCardValue = sunSetValue,
                             rhsCardTitle = "Solar Noon",
-                            rhsCardValue = solarNoonValue
+                            rhsCardValue = solarNoonValue,
+                            isLHSShimmerVisible = sunSetValue.isEmpty(),
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            isRHSShimmerVisible = solarNoonValue.isEmpty(),
+                            isLHSShimmering = sunSetValue.isEmpty(),
+                            isRHSShimmering = solarNoonValue.isEmpty(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(15.dp))
                     }
@@ -689,11 +764,19 @@ fun CardRowGrid(
     lhsCardTitle: String,
     lhsCardValue: String,
     lhsOnClick: () -> Unit = {},
+    isLHSShimmerVisible: Boolean? = null,
+    isLHSShimmering: Boolean = false,
+    lhsShimmerColor: Color? = null,
+    lhsShimmerHighlightColor: Color? = null,
     rhsCardTitle: String,
     rhsCardValue: String,
     lhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     rhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-    rhsOnClick: () -> Unit = {}
+    rhsOnClick: () -> Unit = {},
+    isRHSShimmerVisible: Boolean? = null,
+    isRHSShimmering: Boolean = false,
+    rhsShimmerColor: Color? = null,
+    rhsShimmerHighlightColor: Color? = null
 ) {
     AppTheme {
         Row(
@@ -711,7 +794,11 @@ fun CardRowGrid(
                     .width(150.dp)
                     .clickable {
                         lhsOnClick()
-                    }
+                    },
+                visible = isLHSShimmerVisible,
+                color = lhsShimmerColor,
+                shimmerHighLightColor = lhsShimmerHighlightColor,
+                isShimmering = isLHSShimmering
             )
             CardForRowGridRaw(
                 title = rhsCardTitle,
@@ -722,7 +809,11 @@ fun CardRowGrid(
                     .width(150.dp)
                     .clickable {
                         rhsOnClick()
-                    }
+                    },
+                visible = isRHSShimmerVisible,
+                color = rhsShimmerColor,
+                shimmerHighLightColor = rhsShimmerHighlightColor,
+                isShimmering = isRHSShimmering
             )
         }
     }
@@ -738,7 +829,12 @@ fun CardForRowGridRaw(
     cardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     inSpaceScreen: Boolean = false,
     imageHeight: Dp = 110.dp,
-    imgURL: String = ""
+    imgURL: String = "",
+    visible: Boolean? = null,
+    color: Color? = null,
+    shimmerHighLightColor: Color? = null,
+    isShimmering: Boolean = false,
+    singleRawCard: Boolean? = null
 ) {
     val lhsTextColumnModifier = if (!inSpaceScreen) {
         Modifier.padding(15.dp)
@@ -747,6 +843,30 @@ fun CardForRowGridRaw(
             .padding(15.dp)
             .fillMaxWidth(0.55f)
     }
+    val textModifier =
+        if (visible != null && color != null && shimmerHighLightColor != null && isShimmering && singleRawCard == null) {
+            Modifier
+                .padding(top = 10.dp)
+                .height(40.dp)
+                .width(115.dp)
+                .shimmer(
+                    visible = visible,
+                    color = color,
+                    shimmerHighLightColor = shimmerHighLightColor
+                )
+        } else if (singleRawCard != null && visible != null && color != null && shimmerHighLightColor != null && isShimmering) {
+            Modifier
+                .padding(top = 10.dp)
+                .height(20.dp)
+                .fillMaxWidth(0.95f)
+                .shimmer(
+                    visible = visible,
+                    color = color,
+                    shimmerHighLightColor = shimmerHighLightColor
+                )
+        } else {
+            Modifier.padding(top = 4.dp)
+        }
     AppTheme {
         Card(
             modifier = cardModifier,
@@ -772,7 +892,7 @@ fun CardForRowGridRaw(
                         style = MaterialTheme.typography.headlineLarge,
                         lineHeight = 18.sp,
                         softWrap = true,
-                        textAlign = TextAlign.Start, modifier = Modifier.padding(top = 4.dp)
+                        textAlign = TextAlign.Start, modifier = textModifier
                     )
                 }
                 if (inSpaceScreen) {
@@ -852,15 +972,15 @@ fun APODCardComposable(
     val coroutineScope = rememberCoroutineScope()
     val bookMarksVM: BookMarksVM = viewModel()
 
-        if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
-            bookMarksVM.doesThisExistsInRoverDBIconTxt(
-                imageURL
-            )
-        } else {
-            bookMarksVM.doesThisExistsInAPODIconTxt(
-                imageURL
-            )
-        }
+    if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
+        bookMarksVM.doesThisExistsInRoverDBIconTxt(
+            imageURL
+        )
+    } else {
+        bookMarksVM.doesThisExistsInAPODIconTxt(
+            imageURL
+        )
+    }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -1341,4 +1461,13 @@ fun APODMediaLayout(
         }
     }
 
+}
+
+fun Modifier.shimmer(visible: Boolean, color: Color, shimmerHighLightColor: Color): Modifier {
+    return this.placeholder(
+        visible = visible,
+        color = color,
+        shape = RoundedCornerShape(4.dp),
+        highlight = PlaceholderHighlight.shimmer(highlightColor = shimmerHighLightColor)
+    )
 }
