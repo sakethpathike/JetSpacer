@@ -1,26 +1,24 @@
 package com.sakethh.jetspacer.screens.space.apod.remote.data
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODImplementation
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.httpClient.HTTPClient
+import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching.APODPaginationUtils.calendar
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching.APODPaginationUtils.currentAPODDate
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching.APODPaginationUtils.initialFetchingValue
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching.APODPaginationUtils.primaryInitForAPODEndDate
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
-import java.time.temporal.ChronoUnit
 import java.util.Calendar
-import java.util.Date
 
 class APODPaginationFetching() {
 
     @SuppressLint("SimpleDateFormat")
     suspend fun getPaginatedAPODATA(): List<APOD_DTO> {
-        val apodImplementation = APODImplementation(HTTPClient.ktorClient)
+        val apodImplementation = APODImplementation(HTTPClient.ktorClientWithCache)
         val fetchingLimit = 15
         val dateFormat = SimpleDateFormat("yyyy-MM-dd")
         initialFetchingValue += fetchingLimit
@@ -43,14 +41,20 @@ class APODPaginationFetching() {
             "https://api.nasa.gov/planetary/apod?api_key=Ffr9YBia9lLW9vWQgzNvzKtKfGlUNvynVvF0UOcf&start_date=$startDate&end_date=$endDate"
         primaryInitForAPODEndDate = 1
         val apodData = mutableListOf<APOD_DTO>()
-        APODImplementation(
-            HTTPClient.ktorClient,
-            apodURL = apodURL
-        ).getAPODForPaginatedList().component1().reversed().forEach {
-            if (it.media_type.toString() == "image") {
-                apodData.add(it)
+        try {
+            APODImplementation(
+                HTTPClient.ktorClientWithCache,
+                apodURL = apodURL
+            ).getAPODForPaginatedList().component1().reversed().forEach {
+                if (it.media_type.toString() == "image") {
+                    apodData.add(it)
+                }
             }
+            HomeScreenViewModel.Network.isConnectionSucceed.value = true
+        }catch (_:Exception){
+            HomeScreenViewModel.Network.isConnectionSucceed.value = false
         }
+
         return apodData
 
     }
@@ -64,9 +68,9 @@ class APODPaginationFetching() {
     }
 
     init {
-        val apodImplementation = APODImplementation(HTTPClient.ktorClient)
+        val apodImplementation = APODImplementation(HTTPClient.ktorClientWithCache)
         CoroutineScope(Dispatchers.Default).launch {
-            currentAPODDate = apodImplementation.getAPOD().date.toString()
+                       currentAPODDate = apodImplementation.getAPOD().date.toString()
         }
     }
 }

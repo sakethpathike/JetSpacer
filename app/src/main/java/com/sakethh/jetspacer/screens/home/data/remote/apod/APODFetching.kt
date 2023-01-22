@@ -5,7 +5,7 @@ import com.sakethh.jetspacer.httpClient.HTTPClient
 
 class APODFetching {
     suspend fun getAPOD(): APOD_DTO {
-        val apodImplementation=APODImplementation(ktorClient= HTTPClient.ktorClient)
+        val apodImplementation=APODImplementation(ktorClient= HTTPClient.ktorClientWithCache)
         return apodImplementation.getAPOD()
     }
 }

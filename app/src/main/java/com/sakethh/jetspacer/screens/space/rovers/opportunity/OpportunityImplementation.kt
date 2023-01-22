@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.screens.space.rovers.opportunity
 import androidx.compose.runtime.mutableStateListOf
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.httpClient.HTTPClient
+import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.RandomCameraDTO
 import io.ktor.client.call.*
@@ -15,29 +16,61 @@ import kotlinx.coroutines.coroutineScope
 @Suppress("LocalVariableName")
 class OpportunityCamerasImplementation : OpportunityCamerasService {
     override suspend fun getRandomCamerasData(sol: Int, page: Int): RandomCameraDTO {
-       return HTTPClient.ktorClient.get("https://api.nasa.gov/mars-photos/api/v1/rovers/opportunity/photos?sol=$sol&page=$page&api_key=${Constants.NASA_APIKEY}")
-            .body()
+        return try {
+            HomeScreenViewModel.Network.isConnectionSucceed.value = true
+            HTTPClient.ktorClientWithCache.get("https://api.nasa.gov/mars-photos/api/v1/rovers/opportunity/photos?sol=$sol&page=$page&api_key=${Constants.NASA_APIKEY}")
+                .body()
+        } catch (_: Exception) {
+            HomeScreenViewModel.Network.isConnectionSucceed.value = false
+            RandomCameraDTO(emptyList())
+        }
     }
 
     override suspend fun getFHAZData(sol: Int, page: Int): List<Photo> {
-        return specificRoverHTTPRequest(roverName = "opportunity", cameraName = "fhaz",sol=sol, page = page).component1()
+        return specificRoverHTTPRequest(
+            roverName = "opportunity",
+            cameraName = "fhaz",
+            sol = sol,
+            page = page
+        ).component1()
     }
 
+
     override suspend fun getRHAZData(sol: Int, page: Int): List<Photo> {
-        return specificRoverHTTPRequest(roverName = "opportunity", cameraName = "rhaz",sol=sol, page = page).component1()
+        return specificRoverHTTPRequest(
+            roverName = "opportunity",
+            cameraName = "rhaz",
+            sol = sol,
+            page = page
+        ).component1()
     }
 
 
     override suspend fun getNAVCAMData(sol: Int, page: Int): List<Photo> {
-        return specificRoverHTTPRequest(roverName = "opportunity", cameraName = "navcam",sol=sol, page = page).component1()
+        return specificRoverHTTPRequest(
+            roverName = "opportunity",
+            cameraName = "navcam",
+            sol = sol,
+            page = page
+        ).component1()
     }
 
     override suspend fun getPANCAMData(sol: Int, page: Int): List<Photo> {
-        return specificRoverHTTPRequest(roverName = "opportunity", cameraName = "pancam",sol=sol, page = page).component1()
+        return specificRoverHTTPRequest(
+            roverName = "opportunity",
+            cameraName = "pancam",
+            sol = sol,
+            page = page
+        ).component1()
     }
 
     override suspend fun getMINITESData(sol: Int, page: Int): List<Photo> {
-        return specificRoverHTTPRequest(roverName = "opportunity", cameraName = "minites",sol=sol, page = page).component1()
+        return specificRoverHTTPRequest(
+            roverName = "opportunity",
+            cameraName = "minites",
+            sol = sol,
+            page = page
+        ).component1()
     }
 }
 
@@ -50,8 +83,14 @@ suspend fun specificRoverHTTPRequest(
     val dataList = mutableStateListOf<Deferred<List<Photo>>>()
     coroutineScope {
         val _dataList = async {
-            HTTPClient.ktorClient.get("https://api.nasa.gov/mars-photos/api/v1/rovers/$roverName/photos?sol=$sol&camera=$cameraName&page=$page&api_key=${Constants.NASA_APIKEY}")
-                .body<RandomCameraDTO>().photos
+            try {
+                HomeScreenViewModel.Network.isConnectionSucceed.value = true
+                HTTPClient.ktorClientWithCache.get("https://api.nasa.gov/mars-photos/api/v1/rovers/$roverName/photos?sol=$sol&camera=$cameraName&page=$page&api_key=${Constants.NASA_APIKEY}")
+                    .body<RandomCameraDTO>().photos
+            } catch (_: Exception) {
+                HomeScreenViewModel.Network.isConnectionSucceed.value = false
+                emptyList()
+            }
         }
         dataList.add(_dataList)
     }
