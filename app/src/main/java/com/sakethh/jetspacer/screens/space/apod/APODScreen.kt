@@ -16,11 +16,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,8 +55,7 @@ import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.atLastIndex
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -78,6 +81,8 @@ fun APODScreen(navController: NavController) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val bookMarksVM: BookMarksVM = viewModel()
+    val isConnectedToInternet =
+        HomeScreenViewModel.Network.connectedToInternet.collectAsState()
     BackHandler {
         if (bottomSheetState.isVisible) {
             coroutineScope.launch {
@@ -89,156 +94,216 @@ fun APODScreen(navController: NavController) {
             }
         }
     }
+    val context = LocalContext.current
     AppTheme {
-        Scaffold(topBar = {
-            MediumTopAppBar(
-                scrollBehavior = scrollBehavior,
-                title = {
-                    Text(
-                        text = "APOD Archive",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 22.sp,
-                        style = MaterialTheme.typography.headlineLarge
-                    )
-                },
-                colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface
-                )
-            )
-        }) {
-            var didDataGetAddedInDB = false
-            val bookMarksVM: BookMarksVM = viewModel()
-            val context = LocalContext.current
-            if (apodScreenVM.isDataForAPODPaginationLoaded.value) {
-                ModalBottomSheetLayout(
-                    sheetContent = {
-                        APODBottomSheetContent(
-                            homeScreenViewModel = homeScreenVM,
-                            apodURL = apodURL.value,
-                            apodTitle = apodTitle.value,
-                            apodDate = apodDate.value,
-                            apodDescription = apodDescription.value,
-                            apodMediaType = apodMediaType.value,
-                            onBookMarkClick = {
-                                triggerHapticFeedback(context = context)
-                                bookMarksVM.imgURL = apodURL.value
-                                coroutineScope.launch {
-                                    val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                                    val formattedDate = dateFormat.format(Date())
-                                    didDataGetAddedInDB =
-                                        bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
-                                            this.title = apodTitle.value
-                                            this.datePublished = apodDate.value
-                                            this.description = apodDescription.value
-                                            this.imageURL = apodURL.value
-                                            this.mediaType = "image"
-                                            this.isBookMarked = true
-                                            this.category = "APOD"
-                                            this.addedToLocalDBOn = formattedDate
-                                        })
-                                }.invokeOnCompletion {
-                                    if (didDataGetAddedInDB) {
-                                        Toast.makeText(
-                                            context,
-                                            "Added to bookmarks:)",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } else {
-                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
-                                    }
-                                    bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                                }
+        val isRefreshing = remember { mutableStateOf(false) }
+        val isConnectedToInternet =
+            HomeScreenViewModel.Network.connectedToInternet.collectAsState()
+        val pullRefreshState =
+            rememberPullRefreshState(refreshing = isRefreshing.value,
+                onRefresh = {
+                    isRefreshing.value = true
+                    coroutineScope.launch {
+                        withContext(Dispatchers.Main) {
+                            if (isConnectedToInternet.value) {
+                                Toast.makeText(
+                                    context,
+                                    "Refreshing data in a moment",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
+                            delay(2000L)
+                            isRefreshing.value = false
+                            apodScreenVM.dataForPagination.value = emptyList()
+                            apodScreenVM._dataForAPODPagination.value = emptyList()
+                        }
+                    }
+                }
+            )
+
+        Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
+            Scaffold(topBar = {
+                MediumTopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    title = {
+                        Text(
+                            text = "APOD Archive",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 22.sp,
+                            style = MaterialTheme.typography.headlineLarge
                         )
                     },
-                    sheetState = bottomSheetState,
-                    sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
-                    sheetBackgroundColor = MaterialTheme.colorScheme.primary
-                ) {
-                    LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Adaptive(150.dp),
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surface)
-                            .nestedScroll(scrollBehavior.nestedScrollConnection)
-                            .padding(it)
+                    colors = TopAppBarDefaults.mediumTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            }) {
+                var didDataGetAddedInDB = false
+                val bookMarksVM: BookMarksVM = viewModel()
+                val context = LocalContext.current
+                if (apodScreenVM.isDataForAPODPaginationLoaded.value && apodScreenVM.dataForPagination.value.isNotEmpty()) {
+                    ModalBottomSheetLayout(
+                        sheetContent = {
+                            APODBottomSheetContent(
+                                homeScreenViewModel = homeScreenVM,
+                                apodURL = apodURL.value,
+                                apodTitle = apodTitle.value,
+                                apodDate = apodDate.value,
+                                apodDescription = apodDescription.value,
+                                apodMediaType = apodMediaType.value,
+                                onBookMarkClick = {
+                                    triggerHapticFeedback(context = context)
+                                    bookMarksVM.imgURL = apodURL.value
+                                    coroutineScope.launch {
+                                        val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                                        val formattedDate = dateFormat.format(Date())
+                                        didDataGetAddedInDB =
+                                            bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                                this.title = apodTitle.value
+                                                this.datePublished = apodDate.value
+                                                this.description = apodDescription.value
+                                                this.imageURL = apodURL.value
+                                                this.mediaType = "image"
+                                                this.isBookMarked = true
+                                                this.category = "APOD"
+                                                this.addedToLocalDBOn = formattedDate
+                                            })
+                                    }.invokeOnCompletion {
+                                        if (didDataGetAddedInDB) {
+                                            Toast.makeText(
+                                                context,
+                                                "Added to bookmarks:)",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                                true
+                                        }
+                                        bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                                    }
+                                }
+                            )
+                        },
+                        sheetState = bottomSheetState,
+                        sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
+                        sheetBackgroundColor = MaterialTheme.colorScheme.primary
                     ) {
-                        itemsIndexed(apodScreenVM.dataForPagination.value) { currentAPODItemIndex: Int, apodItem: APOD_DTO ->
-                            if (currentAPODItemIndex == apodScreenVM.dataForPagination.value.lastIndex - 6) {
-                                coroutineScope.launch {
-                                    apodScreenVM.fetchAPODData()
+                        LazyVerticalStaggeredGrid(
+                            columns = StaggeredGridCells.Adaptive(150.dp),
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.surface)
+                                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                                .padding(it)
+                        ) {
+                            itemsIndexed(apodScreenVM.dataForPagination.value) { currentAPODItemIndex: Int, apodItem: APOD_DTO ->
+                                if (currentAPODItemIndex == apodScreenVM.dataForPagination.value.lastIndex - 6) {
+                                    coroutineScope.launch {
+                                        apodScreenVM.fetchAPODData()
+                                    }
+                                }
+                                Coil_Image().CoilImage(
+                                    imgURL = apodItem.url.toString(),
+                                    contentDescription = apodItem.title.toString(),
+                                    modifier = Modifier
+                                        .padding(1.dp)
+                                        .clickable {
+                                            coroutineScope.launch {
+                                                apodDate.value = apodItem.date.toString()
+                                                apodURL.value = apodItem.url.toString()
+                                                apodDescription.value =
+                                                    apodItem.explanation.toString()
+                                                apodTitle.value = apodItem.title.toString()
+                                                apodMediaType.value = apodItem.media_type.toString()
+                                                bottomSheetState.show()
+                                            }
+                                        },
+                                    onError = painterResource(id = R.drawable.satellite_filled)
+                                )
+                            }
+                            item {
+                                androidx.compose.material3.CircularProgressIndicator(
+                                    modifier = Modifier.padding(50.dp),
+                                    strokeWidth = 4.dp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(75.dp))
+                            }
+                        }
+                    }
+                } else {
+                    val status =
+                        if (!isConnectedToInternet.value || !HomeScreenViewModel.Network.isConnectionSucceed.value) {
+                            Status.NO_INTERNET
+                        } else {
+                            coroutineScope.launch {
+                                try {
+                                    HomeScreenViewModel.Network.isConnectionSucceed.value = true
+                                    apodScreenVM.refreshData()
+                                } catch (_: Exception) {
+                                    HomeScreenViewModel.Network.isConnectionSucceed.value = false
+                                    withContext(Dispatchers.Main) {
+                                        isRefreshing.value = false
+                                        Toast.makeText(
+                                            context,
+                                            "Network not detected",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 }
                             }
-                            Coil_Image().CoilImage(
-                                imgURL = apodItem.url.toString(),
-                                contentDescription = apodItem.title.toString(),
-                                modifier = Modifier
-                                    .padding(1.dp)
-                                    .clickable {
-                                        coroutineScope.launch {
-                                            apodDate.value = apodItem.date.toString()
-                                            apodURL.value = apodItem.url.toString()
-                                            apodDescription.value = apodItem.explanation.toString()
-                                            apodTitle.value = apodItem.title.toString()
-                                            apodMediaType.value = apodItem.media_type.toString()
-                                            bottomSheetState.show()
-                                        }
-                                    },
-                                onError = painterResource(id = R.drawable.satellite_filled)
-                            )
+                            Status.LOADING
                         }
-                        item {
-                            androidx.compose.material3.CircularProgressIndicator(
-                                modifier = Modifier.padding(50.dp),
-                                strokeWidth = 4.dp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(75.dp))
-                        }
+                    Column {
+                        Spacer(modifier = Modifier.height(95.dp))
+                        StatusScreen(
+                            title = "Wait a moment!",
+                            description = "fetching the APOD Data from Space!",
+                            status = status
+                        )
                     }
-                }
-            } else {
-                Column {
-                    Spacer(modifier = Modifier.height(95.dp))
-                    StatusScreen(
-                        title = "Wait a moment!",
-                        description = "fetching the APOD Data from Space!",
-                        status = Status.LOADING
-                    )
                 }
             }
-        }
-        var didDataGetAddedInDB=false
-        val context= LocalContext.current
-        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
-            AlertDialogForDeletingFromDB(
-                bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
-                onConfirmBtnClick = {
-                    triggerHapticFeedback(context = context)
-                    coroutineScope.launch {
-                        didDataGetAddedInDB =
-                            bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
-                    }.invokeOnCompletion {
-                        if (didDataGetAddedInDB) {
-                            Toast.makeText(
-                                context,
-                                "Bookmark didn't got removed as expected, report it:(",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Removed from bookmarks:)",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
+            var didDataGetAddedInDB = false
+            val context = LocalContext.current
+            if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+                AlertDialogForDeletingFromDB(
+                    bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                    onConfirmBtnClick = {
+                        triggerHapticFeedback(context = context)
+                        coroutineScope.launch {
+                            didDataGetAddedInDB =
+                                bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                        }.invokeOnCompletion {
+                            if (didDataGetAddedInDB) {
+                                Toast.makeText(
+                                    context,
+                                    "Bookmark didn't got removed as expected, report it:(",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Removed from bookmarks:)",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                            bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                         }
-                        bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                            false
+                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                            false
                     }
-                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
-                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
-                }
+                )
+            }
+            PullRefreshIndicator(
+                refreshing = isRefreshing.value,
+                state = pullRefreshState,
+                Modifier.align(Alignment.TopCenter),
+                scale = true
             )
         }
     }
@@ -328,7 +393,8 @@ fun APODBottomSheetContent(
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     } else {
-                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
+                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                            true
                                     }
                                     bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                                 }

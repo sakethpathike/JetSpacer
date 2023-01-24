@@ -1,16 +1,20 @@
 package com.sakethh.jetspacer.screens.space.rovers.spirit.cameras
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
+import android.annotation.SuppressLint
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.BottomSheetScaffold
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,9 +28,10 @@ import com.sakethh.jetspacer.screens.space.rovers.opportunity.OpportunityCameras
 import com.sakethh.jetspacer.screens.space.rovers.spirit.SpiritCamerasVM
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("CoroutineCreationDuringComposition")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun SpiritRoverSubScreen(cameraName:SpiritCamerasVM.SpiritCameras) {
+fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
     val spiritVM: SpiritCamerasVM = viewModel()
     val roversScreenVM: RoversScreenVM = viewModel()
     val coroutineScope = rememberCoroutineScope()
@@ -116,26 +121,133 @@ fun SpiritRoverSubScreen(cameraName:SpiritCamerasVM.SpiritCameras) {
             }
         }
     }
-    Scaffold(floatingActionButtonPosition = FabPosition.Center, floatingActionButton = {
-        if (solImagesData.isNotEmpty() && expressionForShowingSnackBar && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
-            Snackbar(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp, bottom = 50.dp)
-                    .wrapContentHeight()
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(15.dp)
-            ) {
-                Text(
-                    text = "You've reached the end, change the sol value to explore more!",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    softWrap = true,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Start,
-                    lineHeight = 18.sp
-                )
+    fun loadData() {
+
+        SpiritRoverSubScreen.currentPage = 0
+        when (cameraName) {
+            SpiritCamerasVM.SpiritCameras.MINITES -> {
+                spiritVM.isMinitesDataLoaded.value = false
+                spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.MINITES)
+                coroutineScope.launch {
+                    spiritVM.retrieveSpiritCameraData(
+                        cameraName = SpiritCamerasVM.SpiritCameras.MINITES,
+                        sol = SpiritRoverSubScreen.minitesSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
             }
+            SpiritCamerasVM.SpiritCameras.RHAZ -> {
+                spiritVM.isRHAZCamDataLoaded.value = false
+                spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.RHAZ)
+                coroutineScope.launch {
+                    spiritVM.retrieveSpiritCameraData(
+                        cameraName = SpiritCamerasVM.SpiritCameras.RHAZ,
+                        sol = SpiritRoverSubScreen.rhazSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            SpiritCamerasVM.SpiritCameras.FHAZ -> {
+                spiritVM.isFHAZDataLoaded.value = false
+                spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.FHAZ)
+                coroutineScope.launch {
+                    spiritVM.retrieveSpiritCameraData(
+                        cameraName = SpiritCamerasVM.SpiritCameras.FHAZ,
+                        sol = SpiritRoverSubScreen.fhazSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            SpiritCamerasVM.SpiritCameras.PANCAM -> {
+                spiritVM.isPancamDataLoaded.value = false
+                spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.PANCAM)
+                coroutineScope.launch {
+                    spiritVM.retrieveSpiritCameraData(
+                        cameraName = SpiritCamerasVM.SpiritCameras.PANCAM,
+                        sol = SpiritRoverSubScreen.pancamSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            SpiritCamerasVM.SpiritCameras.NAVCAM -> {
+                spiritVM.isNAVCAMDataLoaded.value = false
+                spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM)
+                coroutineScope.launch {
+                    spiritVM.retrieveSpiritCameraData(
+                        cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM,
+                        sol = SpiritRoverSubScreen.navcamSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            SpiritCamerasVM.SpiritCameras.RANDOM -> {
+                spiritVM.isRandomCamerasDataLoaded.value = false
+                spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.RANDOM)
+                coroutineScope.launch {
+                    spiritVM.retrieveSpiritCameraData(
+                        cameraName = SpiritCamerasVM.SpiritCameras.RANDOM,
+                        sol = SpiritRoverSubScreen.randomCamSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+        }
+    }
+
+    val bottomSheetScaffold = rememberBottomSheetScaffoldState()
+    if (solImagesData.isNotEmpty() && expressionForShowingSnackBar && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
+        coroutineScope.launch {
+            bottomSheetScaffold.bottomSheetState.expand()
+            if (bottomSheetScaffold.bottomSheetState.isCollapsed) {
+                bottomSheetScaffold.bottomSheetState.expand()
+            }
+        }
+    } else {
+        coroutineScope.launch {
+            bottomSheetScaffold.bottomSheetState.collapse()
+            if (bottomSheetScaffold.bottomSheetState.isExpanded) {
+                bottomSheetScaffold.bottomSheetState.collapse()
+            }
+        }
+    }
+    val context = LocalContext.current
+
+    val isRefreshing = remember { mutableStateOf(false) }
+    val pullRefreshState =
+        rememberPullRefreshState(refreshing = isRefreshing.value,
+            onRefresh = {
+                isRefreshing.value = true
+                Toast.makeText(
+                    context,
+                    "Refreshing data in a moment",
+                    Toast.LENGTH_SHORT
+                ).show()
+                coroutineScope.launch {
+                    loadData()
+                }
+                if (solImagesData.isNotEmpty()) {
+                    isRefreshing.value = false
+                }
+            })
+    Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
+    BottomSheetScaffold(backgroundColor = MaterialTheme.colorScheme.surface,sheetPeekHeight = 0.dp,sheetContent = {
+        Snackbar(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier
+                .padding(start = 20.dp, end = 20.dp, bottom = 50.dp)
+                .wrapContentHeight()
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(15.dp)
+        ) {
+            Text(
+                text = "You've reached the end, change the sol value to explore more!",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onSecondary,
+                softWrap = true,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Start,
+                lineHeight = 18.sp
+            )
         }
     }) {
         Column(
@@ -144,75 +256,7 @@ fun SpiritRoverSubScreen(cameraName:SpiritCamerasVM.SpiritCameras) {
                 .padding(it)
         ) {
             SolTextField(solValue = currentScreenSolValue, onContinueClick = {
-                SpiritRoverSubScreen.currentPage = 0
-                when (cameraName) {
-                    SpiritCamerasVM.SpiritCameras.MINITES -> {
-                        spiritVM.isMinitesDataLoaded.value = false
-                        spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.MINITES)
-                        coroutineScope.launch {
-                            spiritVM.retrieveSpiritCameraData(
-                                cameraName = SpiritCamerasVM.SpiritCameras.MINITES,
-                                sol = SpiritRoverSubScreen.minitesSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    SpiritCamerasVM.SpiritCameras.RHAZ -> {
-                        spiritVM.isRHAZCamDataLoaded.value = false
-                        spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.RHAZ)
-                        coroutineScope.launch {
-                            spiritVM.retrieveSpiritCameraData(
-                                cameraName = SpiritCamerasVM.SpiritCameras.RHAZ,
-                                sol = SpiritRoverSubScreen.rhazSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    SpiritCamerasVM.SpiritCameras.FHAZ -> {
-                        spiritVM.isFHAZDataLoaded.value = false
-                        spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.FHAZ)
-                        coroutineScope.launch {
-                            spiritVM.retrieveSpiritCameraData(
-                                cameraName = SpiritCamerasVM.SpiritCameras.FHAZ,
-                                sol = SpiritRoverSubScreen.fhazSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    SpiritCamerasVM.SpiritCameras.PANCAM -> {
-                        spiritVM.isPancamDataLoaded.value = false
-                        spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.PANCAM)
-                        coroutineScope.launch {
-                            spiritVM.retrieveSpiritCameraData(
-                                cameraName = SpiritCamerasVM.SpiritCameras.PANCAM,
-                                sol = SpiritRoverSubScreen.pancamSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    SpiritCamerasVM.SpiritCameras.NAVCAM -> {
-                        spiritVM.isNAVCAMDataLoaded.value = false
-                        spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM)
-                        coroutineScope.launch {
-                            spiritVM.retrieveSpiritCameraData(
-                                cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM,
-                                sol = SpiritRoverSubScreen.navcamSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    SpiritCamerasVM.SpiritCameras.RANDOM -> {
-                        spiritVM.isRandomCamerasDataLoaded.value = false
-                        spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.RANDOM)
-                        coroutineScope.launch {
-                            spiritVM.retrieveSpiritCameraData(
-                                cameraName = SpiritCamerasVM.SpiritCameras.RANDOM,
-                                sol = SpiritRoverSubScreen.randomCamSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                }
+                loadData()
             })
             val statusDescriptionForLoadingScreen =
                 if (cameraName != SpiritCamerasVM.SpiritCameras.RANDOM) {
@@ -240,71 +284,76 @@ fun SpiritRoverSubScreen(cameraName:SpiritCamerasVM.SpiritCameras) {
                     status = Status.FOURO4InMarsScreen
                 )
             } else {
-                ModifiedLazyVerticalGrid(
-                    listData = solImagesData,
-                    loadMoreButtonBooleanExpression = expressionForShowingLoadMoreBtn
-                ) {
-                    when (cameraName) {
-                        SpiritCamerasVM.SpiritCameras.MINITES -> {
-                            coroutineScope.launch {
-                                spiritVM.retrieveSpiritCameraData(
-                                    cameraName = SpiritCamerasVM.SpiritCameras.MINITES,
-                                    sol = SpiritRoverSubScreen.minitesSolValue.value.toInt(),
-                                    page = SpiritRoverSubScreen.currentPage++
-                                )
+                    ModifiedLazyVerticalGrid(
+                        listData = solImagesData,
+                        loadMoreButtonBooleanExpression = expressionForShowingLoadMoreBtn
+                    ) {
+                        when (cameraName) {
+                            SpiritCamerasVM.SpiritCameras.MINITES -> {
+                                coroutineScope.launch {
+                                    spiritVM.retrieveSpiritCameraData(
+                                        cameraName = SpiritCamerasVM.SpiritCameras.MINITES,
+                                        sol = SpiritRoverSubScreen.minitesSolValue.value.toInt(),
+                                        page = SpiritRoverSubScreen.currentPage++
+                                    )
+                                }
                             }
-                        }
-                        SpiritCamerasVM.SpiritCameras.RHAZ -> {
-                            coroutineScope.launch {
-                                spiritVM.retrieveSpiritCameraData(
-                                    cameraName = SpiritCamerasVM.SpiritCameras.RHAZ,
-                                    sol = SpiritRoverSubScreen.rhazSolValue.value.toInt(),
-                                    page = SpiritRoverSubScreen.currentPage++
-                                )
+                            SpiritCamerasVM.SpiritCameras.RHAZ -> {
+                                coroutineScope.launch {
+                                    spiritVM.retrieveSpiritCameraData(
+                                        cameraName = SpiritCamerasVM.SpiritCameras.RHAZ,
+                                        sol = SpiritRoverSubScreen.rhazSolValue.value.toInt(),
+                                        page = SpiritRoverSubScreen.currentPage++
+                                    )
+                                }
                             }
-                        }
-                        SpiritCamerasVM.SpiritCameras.FHAZ -> {
-                            coroutineScope.launch {
-                                spiritVM.retrieveSpiritCameraData(
-                                    cameraName = SpiritCamerasVM.SpiritCameras.FHAZ,
-                                    sol = SpiritRoverSubScreen.fhazSolValue.value.toInt(),
-                                    page = SpiritRoverSubScreen.currentPage++
-                                )
+                            SpiritCamerasVM.SpiritCameras.FHAZ -> {
+                                coroutineScope.launch {
+                                    spiritVM.retrieveSpiritCameraData(
+                                        cameraName = SpiritCamerasVM.SpiritCameras.FHAZ,
+                                        sol = SpiritRoverSubScreen.fhazSolValue.value.toInt(),
+                                        page = SpiritRoverSubScreen.currentPage++
+                                    )
+                                }
                             }
-                        }
-                        SpiritCamerasVM.SpiritCameras.PANCAM -> {
-                            coroutineScope.launch {
-                                spiritVM.retrieveSpiritCameraData(
-                                    cameraName = SpiritCamerasVM.SpiritCameras.PANCAM,
-                                    sol = SpiritRoverSubScreen.pancamSolValue.value.toInt(),
-                                    page = SpiritRoverSubScreen.currentPage++
-                                )
+                            SpiritCamerasVM.SpiritCameras.PANCAM -> {
+                                coroutineScope.launch {
+                                    spiritVM.retrieveSpiritCameraData(
+                                        cameraName = SpiritCamerasVM.SpiritCameras.PANCAM,
+                                        sol = SpiritRoverSubScreen.pancamSolValue.value.toInt(),
+                                        page = SpiritRoverSubScreen.currentPage++
+                                    )
+                                }
                             }
-                        }
-                        SpiritCamerasVM.SpiritCameras.NAVCAM -> {
-                            coroutineScope.launch {
-                                spiritVM.retrieveSpiritCameraData(
-                                    cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM,
-                                    sol = SpiritRoverSubScreen.navcamSolValue.value.toInt(),
-                                    page = SpiritRoverSubScreen.currentPage++
-                                )
+                            SpiritCamerasVM.SpiritCameras.NAVCAM -> {
+                                coroutineScope.launch {
+                                    spiritVM.retrieveSpiritCameraData(
+                                        cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM,
+                                        sol = SpiritRoverSubScreen.navcamSolValue.value.toInt(),
+                                        page = SpiritRoverSubScreen.currentPage++
+                                    )
+                                }
                             }
-                        }
-                        SpiritCamerasVM.SpiritCameras.RANDOM -> {
-                            coroutineScope.launch {
-                                spiritVM.retrieveSpiritCameraData(
-                                    cameraName = SpiritCamerasVM.SpiritCameras.RANDOM,
-                                    sol = SpiritRoverSubScreen.randomCamSolValue.value.toInt(),
-                                    page = SpiritRoverSubScreen.currentPage++
-                                )
+                            SpiritCamerasVM.SpiritCameras.RANDOM -> {
+                                coroutineScope.launch {
+                                    spiritVM.retrieveSpiritCameraData(
+                                        cameraName = SpiritCamerasVM.SpiritCameras.RANDOM,
+                                        sol = SpiritRoverSubScreen.randomCamSolValue.value.toInt(),
+                                        page = SpiritRoverSubScreen.currentPage++
+                                    )
+                                }
                             }
                         }
                     }
-
                 }
             }
-
         }
+        PullRefreshIndicator(
+            refreshing = isRefreshing.value,
+            state = pullRefreshState,
+            Modifier.align(Alignment.TopCenter),
+            scale = true
+        )
     }
 }
 

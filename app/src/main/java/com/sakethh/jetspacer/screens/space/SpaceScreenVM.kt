@@ -23,9 +23,13 @@ class SpaceScreenVM(
 
     init {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-                apodDateData.value = apodFetching.getAPOD()
-                marsWeatherDTO.value = spaceScreenImplementation.getMarsWeatherData()
+            loadData()
         }
+    }
+
+    suspend fun loadData() {
+        apodDateData.value = apodFetching.getAPOD()
+        marsWeatherDTO.value = spaceScreenImplementation.getMarsWeatherData()
     }
 
     suspend fun getAPODDateData(apodDateForURL: String) {

@@ -21,15 +21,20 @@ class APODScreenVM(private val apodPaginationFetching: APODPaginationFetching = 
     val dataForPagination = mutableStateOf<List<APOD_DTO>>(emptyList())
     val isDataForAPODPaginationLoaded = mutableStateOf(false)
 
-    init {
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            fetchAPODData()
-        }
-    }
 
     suspend fun fetchAPODData() {
-        _dataForAPODPagination.value = apodPaginationFetching.getPaginatedAPODATA()
+        _dataForAPODPagination.value = apodPaginationFetching.getPaginatedAPODATA().component1().reversed()
         dataForPagination.value += _dataForAPODPagination.value
         isDataForAPODPaginationLoaded.value = true
+    }
+
+    suspend fun refreshData() {
+        _dataForAPODPagination.value = emptyList()
+        dataForPagination.value = emptyList()
+        APODPaginationFetching.APODPaginationUtils.currentAPODDate=""
+        APODPaginationFetching.APODPaginationUtils.currentFetchedCount.value=0
+        APODPaginationFetching.APODPaginationUtils.initialFetchingValue=0
+        APODPaginationFetching.APODPaginationUtils.primaryInitForAPODEndDate=0
+        fetchAPODData()
     }
 }

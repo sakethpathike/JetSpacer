@@ -1,35 +1,43 @@
 package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
+import android.annotation.SuppressLint
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.BottomSheetScaffold
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
+import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.ModifiedLazyVerticalGrid
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RandomCuriosityCameraVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.SolTextField
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("CoroutineCreationDuringComposition")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun CuriosityCamerasScreen(cameraName: CuriosityCamerasVM.CuriosityCameras) {
     val curiosityCameraVM: CuriosityCamerasVM = viewModel()
     val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
     val roversScreenVM: RoversScreenVM = viewModel()
     val coroutineScope = rememberCoroutineScope()
+    val context= LocalContext.current
     val solImagesData = when (cameraName) {
         CuriosityCamerasVM.CuriosityCameras.CHEMCAM ->
             curiosityCameraVM.chemcamDataFromAPI.value
@@ -133,26 +141,139 @@ fun CuriosityCamerasScreen(cameraName: CuriosityCamerasVM.CuriosityCameras) {
             }
         }
     }
-    Scaffold(floatingActionButtonPosition = FabPosition.Center, floatingActionButton = {
-        if (solImagesData.isNotEmpty() && expressionForShowingSnackBar && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
-            Snackbar(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp, bottom = 50.dp)
-                    .wrapContentHeight()
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(15.dp)
-            ) {
-                Text(
-                    text = "You've reached the end, change the sol value to explore more!",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    softWrap = true,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Start,
-                    lineHeight = 18.sp
-                )
+    val bottomSheetScaffold = rememberBottomSheetScaffoldState()
+    if (solImagesData.isNotEmpty() && expressionForShowingSnackBar && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
+        coroutineScope.launch {
+            bottomSheetScaffold.bottomSheetState.expand()
+            if (bottomSheetScaffold.bottomSheetState.isCollapsed) {
+                bottomSheetScaffold.bottomSheetState.expand()
             }
+        }
+    } else {
+        coroutineScope.launch {
+            bottomSheetScaffold.bottomSheetState.collapse()
+            if (bottomSheetScaffold.bottomSheetState.isExpanded) {
+                bottomSheetScaffold.bottomSheetState.collapse()
+            }
+        }
+    }
+    fun loadData() {
+        when (cameraName) {
+            CuriosityCamerasVM.CuriosityCameras.CHEMCAM -> {
+                curiosityCameraVM.isChemCamDataLoaded.value = false
+                curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.CHEMCAM)
+                coroutineScope.launch {
+                    curiosityCameraVM.getCHEMCAMData(
+                        sol = CuriosityCameraScreen.chemcamSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            CuriosityCamerasVM.CuriosityCameras.RHAZ -> {
+                curiosityCameraVM.isRHAZCamDataLoaded.value = false
+                curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.RHAZ)
+                coroutineScope.launch {
+                    curiosityCameraVM.getRHAZData(
+                        sol = CuriosityCameraScreen.rhazSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            CuriosityCamerasVM.CuriosityCameras.FHAZ -> {
+                curiosityCameraVM.isFHAZDataLoaded.value = false
+                curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.FHAZ)
+                coroutineScope.launch {
+                    curiosityCameraVM.getFHAZData(
+                        sol = CuriosityCameraScreen.fhazSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            CuriosityCamerasVM.CuriosityCameras.MAST -> {
+                curiosityCameraVM.isMASTCamDataLoaded.value = false
+                curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.MAST)
+                coroutineScope.launch {
+                    curiosityCameraVM.getMASTData(
+                        sol = CuriosityCameraScreen.mastSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            CuriosityCamerasVM.CuriosityCameras.MAHLI -> {
+                curiosityCameraVM.isMAHLIDataLoaded.value = false
+                curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.MAHLI)
+                coroutineScope.launch {
+                    curiosityCameraVM.getMAHLIData(
+                        sol = CuriosityCameraScreen.mahliSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            CuriosityCamerasVM.CuriosityCameras.MARDI -> {
+                curiosityCameraVM.isMARDIDataLoaded.value = false
+                curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.MARDI)
+                coroutineScope.launch {
+                    curiosityCameraVM.getMARDIData(
+                        sol = CuriosityCameraScreen.mardiSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            CuriosityCamerasVM.CuriosityCameras.NAVCAM -> {
+                curiosityCameraVM.isNAVCAMDataLoaded.value = false
+                curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.NAVCAM)
+                coroutineScope.launch {
+                    curiosityCameraVM.getNAVCAMData(
+                        sol = CuriosityCameraScreen.navcamSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+            CuriosityCamerasVM.CuriosityCameras.RANDOM -> {
+                randomCuriosityCameraVM.isRandomCamerasDataLoaded.value = false
+                randomCuriosityCameraVM.clearRandomCuriosityCameraData()
+                coroutineScope.launch {
+                    randomCuriosityCameraVM.getRandomCuriosityData(
+                        sol = CuriosityCameraScreen.randomCamSolValue.value.toInt(),
+                        page = 0
+                    )
+                }
+            }
+        }
+    }
+
+    val isRefreshing = remember { mutableStateOf(false) }
+    val pullRefreshState =
+        rememberPullRefreshState(refreshing = isRefreshing.value,
+            onRefresh = {
+                isRefreshing.value = true
+                Toast.makeText(context,"Refreshing data in a moment", Toast.LENGTH_SHORT).show()
+                coroutineScope.launch {
+                    loadData()
+                }
+                if (solImagesData.isNotEmpty()) {
+                    isRefreshing.value = false
+                }
+            })
+    Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
+    BottomSheetScaffold(backgroundColor = MaterialTheme.colorScheme.surface,sheetPeekHeight = 0.dp,sheetContent = {
+        Snackbar(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier
+                .padding(start = 20.dp, end = 20.dp, bottom = 50.dp)
+                .wrapContentHeight()
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(15.dp)
+        ) {
+            Text(
+                text = "You've reached the end, change the sol value to explore more!",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onSecondary,
+                softWrap = true,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Start,
+                lineHeight = 18.sp
+            )
         }
     }) {
         Column(
@@ -162,88 +283,7 @@ fun CuriosityCamerasScreen(cameraName: CuriosityCamerasVM.CuriosityCameras) {
         ) {
             SolTextField(solValue = currentScreenSolValue, onContinueClick = {
                 CuriosityCameraScreen.currentPage = 0
-                when (cameraName) {
-                    CuriosityCamerasVM.CuriosityCameras.CHEMCAM -> {
-                        curiosityCameraVM.isChemCamDataLoaded.value = false
-                        curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.CHEMCAM)
-                        coroutineScope.launch {
-                            curiosityCameraVM.getCHEMCAMData(
-                                sol = CuriosityCameraScreen.chemcamSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    CuriosityCamerasVM.CuriosityCameras.RHAZ -> {
-                        curiosityCameraVM.isRHAZCamDataLoaded.value = false
-                        curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.RHAZ)
-                        coroutineScope.launch {
-                            curiosityCameraVM.getRHAZData(
-                                sol = CuriosityCameraScreen.rhazSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    CuriosityCamerasVM.CuriosityCameras.FHAZ -> {
-                        curiosityCameraVM.isFHAZDataLoaded.value = false
-                        curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.FHAZ)
-                        coroutineScope.launch {
-                            curiosityCameraVM.getFHAZData(
-                                sol = CuriosityCameraScreen.fhazSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    CuriosityCamerasVM.CuriosityCameras.MAST -> {
-                        curiosityCameraVM.isMASTCamDataLoaded.value = false
-                        curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.MAST)
-                        coroutineScope.launch {
-                            curiosityCameraVM.getMASTData(
-                                sol = CuriosityCameraScreen.mastSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    CuriosityCamerasVM.CuriosityCameras.MAHLI -> {
-                        curiosityCameraVM.isMAHLIDataLoaded.value = false
-                        curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.MAHLI)
-                        coroutineScope.launch {
-                            curiosityCameraVM.getMAHLIData(
-                                sol = CuriosityCameraScreen.mahliSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    CuriosityCamerasVM.CuriosityCameras.MARDI -> {
-                        curiosityCameraVM.isMARDIDataLoaded.value = false
-                        curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.MARDI)
-                        coroutineScope.launch {
-                            curiosityCameraVM.getMARDIData(
-                                sol = CuriosityCameraScreen.mardiSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    CuriosityCamerasVM.CuriosityCameras.NAVCAM -> {
-                        curiosityCameraVM.isNAVCAMDataLoaded.value = false
-                        curiosityCameraVM.clearCuriosityCameraData(cameraName = CuriosityCamerasVM.CuriosityCameras.NAVCAM)
-                        coroutineScope.launch {
-                            curiosityCameraVM.getNAVCAMData(
-                                sol = CuriosityCameraScreen.navcamSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                    CuriosityCamerasVM.CuriosityCameras.RANDOM -> {
-                        randomCuriosityCameraVM.isRandomCamerasDataLoaded.value = false
-                        randomCuriosityCameraVM.clearRandomCuriosityCameraData()
-                        coroutineScope.launch {
-                            randomCuriosityCameraVM.getRandomCuriosityData(
-                                sol = CuriosityCameraScreen.randomCamSolValue.value.toInt(),
-                                page = 0
-                            )
-                        }
-                    }
-                }
+                loadData()
             })
             val statusDescriptionForLoadingScreen =
                 if (cameraName != CuriosityCamerasVM.CuriosityCameras.RANDOM) {
@@ -257,6 +297,9 @@ fun CuriosityCamerasScreen(cameraName: CuriosityCamerasVM.CuriosityCameras) {
                 } else {
                     "No images were captured on sol ${currentScreenSolValue.value}. Change the sol value; it may give results."
                 }
+
+            val isConnectedToInternet =
+                HomeScreenViewModel.Network.connectedToInternet.collectAsState()
             if (!isDataLoaded) {
                 StatusScreen(
                     title = "Wait a moment!",
@@ -270,67 +313,79 @@ fun CuriosityCamerasScreen(cameraName: CuriosityCamerasVM.CuriosityCameras) {
                     description = statusDescriptionFor404Screen,
                     status = Status.FOURO4InMarsScreen
                 )
+            } else if (!isDataLoaded && (!isConnectedToInternet.value || !HomeScreenViewModel.Network.isConnectionSucceed.value)) {
+                StatusScreen(
+                    title = "",
+                    description = statusDescriptionFor404Screen,
+                    status = Status.NO_INTERNET
+                )
             } else {
-                ModifiedLazyVerticalGrid(
-                    listData = solImagesData,
-                    loadMoreButtonBooleanExpression = expressionForShowingLoadMoreBtn
-                ) {
-                    coroutineScope.launch {
-                        when (cameraName) {
-                            CuriosityCamerasVM.CuriosityCameras.CHEMCAM -> {
-                                curiosityCameraVM.getCHEMCAMData(
-                                    sol = CuriosityCameraScreen.chemcamSolValue.value.toInt(),
-                                    page = CuriosityCameraScreen.currentPage++
-                                )
-                            }
-                            CuriosityCamerasVM.CuriosityCameras.RHAZ -> {
-                                curiosityCameraVM.getRHAZData(
-                                    sol = CuriosityCameraScreen.rhazSolValue.value.toInt(),
-                                    page = CuriosityCameraScreen.currentPage++
-                                )
-                            }
-                            CuriosityCamerasVM.CuriosityCameras.FHAZ -> {
-                                curiosityCameraVM.getFHAZData(
-                                    sol = CuriosityCameraScreen.fhazSolValue.value.toInt(),
-                                    page = CuriosityCameraScreen.currentPage++
-                                )
-                            }
-                            CuriosityCamerasVM.CuriosityCameras.MAST -> {
-                                curiosityCameraVM.getMASTData(
-                                    sol = CuriosityCameraScreen.mastSolValue.value.toInt(),
-                                    page = CuriosityCameraScreen.currentPage++
-                                )
-                            }
-                            CuriosityCamerasVM.CuriosityCameras.MAHLI -> {
-                                curiosityCameraVM.getMAHLIData(
-                                    sol = CuriosityCameraScreen.mahliSolValue.value.toInt(),
-                                    page = CuriosityCameraScreen.currentPage++
-                                )
-                            }
-                            CuriosityCamerasVM.CuriosityCameras.MARDI -> {
-                                curiosityCameraVM.getMARDIData(
-                                    sol = CuriosityCameraScreen.mardiSolValue.value.toInt(),
-                                    page = CuriosityCameraScreen.currentPage++
-                                )
-                            }
-                            CuriosityCamerasVM.CuriosityCameras.NAVCAM -> {
-                                curiosityCameraVM.getNAVCAMData(
-                                    sol = CuriosityCameraScreen.navcamSolValue.value.toInt(),
-                                    page = CuriosityCameraScreen.currentPage++
-                                )
-                            }
-                            CuriosityCamerasVM.CuriosityCameras.RANDOM -> {
-                                randomCuriosityCameraVM.getRandomCuriosityData(
-                                    sol = CuriosityCameraScreen.randomCamSolValue.value.toInt(),
-                                    page = CuriosityCameraScreen.currentPage++
-                                )
+                    ModifiedLazyVerticalGrid(
+                        listData = solImagesData,
+                        loadMoreButtonBooleanExpression = expressionForShowingLoadMoreBtn
+                    ) {
+                        coroutineScope.launch {
+                            when (cameraName) {
+                                CuriosityCamerasVM.CuriosityCameras.CHEMCAM -> {
+                                    curiosityCameraVM.getCHEMCAMData(
+                                        sol = CuriosityCameraScreen.chemcamSolValue.value.toInt(),
+                                        page = CuriosityCameraScreen.currentPage++
+                                    )
+                                }
+                                CuriosityCamerasVM.CuriosityCameras.RHAZ -> {
+                                    curiosityCameraVM.getRHAZData(
+                                        sol = CuriosityCameraScreen.rhazSolValue.value.toInt(),
+                                        page = CuriosityCameraScreen.currentPage++
+                                    )
+                                }
+                                CuriosityCamerasVM.CuriosityCameras.FHAZ -> {
+                                    curiosityCameraVM.getFHAZData(
+                                        sol = CuriosityCameraScreen.fhazSolValue.value.toInt(),
+                                        page = CuriosityCameraScreen.currentPage++
+                                    )
+                                }
+                                CuriosityCamerasVM.CuriosityCameras.MAST -> {
+                                    curiosityCameraVM.getMASTData(
+                                        sol = CuriosityCameraScreen.mastSolValue.value.toInt(),
+                                        page = CuriosityCameraScreen.currentPage++
+                                    )
+                                }
+                                CuriosityCamerasVM.CuriosityCameras.MAHLI -> {
+                                    curiosityCameraVM.getMAHLIData(
+                                        sol = CuriosityCameraScreen.mahliSolValue.value.toInt(),
+                                        page = CuriosityCameraScreen.currentPage++
+                                    )
+                                }
+                                CuriosityCamerasVM.CuriosityCameras.MARDI -> {
+                                    curiosityCameraVM.getMARDIData(
+                                        sol = CuriosityCameraScreen.mardiSolValue.value.toInt(),
+                                        page = CuriosityCameraScreen.currentPage++
+                                    )
+                                }
+                                CuriosityCamerasVM.CuriosityCameras.NAVCAM -> {
+                                    curiosityCameraVM.getNAVCAMData(
+                                        sol = CuriosityCameraScreen.navcamSolValue.value.toInt(),
+                                        page = CuriosityCameraScreen.currentPage++
+                                    )
+                                }
+                                CuriosityCamerasVM.CuriosityCameras.RANDOM -> {
+                                    randomCuriosityCameraVM.getRandomCuriosityData(
+                                        sol = CuriosityCameraScreen.randomCamSolValue.value.toInt(),
+                                        page = CuriosityCameraScreen.currentPage++
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-
         }
+        PullRefreshIndicator(
+            refreshing = isRefreshing.value,
+            state = pullRefreshState,
+            Modifier.align(Alignment.TopCenter),
+            scale = true
+        )
     }
 }
 

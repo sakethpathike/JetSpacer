@@ -17,7 +17,7 @@ import java.util.Calendar
 class APODPaginationFetching() {
 
     @SuppressLint("SimpleDateFormat")
-    suspend fun getPaginatedAPODATA(): List<APOD_DTO> {
+    suspend fun getPaginatedAPODATA(): List<List<APOD_DTO>> {
         val apodImplementation = APODImplementation(HTTPClient.ktorClientWithCache)
         val fetchingLimit = 15
         val dateFormat = SimpleDateFormat("yyyy-MM-dd")
@@ -40,23 +40,22 @@ class APODPaginationFetching() {
         val apodURL =
             "https://api.nasa.gov/planetary/apod?api_key=Ffr9YBia9lLW9vWQgzNvzKtKfGlUNvynVvF0UOcf&start_date=$startDate&end_date=$endDate"
         primaryInitForAPODEndDate = 1
-        val apodData = mutableListOf<APOD_DTO>()
+        val _apodData = mutableListOf<Deferred<List<APOD_DTO>>>()
         try {
-            APODImplementation(
-                HTTPClient.ktorClientWithCache,
-                apodURL = apodURL
-            ).getAPODForPaginatedList().component1().reversed().forEach {
-                if (it.media_type.toString() == "image") {
-                    apodData.add(it)
+            coroutineScope {
+                val apodData= async {
+                    APODImplementation(
+                        HTTPClient.ktorClientWithCache,
+                        apodURL = apodURL
+                    ).getAPODForPaginatedList().component1()
                 }
+                _apodData.add(apodData)
             }
             HomeScreenViewModel.Network.isConnectionSucceed.value = true
         }catch (_:Exception){
             HomeScreenViewModel.Network.isConnectionSucceed.value = false
         }
-
-        return apodData
-
+        return _apodData.awaitAll()
     }
 
     object APODPaginationUtils {

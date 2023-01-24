@@ -62,8 +62,13 @@ open class HomeScreenViewModel(
                 currentPhaseOfDay = "Everything fine?"
             }
         }
-
         this.viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
+            loadData()
+        }
+    }
+
+    suspend fun loadData() {
+        coroutineScope {
             awaitAll(
                 async {
                     geolocationDTODataFromAPI.value = ipGeolocationFetching.getGeoLocationData()
@@ -71,17 +76,17 @@ open class HomeScreenViewModel(
                 async {
                     issLocationFetching.getISSLatitudeAndLongitude()
                         .collect { _issLocationData ->
-                            this@HomeScreenViewModel._issLocationFromAPIFlow.emit(
+                            _issLocationFromAPIFlow.emit(
                                 _issLocationData
                             )
                         }
                 },
                 async {
-                    this@HomeScreenViewModel.apodDataFromAPI.value = apodFetching.getAPOD()
+                    apodDataFromAPI.value = apodFetching.getAPOD()
                 },
                 async {
                     ipGeolocationFetching.getAstronomicalData().collect { ipGeolocationData ->
-                        this@HomeScreenViewModel._astronomicalDataFromAPIFlow.emit(
+                        _astronomicalDataFromAPIFlow.emit(
                             ipGeolocationData
                         )
                     }

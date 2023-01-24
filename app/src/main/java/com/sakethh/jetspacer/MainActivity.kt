@@ -8,9 +8,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,10 +28,14 @@ import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestFor
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class)
+    @OptIn(
+        ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class,
+        ExperimentalMaterialApi::class
+    )
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,26 +47,47 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             val navController = rememberNavController()
+            val coroutineScope = rememberCoroutineScope()
             val isConnectedToInternet =
                 HomeScreenViewModel.Network.connectedToInternet.collectAsState()
+            val bottomSheetState = rememberBottomSheetScaffoldState()
+            if (!isConnectedToInternet.value || !HomeScreenViewModel.Network.isConnectionSucceed.value) {
+                coroutineScope.launch {
+                    bottomSheetState.bottomSheetState.expand()
+                }
+            } else {
+                coroutineScope.launch {
+                    bottomSheetState.bottomSheetState.collapse()
+                }
+            }
             AppTheme {
                 Scaffold(
                     bottomBar = {
                         BottomNavigationComposable(
                             navController = navController
                         )
-                    }, floatingActionButton = {
-                        if (!isConnectedToInternet.value || !HomeScreenViewModel.Network.isConnectionSucceed.value) {
+                    }
+                ) {
+                    BottomSheetScaffold(
+                        scaffoldState = bottomSheetState,
+                        sheetPeekHeight = 0.dp,
+                        sheetGesturesEnabled = false,
+                        drawerBackgroundColor= Color.Transparent,
+                        drawerContentColor= Color.Transparent,
+                        drawerScrimColor= Color.Transparent,
+                        backgroundColor= Color.Transparent,
+                        sheetBackgroundColor = Color.Transparent,
+                        sheetContent = {
                             Snackbar(
                                 containerColor = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier
-                                    .padding(start = 20.dp, end = 20.dp, bottom = 50.dp)
+                                    .padding(bottom = 80.dp, start = 20.dp, end = 20.dp)
                                     .wrapContentHeight()
                                     .fillMaxWidth(),
-                                shape = RoundedCornerShape(15.dp)
+                                shape = RoundedCornerShape(5.dp)
                             ) {
                                 Text(
-                                    text = "Network not detected, check your network settings",
+                                    text = "Network not detected, check your network settings. Once you are connected to a network, swipe down to refresh the data\n",
                                     style = MaterialTheme.typography.headlineLarge,
                                     color = MaterialTheme.colorScheme.onSecondary,
                                     softWrap = true,
@@ -66,12 +96,11 @@ class MainActivity : ComponentActivity() {
                                     lineHeight = 18.sp
                                 )
                             }
-                        }
-                    }, floatingActionButtonPosition = FabPosition.Center
-                ) {
-                    MainNavigation(
-                        navController = navController
-                    )
+                        }) {
+                        MainNavigation(
+                            navController = navController
+                        )
+                    }
                 }
             }
         }
