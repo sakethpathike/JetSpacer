@@ -212,16 +212,16 @@ fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
                 keyboardActions = KeyboardActions(onSearch = {
                     isEditedIconClicked.value = false
                     randomCuriosityCameraVM.currentPage.value = 1
-                    try {
+                    if(solValue.value==""){
+                        Toast.makeText(
+                            context,
+                            "Value of sol cannot be empty",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }else{
+                        isEditedIconClicked.value = false
+                        randomCuriosityCameraVM.currentPage.value = 1
                         onContinueClick()
-                    } catch (_: Exception) {
-                        if (solValue.value.isEmpty()) {
-                            Toast.makeText(
-                                context,
-                                "Value of sol cannot be empty",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
                     }
                 }),
                 maxLines = 1
@@ -247,9 +247,17 @@ fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
                 APODSideIconButton(
                     imageVector = Icons.Outlined.Done,
                     onClick = {
-                        isEditedIconClicked.value = false
-                        randomCuriosityCameraVM.currentPage.value = 1
-                        onContinueClick()
+                        if(solValue.value==""){
+                            Toast.makeText(
+                                context,
+                                "Value of sol cannot be empty",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }else{
+                            isEditedIconClicked.value = false
+                            randomCuriosityCameraVM.currentPage.value = 1
+                            onContinueClick()
+                        }
                     },
                     iconBtnColor = MaterialTheme.colorScheme.onPrimary.copy(0.3f),
                     iconColor = MaterialTheme.colorScheme.onPrimary,

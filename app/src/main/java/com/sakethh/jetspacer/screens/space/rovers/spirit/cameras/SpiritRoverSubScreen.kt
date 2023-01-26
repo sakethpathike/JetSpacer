@@ -242,7 +242,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
         Snackbar(
             containerColor = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
-                .padding(start = 20.dp, end = 20.dp, bottom = 50.dp)
+                .padding(start = 20.dp, end = 20.dp, bottom = 70.dp)
                 .wrapContentHeight()
                 .fillMaxWidth(),
             shape = RoundedCornerShape(15.dp)
@@ -264,13 +264,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                 .padding(it)
         ) {
             SolTextField(solValue = currentScreenSolValue, onContinueClick = {
-                try {
                     loadData()
-                }catch (_:Exception){
-                    if(currentScreenSolValue.value.isEmpty()){
-                        Toast.makeText(context,"Value of sol cannot be empty",Toast.LENGTH_SHORT).show()
-                    }
-                }
             })
             val statusDescriptionForLoadingScreen =
                 if (cameraName != SpiritCamerasVM.SpiritCameras.RANDOM) {
