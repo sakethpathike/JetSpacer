@@ -45,7 +45,7 @@ class RoversScreenVM : ViewModel() {
             name = "NAVCAM",
             composable = { CuriosityCamerasScreen(cameraName = CuriosityCamerasVM.CuriosityCameras.NAVCAM) }),
     )
-    val atLastIndexInLazyVerticalGrid = mutableStateOf(false)
+
 
     val imgURL = mutableStateOf("")
     val capturedOn = mutableStateOf("")
@@ -60,6 +60,8 @@ class RoversScreenVM : ViewModel() {
 
     object RoverScreenUtils {
         val paddingValues = mutableStateOf(PaddingValues(0.dp))
+        val atLastIndexInLazyVerticalGrid = mutableStateOf(false)
+        val atNearlyLastImageAtLastSolPage = mutableStateOf(false)
     }
 
     fun openRoverBtmSheet(

@@ -288,7 +288,7 @@ fun SpaceScreen(navController: NavController) {
                     item {
                         if (isDatePickerAlertDialogEnabled.value) {
                             androidx.compose.material3.AlertDialog(
-                                containerColor = MaterialTheme.colorScheme.secondary,
+                                containerColor = MaterialTheme.colorScheme.surface,
                                 onDismissRequest = {
                                     isDatePickerAlertDialogEnabled.value = false
                                 },
@@ -296,7 +296,7 @@ fun SpaceScreen(navController: NavController) {
                                     androidx.compose.material3.Text(
                                         text = "Pick a date!",
                                         style = MaterialTheme.typography.headlineLarge,
-                                        color = MaterialTheme.colorScheme.onSecondary,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         fontSize = 18.sp
                                     )
                                 }, text = {
@@ -304,7 +304,7 @@ fun SpaceScreen(navController: NavController) {
                                         minYear = 1995,
                                         maxYear = currentYear,
                                         textStyle = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
-                                        textColor = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
+                                        textColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
                                     ) { selectedDate ->
                                         apodURL.value =
                                             "${selectedDate.year}-${selectedDate.monthValue}-${selectedDate.dayOfMonth}"
@@ -318,12 +318,12 @@ fun SpaceScreen(navController: NavController) {
                                                 spaceScreenVM.getAPODDateData(apodURL.value)
                                             }
                                         },
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
                                     ) {
                                         androidx.compose.material3.Text(
                                             text = "Change date NOW!",
                                             style = MaterialTheme.typography.headlineMedium,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            color = MaterialTheme.colorScheme.surface
                                         )
                                     }
                                 }, dismissButton = {
@@ -334,13 +334,13 @@ fun SpaceScreen(navController: NavController) {
                                         },
                                         border = BorderStroke(
                                             1.dp,
-                                            MaterialTheme.colorScheme.onSecondary
+                                            MaterialTheme.colorScheme.onSurface
                                         )
                                     ) {
                                         androidx.compose.material3.Text(
                                             text = "Not really(¬_¬ )",
                                             style = MaterialTheme.typography.headlineMedium,
-                                            color = MaterialTheme.colorScheme.onSecondary
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                 })

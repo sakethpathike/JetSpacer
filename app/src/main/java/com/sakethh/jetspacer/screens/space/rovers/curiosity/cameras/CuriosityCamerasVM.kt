@@ -16,7 +16,7 @@ class CuriosityCamerasVM(
 ) :
     ViewModel() {
 
-    val atNearlyLastImageAtLastSolPage = mutableStateOf(false)
+
 
     val _fhazDataFromAPI = mutableStateOf<List<Photo>>(emptyList())
     val fhazDataFromAPI = mutableStateOf<List<Photo>>(emptyList())

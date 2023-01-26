@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.navigation.BottomNavigationComposable
 import com.sakethh.jetspacer.navigation.MainNavigation
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
@@ -61,6 +62,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
             AppTheme {
+                val systemColor= rememberSystemUiController()
+                systemColor.setStatusBarColor(MaterialTheme.colorScheme.surface)
+                systemColor.setNavigationBarColor(MaterialTheme.colorScheme.primary)
                 Scaffold(
                     bottomBar = {
                         BottomNavigationComposable(

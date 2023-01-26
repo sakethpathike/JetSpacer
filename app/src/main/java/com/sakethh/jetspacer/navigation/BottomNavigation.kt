@@ -57,7 +57,7 @@ fun BottomNavigationComposable(
         ),
     )
     AppTheme {
-        NavigationBar(modifier = Modifier.height(52.dp),containerColor = MaterialTheme.colorScheme.primaryContainer) {
+        NavigationBar(modifier = Modifier.height(52.dp),containerColor = MaterialTheme.colorScheme.primary) {
             bottomNavDataList.forEach {
                 val isSelected = currentDestination.toString() == it.navigationRoute
                 val currentIconVector = if (isSelected) {
@@ -70,8 +70,7 @@ fun BottomNavigationComposable(
                 } else {
                     it.nonSelectedIconRes
                 }
-                NavigationBarItem(/*
-                    colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(0.3f)),*/
+                NavigationBarItem(
                     selected = isSelected, onClick = {
                     if (!isSelected) {
                         navController.navigate(it.navigationRoute)
@@ -81,14 +80,14 @@ fun BottomNavigationComposable(
                         Icon(
                             imageVector = currentIconVector,
                             contentDescription = it.name,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = if(isSelected) MaterialTheme.colorScheme.primary else  MaterialTheme.colorScheme.onPrimary
                         )
                     } else {
                         currentIconRes?.let { it1 -> painterResource(id = it1) }?.let { it2 ->
                             Icon(
                                 painter = it2,
                                 contentDescription = it.name,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                tint = if(isSelected) MaterialTheme.colorScheme.primary else  MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }

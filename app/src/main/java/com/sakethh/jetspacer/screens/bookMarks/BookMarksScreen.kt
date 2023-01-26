@@ -52,9 +52,6 @@ fun BookMarksScreen(navController: NavController) {
         }
 
     }
-    val systemUIController = rememberSystemUiController()
-    systemUIController.setStatusBarColor(MaterialTheme.colorScheme.surface)
-    systemUIController.setNavigationBarColor(MaterialTheme.colorScheme.primaryContainer)
     val bookMarksVM: BookMarksVM = viewModel()
     val selectedChipIndex = rememberSaveable { mutableStateOf(0) }
 
@@ -93,15 +90,16 @@ fun BookMarksScreen(navController: NavController) {
                                 label = {
                                     Text(
                                         text = bookMarksScreensData.screenName,
-                                        color = if (selectedChipIndex.value == index) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                        color = if (selectedChipIndex.value == index) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onSurface,
                                         style = MaterialTheme.typography.headlineMedium
                                     )
                                 },
                                 border = FilterChipDefaults.filterChipBorder(
-                                    selectedBorderColor = MaterialTheme.colorScheme.primary,
-                                    borderWidth = 1.dp
+                                    selectedBorderColor = MaterialTheme.colorScheme.onSurface,
+                                    borderWidth = 1.dp,
+                                    borderColor = MaterialTheme.colorScheme.onSurface
                                 ),
-                                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = MaterialTheme.colorScheme.primary)
+                                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = MaterialTheme.colorScheme.onSurface)
                             )
                         }
                     }

@@ -63,7 +63,7 @@ fun StatusScreen(title: String, description: String, status: Status) {
                     modifier = Modifier
                         .padding(start = 25.dp, top = 22.dp)
                         .size(40.dp),
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
                     strokeWidth = 4.dp
                 )
             }

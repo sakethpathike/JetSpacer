@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,7 +38,7 @@ fun CuriosityCamerasScreen(cameraName: CuriosityCamerasVM.CuriosityCameras) {
     val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
     val roversScreenVM: RoversScreenVM = viewModel()
     val coroutineScope = rememberCoroutineScope()
-    val context= LocalContext.current
+    val context = LocalContext.current
     val solImagesData = when (cameraName) {
         CuriosityCamerasVM.CuriosityCameras.CHEMCAM ->
             curiosityCameraVM.chemcamDataFromAPI.value
@@ -142,12 +143,9 @@ fun CuriosityCamerasScreen(cameraName: CuriosityCamerasVM.CuriosityCameras) {
         }
     }
     val bottomSheetScaffold = rememberBottomSheetScaffoldState()
-    if (solImagesData.isNotEmpty() && expressionForShowingSnackBar && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
+    if (solImagesData.isNotEmpty() && expressionForShowingSnackBar && RoversScreenVM.RoverScreenUtils.atLastIndexInLazyVerticalGrid.value) {
         coroutineScope.launch {
             bottomSheetScaffold.bottomSheetState.expand()
-            if (bottomSheetScaffold.bottomSheetState.isCollapsed) {
-                bottomSheetScaffold.bottomSheetState.expand()
-            }
         }
     } else {
         coroutineScope.launch {
@@ -247,7 +245,7 @@ fun CuriosityCamerasScreen(cameraName: CuriosityCamerasVM.CuriosityCameras) {
         rememberPullRefreshState(refreshing = isRefreshing.value,
             onRefresh = {
                 isRefreshing.value = true
-                Toast.makeText(context,"Refreshing data in a moment", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Refreshing data in a moment", Toast.LENGTH_SHORT).show()
                 coroutineScope.launch {
                     loadData()
                 }
@@ -256,70 +254,85 @@ fun CuriosityCamerasScreen(cameraName: CuriosityCamerasVM.CuriosityCameras) {
                 }
             })
     Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
-    BottomSheetScaffold(backgroundColor = MaterialTheme.colorScheme.surface,sheetPeekHeight = 0.dp,sheetContent = {
-        Snackbar(
-            containerColor = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier
-                .padding(start = 20.dp, end = 20.dp, bottom = 50.dp)
-                .wrapContentHeight()
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(15.dp)
-        ) {
-            Text(
-                text = "You've reached the end, change the sol value to explore more!",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onSecondary,
-                softWrap = true,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Start,
-                lineHeight = 18.sp
-            )
-        }
-    }) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(it)
-        ) {
-            SolTextField(solValue = currentScreenSolValue, onContinueClick = {
-                CuriosityCameraScreen.currentPage = 0
-                loadData()
-            })
-            val statusDescriptionForLoadingScreen =
-                if (cameraName != CuriosityCamerasVM.CuriosityCameras.RANDOM) {
-                    "fetching the images from this camera that were captured on sol ${currentScreenSolValue.value}"
-                } else {
-                    "fetching the images that were captured on sol ${currentScreenSolValue.value}"
+        BottomSheetScaffold(scaffoldState = bottomSheetScaffold,
+            sheetGesturesEnabled = false,
+            drawerBackgroundColor = Color.Transparent,
+            drawerContentColor = Color.Transparent,
+            drawerScrimColor = Color.Transparent,
+            backgroundColor = Color.Transparent,
+            sheetBackgroundColor = Color.Transparent,
+            sheetPeekHeight = 0.dp,
+            sheetContent = {
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .padding(start = 20.dp, end = 20.dp, bottom = 50.dp)
+                        .wrapContentHeight()
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(15.dp)
+                ) {
+                    Text(
+                        text = "You've reached the end, change the sol value to explore more!",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        softWrap = true,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Start,
+                        lineHeight = 18.sp
+                    )
                 }
-            val statusDescriptionFor404Screen =
-                if (cameraName != CuriosityCamerasVM.CuriosityCameras.RANDOM) {
-                    "No images were captured by this camera on sol ${currentScreenSolValue.value}. Change the sol value; it may give results"
+            }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(it)
+            ) {
+                SolTextField(solValue = currentScreenSolValue, onContinueClick = {
+                    CuriosityCameraScreen.currentPage = 0
+                    try {
+                        loadData()
+                    }catch (_:Exception){
+                        if(currentScreenSolValue.value.isEmpty()){
+                            Toast.makeText(context,"Value of sol cannot be empty",Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                })
+                val statusDescriptionForLoadingScreen =
+                    if (cameraName != CuriosityCamerasVM.CuriosityCameras.RANDOM) {
+                        "fetching the images from this camera that were captured on sol ${currentScreenSolValue.value}"
+                    } else {
+                        "fetching the images that were captured on sol ${currentScreenSolValue.value}"
+                    }
+                val statusDescriptionFor404Screen =
+                    if (cameraName != CuriosityCamerasVM.CuriosityCameras.RANDOM) {
+                        "No images were captured by this camera on sol ${currentScreenSolValue.value}. Change the sol value; it may give results"
+                    } else {
+                        "No images were captured on sol ${currentScreenSolValue.value}. Change the sol value; it may give results."
+                    }
+
+                val isConnectedToInternet =
+                    HomeScreenViewModel.Network.connectedToInternet.collectAsState()
+                if (!isDataLoaded) {
+                    StatusScreen(
+                        title = "Wait a moment!",
+                        description = statusDescriptionForLoadingScreen,
+                        status = Status.LOADING
+                    )
+
+                } else if (solImagesData.isEmpty()) {
+                    StatusScreen(
+                        title = "4ooooFour",
+                        description = statusDescriptionFor404Screen,
+                        status = Status.FOURO4InMarsScreen
+                    )
+                } else if (!isDataLoaded && (!isConnectedToInternet.value || !HomeScreenViewModel.Network.isConnectionSucceed.value)) {
+                    StatusScreen(
+                        title = "",
+                        description = statusDescriptionFor404Screen,
+                        status = Status.NO_INTERNET
+                    )
                 } else {
-                    "No images were captured on sol ${currentScreenSolValue.value}. Change the sol value; it may give results."
-                }
-
-            val isConnectedToInternet =
-                HomeScreenViewModel.Network.connectedToInternet.collectAsState()
-            if (!isDataLoaded) {
-                StatusScreen(
-                    title = "Wait a moment!",
-                    description = statusDescriptionForLoadingScreen,
-                    status = Status.LOADING
-                )
-
-            } else if (solImagesData.isEmpty()) {
-                StatusScreen(
-                    title = "4ooooFour",
-                    description = statusDescriptionFor404Screen,
-                    status = Status.FOURO4InMarsScreen
-                )
-            } else if (!isDataLoaded && (!isConnectedToInternet.value || !HomeScreenViewModel.Network.isConnectionSucceed.value)) {
-                StatusScreen(
-                    title = "",
-                    description = statusDescriptionFor404Screen,
-                    status = Status.NO_INTERNET
-                )
-            } else {
                     ModifiedLazyVerticalGrid(
                         listData = solImagesData,
                         loadMoreButtonBooleanExpression = expressionForShowingLoadMoreBtn

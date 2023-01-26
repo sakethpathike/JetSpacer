@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Done
@@ -22,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -71,11 +73,11 @@ fun ModifiedLazyVerticalGrid(
     }
     LaunchedEffect(key1 = atEndOfTheList) {
         if (atEndOfTheList) {
-            roversScreenVM.atLastIndexInLazyVerticalGrid.value = true
-            curiosityCameraVM.atNearlyLastImageAtLastSolPage.value = true
+            RoversScreenVM.RoverScreenUtils.atLastIndexInLazyVerticalGrid.value = true
+            RoversScreenVM.RoverScreenUtils.atNearlyLastImageAtLastSolPage.value = true
         } else {
-            roversScreenVM.atLastIndexInLazyVerticalGrid.value = false
-            curiosityCameraVM.atNearlyLastImageAtLastSolPage.value = false
+            RoversScreenVM.RoverScreenUtils.atLastIndexInLazyVerticalGrid.value = false
+            RoversScreenVM.RoverScreenUtils.atNearlyLastImageAtLastSolPage.value = false
         }
     }
     AppTheme {
@@ -157,6 +159,7 @@ fun LazyStaggeredGridState.atLastIndex(): Boolean {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
+    val context= LocalContext.current
     val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
     val manifestForCuriosityVM: ManifestForCuriosityVM = viewModel()
     val isEditedIconClicked = rememberSaveable { mutableStateOf(false) }
@@ -172,8 +175,10 @@ fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
         ) {
             OutlinedTextField(
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    cursorColor = MaterialTheme.colorScheme.inverseSurface
+                    textColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.onPrimary,
+                    focusedBorderColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 singleLine = true,
                 modifier = Modifier
@@ -187,7 +192,7 @@ fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
                     Icon(
                         imageVector = Icons.Outlined.Search,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 },
                 enabled = isEditedIconClicked.value,
@@ -200,7 +205,25 @@ fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
                         fontSize = 15.sp
                     )
                 },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(onSearch = {
+                    isEditedIconClicked.value = false
+                    randomCuriosityCameraVM.currentPage.value = 1
+                    try {
+                        onContinueClick()
+                    } catch (_: Exception) {
+                        if (solValue.value.isEmpty()) {
+                            Toast.makeText(
+                                context,
+                                "Value of sol cannot be empty",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }),
                 maxLines = 1
             )
 

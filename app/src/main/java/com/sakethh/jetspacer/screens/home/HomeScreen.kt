@@ -77,9 +77,6 @@ import java.util.*
 @Composable
 fun HomeScreen() {
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
-    val systemUIController = rememberSystemUiController()
-    systemUIController.setStatusBarColor(MaterialTheme.colorScheme.surface)
-    systemUIController.setNavigationBarColor(MaterialTheme.colorScheme.primaryContainer)
     val activity = LocalContext.current as? Activity
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -315,10 +312,10 @@ fun HomeScreen() {
                                 .padding(end = 15.dp, top = 20.dp)
                                 .background(
                                     shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primaryContainer
+                                    color = MaterialTheme.colorScheme.primary
                                 ),
-                            iconBtnColor = MaterialTheme.colorScheme.primaryContainer,
-                            iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            iconBtnColor = MaterialTheme.colorScheme.onPrimary,
+                            iconColor = MaterialTheme.colorScheme.onPrimary,
                             iconModifier = Modifier
                         )
                     }
@@ -387,7 +384,7 @@ fun HomeScreen() {
                             )
                             CardForRowGridRaw(
                                 title = "Location",
-                                value = "${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.district}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.city}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.country_name}",
+                                value = "${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.city}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.country_name}",
                                 cardModifier = Modifier
                                     .wrapContentHeight()
                                     .fillMaxWidth()
@@ -842,8 +839,8 @@ fun CardRowGrid(
     lhsShimmerHighlightColor: Color? = null,
     rhsCardTitle: String,
     rhsCardValue: String,
-    lhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-    rhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    lhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
+    rhsCardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
     rhsOnClick: () -> Unit = {},
     isRHSShimmerVisible: Boolean? = null,
     isRHSShimmering: Boolean = false,
@@ -898,7 +895,7 @@ fun CardForRowGridRaw(
     cardModifier: Modifier = Modifier
         .height(85.dp)
         .width(150.dp),
-    cardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    cardColors: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
     inSpaceScreen: Boolean = false,
     imageHeight: Dp = 110.dp,
     imgURL: String = "",
@@ -950,7 +947,7 @@ fun CardForRowGridRaw(
                 ) {
                     Text(
                         text = title,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = MaterialTheme.colorScheme.onSecondary,
                         fontSize = 14.sp,
                         style = MaterialTheme.typography.headlineMedium,
                         lineHeight = 16.sp,
@@ -959,7 +956,7 @@ fun CardForRowGridRaw(
                     )
                     Text(
                         text = value,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = MaterialTheme.colorScheme.onSecondary,
                         fontSize = 16.sp,
                         style = MaterialTheme.typography.headlineLarge,
                         lineHeight = 18.sp,
@@ -972,10 +969,10 @@ fun CardForRowGridRaw(
                         Modifier.background(
                             brush = Brush.horizontalGradient(
                                 listOf(
-                                    MaterialTheme.colorScheme.primaryContainer.copy(
+                                    MaterialTheme.colorScheme.secondary.copy(
                                         0.3f
                                     ),
-                                    MaterialTheme.colorScheme.primaryContainer.copy(1f)
+                                    MaterialTheme.colorScheme.secondary.copy(1f)
                                 )
                             )
                         )
@@ -1231,11 +1228,11 @@ fun APODCardComposable(
                         Text(
                             text = categoryChipText,
                             style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            color = MaterialTheme.colorScheme.onSecondary,
                             fontSize = 12.sp
                         )
                     },
-                    colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.secondary)
                 )
             }
         }
@@ -1255,7 +1252,7 @@ fun AlertDialogForDeletingFromDB(
     }
     AppTheme {
         AlertDialog(
-            containerColor = MaterialTheme.colorScheme.secondary,
+            containerColor = MaterialTheme.colorScheme.primary,
             onDismissRequest = {
                 isAlertDialogEnabledForRoversDB.value =
                     false;isAlertDialogEnabledForAPODDB.value =
@@ -1265,14 +1262,14 @@ fun AlertDialogForDeletingFromDB(
                 Text(
                     text = "Wait a minute!",
                     style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onSecondary,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 18.sp
                 )
             }, text = {
                 Text(
                     text = dialogText,
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSecondary,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     lineHeight = 18.sp
                 )
             }, confirmButton = {
@@ -1282,12 +1279,12 @@ fun AlertDialogForDeletingFromDB(
                         isAlertDialogEnabledForAPODDB.value = false
                         onConfirmBtnClick()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onPrimary)
                 ) {
                     Text(
                         text = "Remove it ASAP!",
                         style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }, dismissButton = {
@@ -1298,13 +1295,13 @@ fun AlertDialogForDeletingFromDB(
                     },
                     border = BorderStroke(
                         1.dp,
-                        MaterialTheme.colorScheme.onSecondary
+                        MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
                     Text(
                         text = "Um-mm, Never mind",
                         style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             })

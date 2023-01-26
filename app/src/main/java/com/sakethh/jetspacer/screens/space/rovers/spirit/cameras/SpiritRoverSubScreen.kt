@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -195,7 +196,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
     }
 
     val bottomSheetScaffold = rememberBottomSheetScaffoldState()
-    if (solImagesData.isNotEmpty() && expressionForShowingSnackBar && roversScreenVM.atLastIndexInLazyVerticalGrid.value) {
+    if (solImagesData.isNotEmpty() && expressionForShowingSnackBar && RoversScreenVM.RoverScreenUtils.atLastIndexInLazyVerticalGrid.value) {
         coroutineScope.launch {
             bottomSheetScaffold.bottomSheetState.expand()
             if (bottomSheetScaffold.bottomSheetState.isCollapsed) {
@@ -230,7 +231,14 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                 }
             })
     Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
-    BottomSheetScaffold(backgroundColor = MaterialTheme.colorScheme.surface,sheetPeekHeight = 0.dp,sheetContent = {
+        BottomSheetScaffold(scaffoldState = bottomSheetScaffold,
+            sheetGesturesEnabled = false,
+            drawerBackgroundColor = Color.Transparent,
+            drawerContentColor = Color.Transparent,
+            drawerScrimColor = Color.Transparent,
+            backgroundColor = Color.Transparent,
+            sheetBackgroundColor = Color.Transparent,
+            sheetPeekHeight = 0.dp,sheetContent = {
         Snackbar(
             containerColor = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
@@ -256,7 +264,13 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                 .padding(it)
         ) {
             SolTextField(solValue = currentScreenSolValue, onContinueClick = {
-                loadData()
+                try {
+                    loadData()
+                }catch (_:Exception){
+                    if(currentScreenSolValue.value.isEmpty()){
+                        Toast.makeText(context,"Value of sol cannot be empty",Toast.LENGTH_SHORT).show()
+                    }
+                }
             })
             val statusDescriptionForLoadingScreen =
                 if (cameraName != SpiritCamerasVM.SpiritCameras.RANDOM) {

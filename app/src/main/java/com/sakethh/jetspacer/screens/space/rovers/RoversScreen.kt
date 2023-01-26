@@ -90,19 +90,19 @@ fun RoversScreen(navController: NavController) {
                 gesturesEnabled = true,
                 drawerContent = {
                     CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
-                        Column(
+                        AppTheme {
+                            Column(
                             Modifier
                                 .fillMaxWidth(0.75f)
                                 .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.primaryContainer),
+                                .background(MaterialTheme.colorScheme.surface),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.Start
                         ) {
                             Text(
                                 text = "Select\none of the\nRovers",
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 style = MaterialTheme.typography.headlineLarge,
-                                fontWeight = FontWeight.Bold,
                                 fontSize = 40.sp,
                                 modifier = Modifier.padding(start = 15.dp),
                                 maxLines = 3,
@@ -111,7 +111,7 @@ fun RoversScreen(navController: NavController) {
                             )
                             Divider(
                                 thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.padding(
                                     start = 25.dp,
                                     end = 25.dp,
@@ -141,7 +141,7 @@ fun RoversScreen(navController: NavController) {
                                         Icon(
                                             imageVector = Icons.Outlined.Camera,
                                             contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            tint = MaterialTheme.colorScheme.onSurface,
                                             modifier = Modifier.padding(end = 10.dp)
                                         )
                                     }
@@ -152,9 +152,8 @@ fun RoversScreen(navController: NavController) {
                                     ) {
                                         Text(
                                             text = roversScreen.screenName,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            color = MaterialTheme.colorScheme.onSurface,
                                             style = MaterialTheme.typography.headlineLarge,
-                                            fontWeight = FontWeight.Bold,
                                             fontSize = 26.sp
                                         )
                                     }
@@ -162,7 +161,7 @@ fun RoversScreen(navController: NavController) {
                             }
                             Divider(
                                 thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.padding(
                                     start = 25.dp,
                                     end = 25.dp,
@@ -170,7 +169,7 @@ fun RoversScreen(navController: NavController) {
                                     bottom = 15.dp
                                 )
                             )
-                        }
+                        }}
                     }
                 },
                 drawerState = navigationDrawerState
@@ -222,13 +221,34 @@ fun RoversScreen(navController: NavController) {
                                     }
                                     bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
                                 },
-                                onConfirmBookMarkDeletionButtonClick = {bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL) }
+                                onConfirmBookMarkDeletionButtonClick = {
+                                    coroutineScope.launch {
+                                        didDataGetAddedInDB= bookMarksVM.deleteDataFromMARSDB(bookMarksVM.imgURL)
+                                    }.invokeOnCompletion {
+                                        if (didDataGetAddedInDB) {
+                                            Toast.makeText(
+                                                context,
+                                                "Bookmark didn't got removed as expected, report it:(",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                                .show()
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Removed from bookmarks:)",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                                .show()
+                                        }
+                                        bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
+                                    }
+                                }
 
                             )
                         },
                         sheetState = bottomSheetState,
                         sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
-                        sheetBackgroundColor = MaterialTheme.colorScheme.primary
+                        sheetBackgroundColor = MaterialTheme.colorScheme.surface
                     ) {
                         Scaffold(
                             topBar = {
