@@ -33,7 +33,7 @@ fun MainNavigation(navController: NavHostController) {
             RoversScreen(navController = navController)
         }
         composable(route = NavigationRoutes.NEWS_SCREEN){
-            NewsScreen()
+            NewsScreen(navController = navController)
         }
     }
 }

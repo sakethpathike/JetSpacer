@@ -19,8 +19,10 @@ import androidx.navigation.NavController
 import com.sakethh.jetspacer.localDB.*
 import com.sakethh.jetspacer.screens.bookMarks.screens.APODBookMarksScreen
 import com.sakethh.jetspacer.screens.bookMarks.screens.MarsRoversBookMarksScreen
+import com.sakethh.jetspacer.screens.bookMarks.screens.NewsBookmarkScreen
 import com.sakethh.jetspacer.screens.home.HomeScreen
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
+import com.sakethh.jetspacer.screens.news.NewsScreen
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
@@ -32,7 +34,10 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
             screenComposable = { APODBookMarksScreen(navController = it) }),
         BookMarksScreensData(
             screenName = "Mars Rover",
-            screenComposable = { MarsRoversBookMarksScreen(navController = it) })
+            screenComposable = { MarsRoversBookMarksScreen(navController = it) }),
+        BookMarksScreensData(
+            screenName = "News",
+            screenComposable = { NewsBookmarkScreen(navController = it) })
     )
     var imgURL = ""
     private val _bookMarksFromAPODDB = MutableStateFlow<List<APOD_DB_DTO>>(emptyList())
@@ -43,6 +48,9 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
 
     private val _bookMarksFromRoversDB = MutableStateFlow<List<MarsRoversDBDTO>>(emptyList())
     val bookMarksFromRoversDB = _bookMarksFromRoversDB.asStateFlow()
+
+    private val _bookMarksFromNewsDB = MutableStateFlow<List<NewsDB>>(emptyList())
+    val bookMarksFromNewsDB = _bookMarksFromNewsDB.asStateFlow()
 
     private val coroutineExceptionalHandler =
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
@@ -58,6 +66,11 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
             dbImplementation.localDBData().getBookMarkedRoverDBDATA().collect {
                 _bookMarksFromRoversDB.emit(it)
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler){
+            dbImplementation.localDBData().getBookMarkedNewsDATA().collect{
+                _bookMarksFromNewsDB.emit(it)
             }
         }
     }

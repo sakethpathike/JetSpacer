@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -46,11 +47,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.localDB.NewsDB
+import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
@@ -66,7 +69,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun NewsScreen() {
+fun NewsScreen(navController: NavController) {
     val newsVM: NewsVM = viewModel()
     val topHeadLinesData = newsVM.topHeadLinesListFromAPI
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -77,6 +80,15 @@ fun NewsScreen() {
     val newsBottomSheetContentImpl = NewsBottomSheetContentImpl().copy()
     val modalBottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    BackHandler {
+        if(modalBottomSheetState.isVisible){
+            coroutineScope.launch {
+                modalBottomSheetState.hide()
+            }
+        }else{
+            navController.navigate(route = NavigationRoutes.HOME_SCREEN)
+        }
+    }
     val isConnectedToInternet =
         HomeScreenViewModel.Network.connectedToInternet.collectAsState()
     val pullRefreshState =
@@ -158,7 +170,9 @@ fun NewsScreen() {
                     Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
                         LazyColumn(
                             contentPadding = it,
-                            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surface)
                         ) {
                             this.newsUI(
                                 topHeadLinesData = topHeadLinesData,
@@ -266,86 +280,173 @@ fun NewsScreen() {
 @OptIn(ExperimentalMaterialApi::class)
 fun LazyListScope.newsUI(
     bottomSheetState: ModalBottomSheetState,
-    topHeadLinesData: MutableState<List<Article>>,
+    topHeadLinesData: MutableState<List<Article>>?=null,
     coroutineScope: CoroutineScope,
+    bookMarkedData:State<List<NewsDB>>?=null,
     newsBottomSheetContentImpl: NewsBottomSheetContentImpl
 ) {
-    items(topHeadLinesData.value) {
-        Row(
-            modifier = Modifier
-                .padding(top = 15.dp, start = 10.dp, end = 10.dp)
-                .fillMaxWidth()
-                .wrapContentHeight()
-        ) {
-            Column(modifier = Modifier.fillMaxWidth(0.75f)) {
-                Text(
-                    text = it.title,
-                    fontSize = 20.sp,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(
-                        top = 15.dp,
-                        start = 15.dp,
-                        end = 15.dp
-                    ),
-                    textAlign = TextAlign.Start,
-                    lineHeight = 22.sp,
-                    maxLines = 4,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    overflow = TextOverflow.Ellipsis,
-                    minLines = 1
-                )
-                Text(
-                    text = it.source.name,
-                    fontSize = 14.sp,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(top = 20.dp),
-                    textAlign = TextAlign.Start,
-                    maxLines = 1,
-                    color = MaterialTheme.colorScheme.secondary,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = it.publishedAt,
-                    fontSize = 14.sp,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(top = 10.dp),
-                    textAlign = TextAlign.Start,
-                    maxLines = 1,
-                    color = MaterialTheme.colorScheme.secondary,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            Column {
-                Box {
-                    Coil_Image().CoilImage(
-                        imgURL = it.urlToImage,
-                        contentDescription = "",
-                        modifier = Modifier
-                            .size(100.dp)
-                            .border(
-                                shape = RoundedCornerShape(4.dp),
-                                border = BorderStroke(
-                                    0.dp,
-                                    Color.Transparent
-                                )
-                            )
-                            .align(Alignment.CenterEnd),
-                        onError = painterResource(id = R.drawable.baseline_image_24)
+
+    if (topHeadLinesData != null) {
+        items(topHeadLinesData.value) {
+            Row(
+                modifier = Modifier
+                    .padding(top = 15.dp, start = 10.dp, end = 10.dp)
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                Column(modifier = Modifier.fillMaxWidth(0.75f)) {
+                    Text(
+                        text = it.title,
+                        fontSize = 20.sp,
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.padding(
+                            top = 15.dp,
+                            start = 15.dp,
+                            end = 15.dp
+                        ),
+                        textAlign = TextAlign.Start,
+                        lineHeight = 22.sp,
+                        maxLines = 4,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        overflow = TextOverflow.Ellipsis,
+                        minLines = 1
                     )
-                    IconButton(onClick = {
-                        newsBottomSheetContentImpl.imageURL = it.urlToImage
-                        newsBottomSheetContentImpl.publishedTime = it.publishedAt
-                        newsBottomSheetContentImpl.sourceName = it.source.name
-                        newsBottomSheetContentImpl.sourceURL = it.url
-                        newsBottomSheetContentImpl.title = it.title
-                        coroutineScope.launch {
-                            bottomSheetState.show()
-                        }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = ""
+                    Text(
+                        text = it.source.name,
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.padding(top = 20.dp),
+                        textAlign = TextAlign.Start,
+                        maxLines = 1,
+                        color = MaterialTheme.colorScheme.secondary,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = it.publishedAt,
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.padding(top = 10.dp),
+                        textAlign = TextAlign.Start,
+                        maxLines = 1,
+                        color = MaterialTheme.colorScheme.secondary,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Column {
+                    Box {
+                        Coil_Image().CoilImage(
+                            imgURL = it.urlToImage,
+                            contentDescription = "",
+                            modifier = Modifier
+                                .size(100.dp)
+                                .border(
+                                    shape = RoundedCornerShape(4.dp),
+                                    border = BorderStroke(
+                                        0.dp,
+                                        Color.Transparent
+                                    )
+                                )
+                                .align(Alignment.CenterEnd),
+                            onError = painterResource(id = R.drawable.baseline_image_24)
                         )
+                        IconButton(onClick = {
+                            newsBottomSheetContentImpl.imageURL = it.urlToImage
+                            newsBottomSheetContentImpl.publishedTime = it.publishedAt
+                            newsBottomSheetContentImpl.sourceName = it.source.name
+                            newsBottomSheetContentImpl.sourceURL = it.url
+                            newsBottomSheetContentImpl.title = it.title
+                            coroutineScope.launch {
+                                bottomSheetState.show()
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = ""
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (bookMarkedData != null) {
+        items(bookMarkedData.value) {
+            Row(
+                modifier = Modifier
+                    .padding(top = 15.dp, start = 10.dp, end = 10.dp)
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                Column(modifier = Modifier.fillMaxWidth(0.75f)) {
+                    Text(
+                        text = it.title,
+                        fontSize = 20.sp,
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.padding(
+                            top = 15.dp,
+                            start = 15.dp,
+                            end = 15.dp
+                        ),
+                        textAlign = TextAlign.Start,
+                        lineHeight = 22.sp,
+                        maxLines = 4,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        overflow = TextOverflow.Ellipsis,
+                        minLines = 1
+                    )
+                    Text(
+                        text = it.sourceOfNews,
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.padding(top = 20.dp),
+                        textAlign = TextAlign.Start,
+                        maxLines = 1,
+                        color = MaterialTheme.colorScheme.secondary,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = it.publishedTime,
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.padding(top = 10.dp),
+                        textAlign = TextAlign.Start,
+                        maxLines = 1,
+                        color = MaterialTheme.colorScheme.secondary,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Column {
+                    Box {
+                        Coil_Image().CoilImage(
+                            imgURL = it.sourceURL,
+                            contentDescription = "",
+                            modifier = Modifier
+                                .size(100.dp)
+                                .border(
+                                    shape = RoundedCornerShape(4.dp),
+                                    border = BorderStroke(
+                                        0.dp,
+                                        Color.Transparent
+                                    )
+                                )
+                                .align(Alignment.CenterEnd),
+                            onError = painterResource(id = R.drawable.baseline_image_24)
+                        )
+                        IconButton(onClick = {
+                            newsBottomSheetContentImpl.imageURL = it.imageURL
+                            newsBottomSheetContentImpl.publishedTime = it.publishedTime
+                            newsBottomSheetContentImpl.sourceName = it.sourceOfNews
+                            newsBottomSheetContentImpl.sourceURL = it.sourceURL
+                            newsBottomSheetContentImpl.title = it.title
+                            coroutineScope.launch {
+                                bottomSheetState.show()
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = ""
+                            )
+                        }
                     }
                 }
             }

@@ -17,6 +17,8 @@ interface DBService {
 
     @Query("SELECT * FROM marsRovers_db ORDER BY imageURL ASC")
     fun getBookMarkedRoverDBDATA(): Flow<List<MarsRoversDBDTO>>
+    @Query("SELECT * FROM marsRovers_db ORDER BY imageURL ASC")
+    fun getBookMarkedNewsDATA(): Flow<List<NewsDB>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addNewBookMarkToRoverDB(marsRoverDbDto: MarsRoversDBDTO)
