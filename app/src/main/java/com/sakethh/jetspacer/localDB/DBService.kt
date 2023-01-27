@@ -24,8 +24,16 @@ interface DBService {
     @Query("DELETE from marsRovers_db WHERE imageURL = :imageURL")
     suspend fun deleteFromRoverDB(imageURL: String)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun addNewBookMarkToNewsDB(newsDB: NewsDB)
+
+    @Query("DELETE from newsDB WHERE imageURL = :imageURL")
+    suspend fun deleteFromNewsDB(imageURL: String)
+
     @Query("SELECT EXISTS(SELECT * FROM apod_db WHERE imageURL = :imageURL)")
     suspend fun doesThisExistsInAPODDB(imageURL: String):Boolean
     @Query("SELECT EXISTS(SELECT * FROM marsRovers_db WHERE imageURL = :imageURL)")
     suspend fun doesThisExistsInRoversDB(imageURL: String):Boolean
+    @Query("SELECT EXISTS(SELECT * FROM newsDB WHERE imageURL = :imageURL)")
+    suspend fun doesThisExistsInNewsDB(imageURL: String):Boolean
 }

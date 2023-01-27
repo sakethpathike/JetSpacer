@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material3.*
@@ -28,34 +30,40 @@ data class BottomNavigationItem(
     val selectedIconRes: Int? = null,
     val nonSelectedIconRes: Int? = null
 )
-
+val bottomNavDataList: List<BottomNavigationItem> = listOf(
+    BottomNavigationItem(
+        name = "Home",
+        navigationRoute = NavigationRoutes.HOME_SCREEN,
+        selectedIcon = Icons.Filled.Home,
+        nonSelectedIcon = Icons.Outlined.Home
+    ),
+    BottomNavigationItem(
+        name = "Space",
+        navigationRoute = NavigationRoutes.SPACE_SCREEN,
+        selectedIcon = null,
+        nonSelectedIcon = null,
+        selectedIconRes = R.drawable.satellite_filled,
+        nonSelectedIconRes = R.drawable.satellite_outlined
+    ),
+    BottomNavigationItem(
+        name = "News",
+        navigationRoute = NavigationRoutes.NEWS_SCREEN,
+        selectedIcon = Icons.Filled.Newspaper,
+        nonSelectedIcon = Icons.Outlined.Newspaper
+    ),
+    BottomNavigationItem(
+        name = "Bookmarks",
+        navigationRoute = NavigationRoutes.BOOKMARKS_SCREEN,
+        selectedIcon = Icons.Filled.Bookmarks,
+        nonSelectedIcon = Icons.Outlined.Bookmarks
+    ),
+)
 @Composable
 fun BottomNavigationComposable(
     navController: NavController
 ) {
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
-    val bottomNavDataList: List<BottomNavigationItem> = listOf(
-        BottomNavigationItem(
-            name = "Home",
-            navigationRoute = NavigationRoutes.HOME_SCREEN,
-            selectedIcon = Icons.Filled.Home,
-            nonSelectedIcon = Icons.Outlined.Home
-        ),
-        BottomNavigationItem(
-            name = "Space",
-            navigationRoute = NavigationRoutes.SPACE_SCREEN,
-            selectedIcon = null,
-            nonSelectedIcon = null,
-            selectedIconRes = R.drawable.satellite_filled,
-            nonSelectedIconRes = R.drawable.satellite_outlined
-        ),
-        BottomNavigationItem(
-            name = "Bookmarks",
-            navigationRoute = NavigationRoutes.BOOKMARKS_SCREEN,
-            selectedIcon = Icons.Filled.Bookmarks,
-            nonSelectedIcon = Icons.Outlined.Bookmarks
-        ),
-    )
+
     AppTheme {
         NavigationBar(modifier = Modifier.height(52.dp),containerColor = MaterialTheme.colorScheme.primary) {
             bottomNavDataList.forEach {

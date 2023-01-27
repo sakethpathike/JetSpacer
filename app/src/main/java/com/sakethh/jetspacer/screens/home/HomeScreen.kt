@@ -1247,7 +1247,9 @@ fun AlertDialogForDeletingFromDB(
 
     val dialogText: String = if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
         "Are you sure want to remove this image captured by the rover from bookmarks which is stored locally on your device? This can't be undone."
-    } else {
+    } else if(bookMarkedCategory==Constants.SAVED_IN_NEWS_DB) {
+        "Are you sure want to remove this NEWS publication from bookmarks which is stored locally on your device? This can't be undone."
+    }else {
         "Are you sure want to remove this APOD publication from bookmarks which is stored locally on your device? This can't be undone."
     }
     AppTheme {

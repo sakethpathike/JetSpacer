@@ -8,4 +8,5 @@ object NavigationRoutes {
     const val BOOKMARKS_SCREEN = "bookMarksScreen"
     const val SETTINGS_SCREEN = "settingsScreen"
     const val WEB_VIEW_SCREEN = "webViewScreen"
+    const val NEWS_SCREEN = "newsScreen"
 }

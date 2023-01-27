@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksScreen
 import com.sakethh.jetspacer.screens.home.HomeScreen
+import com.sakethh.jetspacer.screens.news.NewsScreen
 import com.sakethh.jetspacer.screens.space.SpaceScreen
 import com.sakethh.jetspacer.screens.space.apod.APODScreen
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreen
@@ -30,6 +31,9 @@ fun MainNavigation(navController: NavHostController) {
         }
         composable(route = NavigationRoutes.ROVERS_SCREEN) {
             RoversScreen(navController = navController)
+        }
+        composable(route = NavigationRoutes.NEWS_SCREEN){
+            NewsScreen()
         }
     }
 }

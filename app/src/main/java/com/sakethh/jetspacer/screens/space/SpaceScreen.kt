@@ -284,68 +284,6 @@ fun SpaceScreen(navController: NavController) {
                             imageHeight = 125.dp
                         )
                     }
-
-                    item {
-                        if (isDatePickerAlertDialogEnabled.value) {
-                            androidx.compose.material3.AlertDialog(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                onDismissRequest = {
-                                    isDatePickerAlertDialogEnabled.value = false
-                                },
-                                title = {
-                                    androidx.compose.material3.Text(
-                                        text = "Pick a date!",
-                                        style = MaterialTheme.typography.headlineLarge,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 18.sp
-                                    )
-                                }, text = {
-                                    WheelDatePicker(
-                                        minYear = 1995,
-                                        maxYear = currentYear,
-                                        textStyle = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
-                                        textColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
-                                    ) { selectedDate ->
-                                        apodURL.value =
-                                            "${selectedDate.year}-${selectedDate.monthValue}-${selectedDate.dayOfMonth}"
-                                    }
-                                }, confirmButton = {
-                                    androidx.compose.material3.Button(
-                                        onClick = {
-                                            isDatePickerAlertDialogEnabled.value =
-                                                false
-                                            coroutineScope.launch {
-                                                spaceScreenVM.getAPODDateData(apodURL.value)
-                                            }
-                                        },
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
-                                    ) {
-                                        androidx.compose.material3.Text(
-                                            text = "Change date NOW!",
-                                            style = MaterialTheme.typography.headlineMedium,
-                                            color = MaterialTheme.colorScheme.surface
-                                        )
-                                    }
-                                }, dismissButton = {
-                                    androidx.compose.material3.OutlinedButton(
-                                        onClick = {
-                                            isDatePickerAlertDialogEnabled.value =
-                                                false
-                                        },
-                                        border = BorderStroke(
-                                            1.dp,
-                                            MaterialTheme.colorScheme.onSurface
-                                        )
-                                    ) {
-                                        androidx.compose.material3.Text(
-                                            text = "Not really(¬_¬ )",
-                                            style = MaterialTheme.typography.headlineMedium,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                })
-                        }
-                    }
                     item {
                         androidx.compose.material3.Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -526,63 +464,65 @@ fun SpaceScreen(navController: NavController) {
         }
 
         if (isDatePickerAlertDialogEnabled.value) {
-            androidx.compose.material3.AlertDialog(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                onDismissRequest = {
-                    isDatePickerAlertDialogEnabled.value = false
-                },
-                title = {
-                    androidx.compose.material3.Text(
-                        text = "Pick a date!",
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = MaterialTheme.colorScheme.onSecondary,
-                        fontSize = 18.sp
-                    )
-                }, text = {
-                    WheelDatePicker(
-                        minYear = 1995,
-                        maxYear = currentYear,
-                        textStyle = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
-                        textColor = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary
-                    ) { selectedDate ->
-                        apodURL.value =
-                            "${selectedDate.year}-${selectedDate.monthValue}-${selectedDate.dayOfMonth}"
-                    }
-                }, confirmButton = {
-                    androidx.compose.material3.Button(
-                        onClick = {
-                            isDatePickerAlertDialogEnabled.value =
-                                false
-                            coroutineScope.launch {
-                                spaceScreenVM.getAPODDateData(apodURL.value)
+                    androidx.compose.material3.AlertDialog(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        onDismissRequest = {
+                            isDatePickerAlertDialogEnabled.value = false
+                        },
+                        title = {
+                            androidx.compose.material3.Text(
+                                text = "Pick a date!",
+                                style = MaterialTheme.typography.headlineLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 18.sp
+                            )
+                        }, text = {
+                            WheelDatePicker(
+                                minYear = 1995,
+                                maxYear = currentYear,
+                                textStyle = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
+                                textColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+                            ) { selectedDate ->
+                                apodURL.value =
+                                    "${selectedDate.year}-${selectedDate.monthValue}-${selectedDate.dayOfMonth}"
                             }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                    ) {
-                        androidx.compose.material3.Text(
-                            text = "Change date NOW!",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
-                }, dismissButton = {
-                    androidx.compose.material3.OutlinedButton(
-                        onClick = {
-                            isDatePickerAlertDialogEnabled.value =
-                                false
-                        },
-                        border = BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.onSecondary
-                        )
-                    ) {
-                        androidx.compose.material3.Text(
-                            text = "Not really(¬_¬ )",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSecondary
-                        )
-                    }
-                })
+                        }, confirmButton = {
+                            androidx.compose.material3.Button(
+                                onClick = {
+                                    isDatePickerAlertDialogEnabled.value =
+                                        false
+                                    coroutineScope.launch {
+                                        spaceScreenVM.getAPODDateData(apodURL.value)
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
+                            ) {
+                                androidx.compose.material3.Text(
+                                    text = "Change date NOW!",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.surface
+                                )
+                            }
+                        }, dismissButton = {
+                            androidx.compose.material3.OutlinedButton(
+                                onClick = {
+                                    isDatePickerAlertDialogEnabled.value =
+                                        false
+                                },
+                                border = BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.onSurface
+                                )
+                            ) {
+                                androidx.compose.material3.Text(
+                                    text = "Not really(¬_¬ )",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        })
+
+
         }
         if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
             AlertDialogForDeletingFromDB(

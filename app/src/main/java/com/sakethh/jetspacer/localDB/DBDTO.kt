@@ -47,3 +47,12 @@ data class MarsRoversDB(
     val category: MutableState<String> = mutableStateOf(""),
     val addedToLocalDBOn: MutableState<String> = mutableStateOf("")
 )
+
+@Entity(tableName="newsDB")
+data class NewsDB(
+    var title:String="",
+    var imageURL: String="",
+    var sourceURL:String="",
+    var sourceOfNews:String="",
+    var publishedTime:String=""
+)

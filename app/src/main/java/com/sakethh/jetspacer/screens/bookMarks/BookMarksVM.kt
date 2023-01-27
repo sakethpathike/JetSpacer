@@ -16,10 +16,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.sakethh.jetspacer.localDB.APOD_DB_DTO
-import com.sakethh.jetspacer.localDB.DBImplementation
-import com.sakethh.jetspacer.localDB.DBService
-import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
+import com.sakethh.jetspacer.localDB.*
 import com.sakethh.jetspacer.screens.bookMarks.screens.APODBookMarksScreen
 import com.sakethh.jetspacer.screens.bookMarks.screens.MarsRoversBookMarksScreen
 import com.sakethh.jetspacer.screens.home.HomeScreen
@@ -75,6 +72,11 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
         return dbImplementation.localDBData()
             .doesThisExistsInRoversDB(imageURL = imageURL)
     }
+    suspend fun deleteDataFromNewsDB(imageURL: String): Boolean {
+        dbImplementation.localDBData().deleteFromNewsDB(imageURL = imageURL)
+        return dbImplementation.localDBData()
+            .doesThisExistsInNewsDB(imageURL = imageURL)
+    }
 
     suspend fun addDataToAPODDB(apodDbDto: APOD_DB_DTO): Boolean {
         return if (dbImplementation.localDBData()
@@ -90,50 +92,77 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
     }
 
 
-suspend fun addDataToMarsDB(marsRoversDBDTO: MarsRoversDBDTO): Boolean {
-    return if (dbImplementation.localDBData()
-            .doesThisExistsInRoversDB(imageURL = marsRoversDBDTO.imageURL)
-    ) {
-        false
-    } else {
-        dbImplementation.localDBData()
-            .addNewBookMarkToRoverDB(marsRoverDbDto = marsRoversDBDTO)
-        dbImplementation.localDBData()
-            .doesThisExistsInRoversDB(imageURL = marsRoversDBDTO.imageURL)
-    }
-}
-
-fun doesThisExistsInAPODIconTxt(imageURL: String) {
-    var doesDataExistsInDB = false
-    viewModelScope.launch {
-        doesDataExistsInDB = dbImplementation.localDBData()
-            .doesThisExistsInAPODDB(imageURL = imageURL)
-    }.invokeOnCompletion {
-        if (!doesDataExistsInDB) {
-            bookMarkText.value = "Add to bookmarks"
-            bookMarkIcons.value = Icons.Outlined.BookmarkAdd
+    suspend fun addDataToMarsDB(marsRoversDBDTO: MarsRoversDBDTO): Boolean {
+        return if (dbImplementation.localDBData()
+                .doesThisExistsInRoversDB(imageURL = marsRoversDBDTO.imageURL)
+        ) {
+            false
         } else {
-            bookMarkText.value = "Remove from bookmarks"
-            bookMarkIcons.value = Icons.Outlined.BookmarkRemove
+            dbImplementation.localDBData()
+                .addNewBookMarkToRoverDB(marsRoverDbDto = marsRoversDBDTO)
+            dbImplementation.localDBData()
+                .doesThisExistsInRoversDB(imageURL = marsRoversDBDTO.imageURL)
         }
     }
-}
-
-fun doesThisExistsInRoverDBIconTxt(imageURL: String) {
-    var doesDataExistsInDB = false
-    viewModelScope.launch {
-        doesDataExistsInDB = dbImplementation.localDBData()
-            .doesThisExistsInRoversDB(imageURL = imageURL)
-    }.invokeOnCompletion {
-        if (!doesDataExistsInDB) {
-          bookMarkText.value = "Add to bookmarks"
-          bookMarkIcons.value = Icons.Outlined.BookmarkAdd
+    suspend fun addDataToNewsDB(newsDB: NewsDB): Boolean {
+        return if (dbImplementation.localDBData()
+                .doesThisExistsInNewsDB(imageURL = newsDB.imageURL)
+        ) {
+            false
         } else {
-           bookMarkText.value = "Remove from bookmarks"
-           bookMarkIcons.value = Icons.Outlined.BookmarkRemove
+            dbImplementation.localDBData()
+                .addNewBookMarkToNewsDB(newsDB = newsDB)
+            dbImplementation.localDBData()
+                .doesThisExistsInNewsDB(imageURL = newsDB.imageURL)
         }
     }
-}
+
+    fun doesThisExistsInAPODIconTxt(imageURL: String) {
+        var doesDataExistsInDB = false
+        viewModelScope.launch {
+            doesDataExistsInDB = dbImplementation.localDBData()
+                .doesThisExistsInAPODDB(imageURL = imageURL)
+        }.invokeOnCompletion {
+            if (!doesDataExistsInDB) {
+                bookMarkText.value = "Add to bookmarks"
+                bookMarkIcons.value = Icons.Outlined.BookmarkAdd
+            } else {
+                bookMarkText.value = "Remove from bookmarks"
+                bookMarkIcons.value = Icons.Outlined.BookmarkRemove
+            }
+        }
+    }
+    fun doesThisExistsInNewsDBIconTxt(imageURL: String) {
+        var doesDataExistsInDB = false
+        viewModelScope.launch {
+            doesDataExistsInDB = dbImplementation.localDBData()
+                .doesThisExistsInNewsDB(imageURL = imageURL)
+        }.invokeOnCompletion {
+            if (!doesDataExistsInDB) {
+                bookMarkText.value = "Add to bookmarks"
+                bookMarkIcons.value = Icons.Outlined.BookmarkAdd
+            } else {
+                bookMarkText.value = "Remove from bookmarks"
+                bookMarkIcons.value = Icons.Outlined.BookmarkRemove
+            }
+        }
+    }
+
+    fun doesThisExistsInRoverDBIconTxt(imageURL: String) {
+        var doesDataExistsInDB = false
+        viewModelScope.launch {
+            doesDataExistsInDB = dbImplementation.localDBData()
+                .doesThisExistsInRoversDB(imageURL = imageURL)
+        }.invokeOnCompletion {
+            if (!doesDataExistsInDB) {
+                bookMarkText.value = "Add to bookmarks"
+                bookMarkIcons.value = Icons.Outlined.BookmarkAdd
+            } else {
+                bookMarkText.value = "Remove from bookmarks"
+                bookMarkIcons.value = Icons.Outlined.BookmarkRemove
+            }
+        }
+    }
 }
 
 data class BookMarksScreensData(

@@ -107,59 +107,5 @@ fun BookMarksScreen(navController: NavController) {
             }
             bookMarksVM.bookMarksScreensData[selectedChipIndex.value].screenComposable(navController)
         }
-
-
     }
 }
-
-//items(bookMarksFromAPODDB) { apodBookMarkedItem ->
-//                        APODCardComposable(
-//                            homeScreenViewModel = homeScreenViewModel,
-//                            imageURL = apodBookMarkedItem.imageURL,
-//                            apodDate = apodBookMarkedItem.datePublished,
-//                            apodDescription = apodBookMarkedItem.description,
-//                            apodTitle = apodBookMarkedItem.title,
-//                            inBookMarkScreen = true,
-//                            imageOnClick = {
-//                                apodURL.value = apodBookMarkedItem.imageURL
-//                                apodTitle.value = apodBookMarkedItem.title
-//                                apodDate.value = apodBookMarkedItem.datePublished
-//                                apodDescription.value = apodBookMarkedItem.description
-//                                apodMediaType.value = apodBookMarkedItem.mediaType
-//                                coroutineScope.launch {
-//                                    bottomSheetState.show()
-//                                }
-//                            },
-//                            bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
-//                            apodMediaType = apodBookMarkedItem.mediaType,
-//                            saveToMarsRoversDB = false,
-//                            saveToAPODDB = true,
-//                            inAPODBottomSheetContent = false,
-//                            roverDBDTO = null
-//                        )
-//                    }
-//                    items(bookMarksFromRoversDB) { roverBookMarkedItem ->
-//                        APODCardComposable(
-//                            homeScreenViewModel = homeScreenViewModel,
-//                            bookMarkedCategory = Constants.SAVED_IN_ROVERS_DB,
-//                            inBookMarkScreen = true,
-//                            imageURL = roverBookMarkedItem.imageURL,
-//                            roverDBDTO = MarsRoversDBDTO().apply {
-//                                this.addedToLocalDBOn = roverBookMarkedItem.addedToLocalDBOn
-//                                this.capturedBy = roverBookMarkedItem.capturedBy
-//                                this.category = Constants.SAVED_IN_ROVERS_DB
-//                                this.earthDate = roverBookMarkedItem.earthDate
-//                                this.roverStatus = roverBookMarkedItem.roverStatus
-//                                this.roverName = roverBookMarkedItem.roverName
-//                                this.id = roverBookMarkedItem.imageURL
-//                                this.imageURL = roverBookMarkedItem.imageURL
-//                                this.isBookMarked = true
-//                                this.landingDate = roverBookMarkedItem.landingDate
-//                                this.launchingDate = roverBookMarkedItem.launchingDate
-//                                this.sol = roverBookMarkedItem.sol
-//                            },
-//                            saveToAPODDB = false,
-//                            saveToMarsRoversDB = true,
-//                            inAPODBottomSheetContent = false
-//                        )
-//                    }
