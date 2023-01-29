@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.screens.webview
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
@@ -41,6 +42,7 @@ object WebViewUtils {
     var newsBottomSheetContentImpl = NewsBottomSheetContentImpl()
 }
 
+@SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun WebViewScreen(navController: NavController) {
@@ -143,6 +145,7 @@ fun WebViewScreen(navController: NavController) {
                     }
                 })
             }, bottomBar = {
+                if(enableBtmBarInWebView){
                 TopAppBar(actions = {
                     bottomList.forEach {
                         IconButton(
@@ -158,9 +161,12 @@ fun WebViewScreen(navController: NavController) {
                             )
                         }
                     }
-                }, title = {})
+                }, title = {})}
             }) {
                 WebView(
+                    onCreated = {webView->
+                        webView.settings.javaScriptEnabled=true
+                    },
                     state = webViewState, modifier = Modifier
                         .padding(it)
                         .fillMaxSize()
@@ -201,3 +207,5 @@ fun WebViewScreen(navController: NavController) {
         }
     }
 }
+
+var enableBtmBarInWebView=false

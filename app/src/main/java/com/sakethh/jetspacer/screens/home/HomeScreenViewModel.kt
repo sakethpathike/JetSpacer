@@ -4,10 +4,15 @@ package com.sakethh.jetspacer.screens.home
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.material.BottomSheetScaffoldState
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.jetspacer.httpClient.HTTPClient
+import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODFetching
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.IPGeolocationFetching
@@ -115,8 +120,6 @@ open class HomeScreenViewModel(
 
         }
     }
-
-
     object BookMarkUtils {
         val isAlertDialogEnabledForAPODDB = mutableStateOf(false)
         val isAlertDialogEnabledForRoversDB = mutableStateOf(false)

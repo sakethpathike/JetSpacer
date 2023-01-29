@@ -37,10 +37,15 @@ import androidx.datastore.preferences.edit
 import androidx.datastore.preferences.preferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
+import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
+import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.news.NewsBottomSheetContentImpl
 import com.sakethh.jetspacer.screens.webview.WebViewUtils
+import com.sakethh.jetspacer.screens.webview.enableBtmBarInWebView
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -89,7 +94,7 @@ fun SettingsScreen(
                     title = {
                         Text(
                             text = "Settings",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.headlineLarge,
                             fontSize = 24.sp,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -111,7 +116,7 @@ fun SettingsScreen(
                     ) {
                         Text(
                             text = "Open web links in-app",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.headlineMedium,
                             fontSize = 18.sp,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(start = 15.dp, top = 0.dp)
@@ -151,7 +156,7 @@ fun SettingsScreen(
             item {
                 Text(
                     text = "Storage",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.headlineLarge,
                     fontSize = 24.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.titlePadding()
@@ -160,18 +165,7 @@ fun SettingsScreen(
             item {
                 IndividualSettingItemComposable(
                     modifier = Modifier.clickable {
-                        coroutineScope.launch {
-                            awaitAll(async {
-                                bookMarksVM.dbImplementation.localDBData().deleteAllDataFromAPODDB()
-                            }, async {
-                                bookMarksVM.dbImplementation.localDBData().deleteAllDataFromMarsDB()
-                            }, async {
-                                bookMarksVM.dbImplementation.localDBData().deleteAllDataFromNewsDB()
-                            })
-                        }.invokeOnCompletion {
-                            Toast.makeText(context, "Deleted all bookmarks:)", Toast.LENGTH_SHORT)
-                                .show()
-                        }
+                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =true
                     },
                     title = "Clear Bookmarks",
                     description = "Remove all bookmarks from local database. Cache won't be removed."
@@ -183,7 +177,7 @@ fun SettingsScreen(
             item {
                 Text(
                     text = "About",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.headlineLarge,
                     fontSize = 24.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.titlePadding()
@@ -201,12 +195,61 @@ fun SettingsScreen(
                     modifier = Modifier.redirectToWeb(
                         navController = navController,
                         newsBottomSheetContentImpl =NewsBottomSheetContentImpl(sourceURL = "https://github.com/sakethpathike/JetSpacer"),
-                        {}
+                        {},inSettingsScreen = true
                     ),
                     title = "Source code",
                     description = "The code-base for this android client is public and open-source, checkout repository for further information on how this app works and what tech have been used to make this app alive *_*"
                 )
             }
+            item {
+                DividerComposable()
+            }
+            item {
+                Text(
+                    text = "Social",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.titlePadding()
+                )
+            }
+            item {
+                IndividualSettingItemComposable(
+                    modifier = Modifier.redirectToWeb(
+                        navController = navController,
+                        newsBottomSheetContentImpl =NewsBottomSheetContentImpl(sourceURL = "https://twitter.com/jetspacerapp"),
+                        {},inSettingsScreen = true
+                    ),
+                    title = "Twitter",
+                    description = "Checkout \"Jet Spacer\" on Twitter for latest updates or anything related to this project"
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(30.dp))
+            }
+        }
+
+        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+            AlertDialogForDeletingFromDB(
+                bookMarkedCategory = Constants.SAVED_IN_NEWS_DB,
+                onConfirmBtnClick = {
+                    triggerHapticFeedback(context = context)
+                    coroutineScope.launch {
+                        awaitAll(async {
+                            bookMarksVM.dbImplementation.localDBData().deleteAllDataFromAPODDB()
+                        }, async {
+                            bookMarksVM.dbImplementation.localDBData().deleteAllDataFromMarsDB()
+                        }, async {
+                            bookMarksVM.dbImplementation.localDBData().deleteAllDataFromNewsDB()
+                        })
+                    }.invokeOnCompletion {
+                        Toast.makeText(context, "Deleted all bookmarks:)", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                }
+            )
         }
     }
 }
@@ -256,11 +299,12 @@ object Settings {
 }
 
 fun Modifier.redirectToWeb(
-    navController: NavController, newsBottomSheetContentImpl: NewsBottomSheetContentImpl,onClick:()->Unit
+    navController: NavController, newsBottomSheetContentImpl: NewsBottomSheetContentImpl,onClick:()->Unit,inSettingsScreen:Boolean=false
 ): Modifier = composed {
     val localUriHandler = LocalUriHandler.current
     this.clickable {
         onClick()
+        enableBtmBarInWebView=!inSettingsScreen
         if (Settings.inAppBrowserSetting.value) {
             WebViewUtils.newsBottomSheetContentImpl = newsBottomSheetContentImpl
             navController.navigate(NavigationRoutes.WEB_VIEW_SCREEN)
@@ -279,16 +323,16 @@ fun IndividualSettingItemComposable(
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineLarge,
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.titlePadding()
         )
         Text(
             text = description,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineMedium,
             fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.descriptionPadding(),
             lineHeight = lineHeight
         )

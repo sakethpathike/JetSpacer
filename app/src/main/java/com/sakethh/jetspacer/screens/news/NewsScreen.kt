@@ -42,8 +42,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.layoutId
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Coil_Image
@@ -58,6 +61,7 @@ import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
+import com.sakethh.jetspacer.screens.home.constraintSet
 import com.sakethh.jetspacer.screens.news.dto.Article
 import com.sakethh.jetspacer.screens.settings.redirectToWeb
 import com.sakethh.jetspacer.ui.theme.AppTheme
@@ -65,6 +69,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -320,7 +325,7 @@ fun LazyListScope.newsUI(
                         }
                     )
             ) {
-                Column(modifier = Modifier.fillMaxWidth(0.75f)) {
+                Column(modifier = Modifier.fillMaxWidth(0.75f).wrapContentHeight()) {
                     Text(
                         text = it.title,
                         fontSize = 20.sp,
@@ -364,11 +369,11 @@ fun LazyListScope.newsUI(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Column {
+                Column(modifier = Modifier.fillMaxWidth().height(175.dp)) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .wrapContentHeight()
+                            .height(175.dp)
                     ) {
                         Coil_Image().CoilImage(
                             imgURL = it.urlToImage,
@@ -385,10 +390,9 @@ fun LazyListScope.newsUI(
                                 .align(Alignment.CenterEnd),
                             onError = painterResource(id = R.drawable.baseline_image_24)
                         )
-                        Spacer(modifier = Modifier.height(50.dp))
-                        IconButton(
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd),
+                        Spacer(modifier = Modifier.height(0.dp))
+                        IconButton(modifier = Modifier
+                            .align(Alignment.BottomEnd),
                             onClick = {
                                 newsBottomSheetContentImpl.imageURL = it.urlToImage
                                 newsBottomSheetContentImpl.publishedTime = it.publishedAt
@@ -399,7 +403,8 @@ fun LazyListScope.newsUI(
                                     bottomSheetState.show()
                                 }
                             }) {
-                            Icon(
+                            Icon(modifier = Modifier
+                                .align(Alignment.BottomEnd),
                                 imageVector = Icons.Filled.MoreVert,
                                 contentDescription = ""
                             )
@@ -417,7 +422,12 @@ fun LazyListScope.newsUI(
                     .fillMaxWidth()
                     .wrapContentHeight()
             ) {
-                Column(modifier = Modifier.fillMaxWidth(0.75f)) {
+                ConstraintLayout(constraintSet = constraintSet, modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()) {
+                Column(modifier = Modifier
+                    .fillMaxWidth(0.75f)
+                    .layoutId("newsDetailColumn")) {
                     Text(
                         text = it.title,
                         fontSize = 20.sp,
@@ -455,8 +465,6 @@ fun LazyListScope.newsUI(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Column {
-                    Box {
                         Coil_Image().CoilImage(
                             imgURL = it.sourceURL,
                             contentDescription = "",
@@ -469,10 +477,10 @@ fun LazyListScope.newsUI(
                                         Color.Transparent
                                     )
                                 )
-                                .align(Alignment.CenterEnd),
+                                .layoutId("newsImage"),
                             onError = painterResource(id = R.drawable.baseline_image_24)
                         )
-                        IconButton(onClick = {
+                        IconButton(modifier = Modifier.layoutId("newsMoreIcon"),onClick = {
                             newsBottomSheetContentImpl.imageURL = it.imageURL
                             newsBottomSheetContentImpl.publishedTime = it.publishedTime
                             newsBottomSheetContentImpl.sourceName = it.sourceOfNews
@@ -488,7 +496,6 @@ fun LazyListScope.newsUI(
                             )
                         }
                     }
-                }
             }
         }
     }

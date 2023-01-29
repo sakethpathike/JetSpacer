@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -22,10 +23,13 @@ import androidx.compose.ui.unit.sp
 import androidx.datastore.createDataStore
 import androidx.datastore.preferences.createDataStore
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.navigation.BottomNavigationComposable
 import com.sakethh.jetspacer.navigation.MainNavigation
+import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.settings.readInAppBrowserSetting
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestForCuriosityVM
@@ -57,6 +61,11 @@ class MainActivity : ComponentActivity() {
             val isConnectedToInternet =
                 HomeScreenViewModel.Network.connectedToInternet.collectAsState()
             val bottomSheetState = rememberBottomSheetScaffoldState()
+            val bottomBarSheetState = rememberBottomSheetScaffoldState()
+            val _currentDestination=navController.currentBackStackEntryAsState()
+            val currentDestination = rememberSaveable(inputs = arrayOf(_currentDestination.value?.destination?.route)) {
+                _currentDestination.value?.destination?.route.toString()
+            }
             if (!isConnectedToInternet.value || !HomeScreenViewModel.Network.isConnectionSucceed.value) {
                 coroutineScope.launch {
                     bottomSheetState.bottomSheetState.expand()
@@ -66,25 +75,41 @@ class MainActivity : ComponentActivity() {
                     bottomSheetState.bottomSheetState.collapse()
                 }
             }
+
+                if (currentDestination.toString()==NavigationRoutes.NEWS_SCREEN ||currentDestination.toString()==NavigationRoutes.HOME_SCREEN ||currentDestination.toString()==NavigationRoutes.SPACE_SCREEN||currentDestination.toString()==NavigationRoutes.BOOKMARKS_SCREEN) {
+                    coroutineScope.launch {
+                        bottomBarSheetState.bottomSheetState.expand()
+                    }
+                } else {
+                    coroutineScope.launch {
+                        bottomBarSheetState.bottomSheetState.collapse()
+                    }
+                }
+
+
             AppTheme {
-                val systemColor= rememberSystemUiController()
+                val systemColor = rememberSystemUiController()
                 systemColor.setStatusBarColor(MaterialTheme.colorScheme.surface)
                 systemColor.setNavigationBarColor(MaterialTheme.colorScheme.primary)
-                Scaffold(
-                    bottomBar = {
-                        BottomNavigationComposable(
-                            navController = navController
-                        )
-                    }
-                ) {
+                BottomSheetScaffold(
+                    sheetPeekHeight = 0.dp,
+                    sheetGesturesEnabled = false,
+                    drawerBackgroundColor = Color.Transparent,
+                    drawerContentColor = Color.Transparent,
+                    drawerScrimColor = Color.Transparent,
+                    backgroundColor = Color.Transparent,
+                    sheetBackgroundColor = Color.Transparent,
+                    scaffoldState = bottomBarSheetState, sheetContent = {
+                        BottomNavigationComposable(navController = navController)
+                    }) {
                     BottomSheetScaffold(
                         scaffoldState = bottomSheetState,
                         sheetPeekHeight = 0.dp,
                         sheetGesturesEnabled = false,
-                        drawerBackgroundColor= Color.Transparent,
-                        drawerContentColor= Color.Transparent,
-                        drawerScrimColor= Color.Transparent,
-                        backgroundColor= Color.Transparent,
+                        drawerBackgroundColor = Color.Transparent,
+                        drawerContentColor = Color.Transparent,
+                        drawerScrimColor = Color.Transparent,
+                        backgroundColor = Color.Transparent,
                         sheetBackgroundColor = Color.Transparent,
                         sheetContent = {
                             Snackbar(
@@ -108,9 +133,10 @@ class MainActivity : ComponentActivity() {
                         }) {
                         MainNavigation(
                             navController = navController,
-                        dataStore = dataStore
+                            dataStore = dataStore
                         )
                     }
+
                 }
             }
         }
