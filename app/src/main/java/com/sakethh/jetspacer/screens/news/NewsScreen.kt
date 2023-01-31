@@ -2,7 +2,6 @@ package com.sakethh.jetspacer.screens.news
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
@@ -25,16 +24,17 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -42,17 +42,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.layoutId
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.R
-import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.localDB.NewsDB
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.Status
@@ -61,19 +57,18 @@ import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
-import com.sakethh.jetspacer.screens.home.constraintSet
 import com.sakethh.jetspacer.screens.news.dto.Article
 import com.sakethh.jetspacer.screens.settings.redirectToWeb
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import io.ktor.http.*
 import kotlinx.coroutines.*
-import java.text.SimpleDateFormat
 import java.util.*
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun NewsScreen(navController: NavController) {
+    NewsVM.NewsData.currentPage = 0
     val newsVM: NewsVM = viewModel()
     val topHeadLinesData = newsVM.topHeadLinesListFromAPI
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -97,10 +92,13 @@ fun NewsScreen(navController: NavController) {
     }
     val isConnectedToInternet =
         HomeScreenViewModel.Network.connectedToInternet.collectAsState()
+
+    val bookMarksVM: BookMarksVM = viewModel()
     val pullRefreshState =
         rememberPullRefreshState(refreshing = isRefreshing.value,
             onRefresh = {
                 isRefreshing.value = true
+                shouldLoadMoreData.value = true
                 coroutineScope.launch {
                     awaitAll(
                         async {
@@ -139,7 +137,7 @@ fun NewsScreen(navController: NavController) {
             })
     AppTheme {
         ModalBottomSheetLayout(sheetShape =
-        RoundedCornerShape(topStart = 5.dp, topEnd = 5.dp),
+        RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
             sheetState = modalBottomSheetState,
             sheetContent = {
                 Column(
@@ -197,55 +195,64 @@ fun NewsScreen(navController: NavController) {
                                 bottomSheetState = modalBottomSheetState,
                                 coroutineScope = coroutineScope,
                                 newsBottomSheetContentImpl = newsBottomSheetContentImpl,
-                                navController = navController
+                                navController = navController,
+                                bookMarksVM = bookMarksVM
                             )
                             item {
-                                Button(
-                                    modifier = Modifier
-                                        .padding(20.dp)
-                                        .fillMaxWidth(),
-                                    onClick = {
-                                        shouldLoadMoreData.value = false
-                                        if (shouldLoadMoreData.value) {
-                                            coroutineScope.launch {
-                                                newsVM.loadTopHeadLinesData()
-                                            }.invokeOnCompletion {
-                                                shouldLoadMoreData.value = true
+                                if (newsVM._topHeadLinesListFromAPI.value.isEmpty()) {
+                                    shouldLoadMoreData.value = false
+                                    Text(
+                                        text = "You've came to end! It usually takes an hour or less to update new Top-headlines until then go and touch some grass bro U_U",
+                                        fontSize = 14.sp,
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        modifier = Modifier.padding(20.dp),
+                                        textAlign = TextAlign.Start,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        lineHeight = 16.sp
+                                    )
+                                } else {
+                                    Button(
+                                        modifier = Modifier
+                                            .padding(20.dp)
+                                            .fillMaxWidth(),
+                                        onClick = {
+                                            if (shouldLoadMoreData.value) {
+                                                shouldLoadMoreData.value = false
+                                                coroutineScope.launch {
+                                                    newsVM.loadTopHeadLinesData()
+                                                }.invokeOnCompletion {
+                                                    shouldLoadMoreData.value = true
+                                                }
                                             }
-                                        }
-                                    },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                                ) {
-                                    if (shouldLoadMoreData.value) {
-                                        Text(
-                                            text = "Load more news",
-                                            style = MaterialTheme.typography.headlineMedium,
-                                            color = MaterialTheme.colorScheme.onPrimary
-                                        )
-                                    } else if (topHeadLinesData.value.count() >= newsVM.totalNewsCount.value - 4) {
-                                        Text(
-                                            text = "You've came to end!",
-                                            style = MaterialTheme.typography.headlineMedium,
-                                            color = MaterialTheme.colorScheme.onPrimary
-                                        )
-                                    } else if (!shouldLoadMoreData.value) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceAround
-                                        ) {
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                    ) {
+                                        if (shouldLoadMoreData.value) {
                                             Text(
-                                                text = "Loading more news...",
+                                                text = "Load more news",
                                                 style = MaterialTheme.typography.headlineMedium,
                                                 color = MaterialTheme.colorScheme.onPrimary
                                             )
-                                            CircularProgressIndicator(
-                                                color = MaterialTheme.colorScheme.onPrimary,
-                                                modifier = Modifier.size(20.dp),
-                                                strokeWidth = 3.dp
-                                            )
+                                        } else {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceAround
+                                            ) {
+                                                Text(
+                                                    text = "Loading more news...",
+                                                    style = MaterialTheme.typography.headlineMedium,
+                                                    color = MaterialTheme.colorScheme.onPrimary
+                                                )
+                                                CircularProgressIndicator(
+                                                    color = MaterialTheme.colorScheme.onPrimary,
+                                                    modifier = Modifier.size(20.dp),
+                                                    strokeWidth = 3.dp
+                                                )
+                                            }
                                         }
                                     }
                                 }
+                                Spacer(modifier = Modifier.height(60.dp))
                             }
                         }
                         PullRefreshIndicator(
@@ -259,7 +266,6 @@ fun NewsScreen(navController: NavController) {
             }
         }
 
-        val bookMarksVM: BookMarksVM = viewModel()
         var doesExistsInDB = false
         if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
             AlertDialogForDeletingFromDB(
@@ -268,7 +274,8 @@ fun NewsScreen(navController: NavController) {
                     triggerHapticFeedback(context = context)
                     coroutineScope.launch {
                         doesExistsInDB =
-                            bookMarksVM.deleteDataFromNewsDB(imageURL = newsBottomSheetContentImpl.imageURL)
+                            bookMarksVM.deleteDataFromNewsDB(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                        modalBottomSheetState.hide()
                     }.invokeOnCompletion {
                         if (doesExistsInDB) {
                             Toast.makeText(
@@ -285,7 +292,7 @@ fun NewsScreen(navController: NavController) {
                             )
                                 .show()
                         }
-                        bookMarksVM.doesThisExistsInNewsDBIconTxt(imageURL = newsBottomSheetContentImpl.imageURL)
+                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                     }
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
@@ -304,14 +311,14 @@ fun LazyListScope.newsUI(
     bookMarkedData: State<List<NewsDB>>? = null,
     newsBottomSheetContentImpl: NewsBottomSheetContentImpl,
     navController: NavController,
+    bookMarksVM: BookMarksVM,
 ) {
-
     if (topHeadLinesData != null) {
         items(topHeadLinesData.value) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 15.dp, start = 10.dp, end = 10.dp)
+                    .padding(top = 15.dp, start = 8.dp, end = 8.dp)
                     .wrapContentHeight()
                     .redirectToWeb(
                         navController = navController,
@@ -325,14 +332,17 @@ fun LazyListScope.newsUI(
                         }
                     )
             ) {
-                Column(modifier = Modifier.fillMaxWidth(0.75f).wrapContentHeight()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(0.75f)
+                        .wrapContentHeight()
+                ) {
                     Text(
                         text = it.title,
                         fontSize = 20.sp,
                         style = MaterialTheme.typography.headlineLarge,
                         modifier = Modifier.padding(
                             top = 15.dp,
-                            start = 15.dp,
                             end = 15.dp
                         ),
                         textAlign = TextAlign.Start,
@@ -347,7 +357,7 @@ fun LazyListScope.newsUI(
                         fontSize = 14.sp,
                         style = MaterialTheme.typography.headlineMedium,
                         modifier = Modifier.padding(
-                            top = 5.dp, start = 15.dp,
+                            top = 5.dp,
                             end = 15.dp
                         ),
                         textAlign = TextAlign.Start,
@@ -360,7 +370,7 @@ fun LazyListScope.newsUI(
                         fontSize = 14.sp,
                         style = MaterialTheme.typography.headlineMedium,
                         modifier = Modifier.padding(
-                            top = 5.dp, start = 15.dp,
+                            top = 5.dp,
                             end = 15.dp
                         ),
                         textAlign = TextAlign.Start,
@@ -369,32 +379,36 @@ fun LazyListScope.newsUI(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Column(modifier = Modifier.fillMaxWidth().height(175.dp)) {
-                    Box(
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                ) {
+                    Coil_Image().CoilImage(
+                        imgURL = it.urlToImage,
+                        contentDescription = "",
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(175.dp)
-                    ) {
-                        Coil_Image().CoilImage(
-                            imgURL = it.urlToImage,
-                            contentDescription = "",
-                            modifier = Modifier
-                                .size(100.dp)
-                                .border(
-                                    shape = RoundedCornerShape(4.dp),
-                                    border = BorderStroke(
-                                        0.dp,
-                                        Color.Transparent
-                                    )
-                                )
-                                .align(Alignment.CenterEnd),
-                            onError = painterResource(id = R.drawable.baseline_image_24)
-                        )
-                        Spacer(modifier = Modifier.height(0.dp))
-                        IconButton(modifier = Modifier
-                            .align(Alignment.BottomEnd),
-                            onClick = {
+                            .padding(top = 15.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(
+                                width = 1.dp,
+                                shape = RoundedCornerShape(10.dp),
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            .size(100.dp)
+                            .align(Alignment.TopEnd),
+                        onError = painterResource(id = R.drawable.baseline_image_24),
+                        contentScale = ContentScale.Crop
+                    )
+                    Icon(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .clickable {
                                 newsBottomSheetContentImpl.imageURL = it.urlToImage
+                                bookMarksVM.doesThisExistsInNewsDBIconTxt(
+                                    sourceURL = newsBottomSheetContentImpl.sourceURL
+                                )
                                 newsBottomSheetContentImpl.publishedTime = it.publishedAt
                                 newsBottomSheetContentImpl.sourceName = it.source.name
                                 newsBottomSheetContentImpl.sourceURL = it.url
@@ -402,14 +416,10 @@ fun LazyListScope.newsUI(
                                 coroutineScope.launch {
                                     bottomSheetState.show()
                                 }
-                            }) {
-                            Icon(modifier = Modifier
-                                .align(Alignment.BottomEnd),
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = ""
-                            )
-                        }
-                    }
+                            },
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = ""
+                    )
                 }
             }
         }
@@ -418,23 +428,32 @@ fun LazyListScope.newsUI(
         items(bookMarkedData.value) {
             Row(
                 modifier = Modifier
-                    .padding(top = 15.dp, start = 10.dp, end = 10.dp)
                     .fillMaxWidth()
+                    .padding(top = 15.dp, start = 8.dp, end = 8.dp)
                     .wrapContentHeight()
+                    .redirectToWeb(
+                        navController = navController,
+                        newsBottomSheetContentImpl = newsBottomSheetContentImpl,
+                        onClick = {
+                            newsBottomSheetContentImpl.imageURL = it.imageURL
+                            newsBottomSheetContentImpl.publishedTime = it.publishedTime
+                            newsBottomSheetContentImpl.sourceName = it.sourceOfNews
+                            newsBottomSheetContentImpl.sourceURL = it.sourceURL
+                            newsBottomSheetContentImpl.title = it.title
+                        }
+                    )
             ) {
-                ConstraintLayout(constraintSet = constraintSet, modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()) {
-                Column(modifier = Modifier
-                    .fillMaxWidth(0.75f)
-                    .layoutId("newsDetailColumn")) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(0.75f)
+                        .wrapContentHeight()
+                ) {
                     Text(
                         text = it.title,
                         fontSize = 20.sp,
                         style = MaterialTheme.typography.headlineLarge,
                         modifier = Modifier.padding(
                             top = 15.dp,
-                            start = 15.dp,
                             end = 15.dp
                         ),
                         textAlign = TextAlign.Start,
@@ -447,8 +466,11 @@ fun LazyListScope.newsUI(
                     Text(
                         text = it.sourceOfNews,
                         fontSize = 14.sp,
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier.padding(top = 20.dp),
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.padding(
+                            top = 5.dp,
+                            end = 15.dp
+                        ),
                         textAlign = TextAlign.Start,
                         maxLines = 1,
                         color = MaterialTheme.colorScheme.secondary,
@@ -457,50 +479,61 @@ fun LazyListScope.newsUI(
                     Text(
                         text = it.publishedTime,
                         fontSize = 14.sp,
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier.padding(top = 10.dp),
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.padding(
+                            top = 5.dp,
+                            end = 15.dp
+                        ),
                         textAlign = TextAlign.Start,
                         maxLines = 1,
                         color = MaterialTheme.colorScheme.secondary,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                        Coil_Image().CoilImage(
-                            imgURL = it.sourceURL,
-                            contentDescription = "",
-                            modifier = Modifier
-                                .size(100.dp)
-                                .border(
-                                    shape = RoundedCornerShape(4.dp),
-                                    border = BorderStroke(
-                                        0.dp,
-                                        Color.Transparent
-                                    )
-                                )
-                                .layoutId("newsImage"),
-                            onError = painterResource(id = R.drawable.baseline_image_24)
-                        )
-                        IconButton(modifier = Modifier.layoutId("newsMoreIcon"),onClick = {
-                            newsBottomSheetContentImpl.imageURL = it.imageURL
-                            newsBottomSheetContentImpl.publishedTime = it.publishedTime
-                            newsBottomSheetContentImpl.sourceName = it.sourceOfNews
-                            newsBottomSheetContentImpl.sourceURL = it.sourceURL
-                            newsBottomSheetContentImpl.title = it.title
-                            coroutineScope.launch {
-                                bottomSheetState.show()
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = ""
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                ) {
+                    Coil_Image().CoilImage(
+                        imgURL = it.imageURL,
+                        contentDescription = "",
+                        modifier = Modifier
+                            .padding(top = 15.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(
+                                width = 1.dp,
+                                shape = RoundedCornerShape(10.dp),
+                                color = MaterialTheme.colorScheme.secondary
                             )
-                        }
-                    }
+                            .size(100.dp)
+                            .align(Alignment.TopEnd),
+                        onError = painterResource(id = R.drawable.baseline_image_24),
+                        contentScale = ContentScale.Crop
+                    )
+                    Icon(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .clickable {
+                                newsBottomSheetContentImpl.imageURL = it.imageURL
+                                bookMarksVM.doesThisExistsInNewsDBIconTxt(
+                                    sourceURL = newsBottomSheetContentImpl.sourceURL
+                                )
+                                newsBottomSheetContentImpl.publishedTime = it.publishedTime
+                                newsBottomSheetContentImpl.sourceName = it.sourceOfNews
+                                newsBottomSheetContentImpl.sourceURL = it.sourceURL
+                                newsBottomSheetContentImpl.title = it.title
+                                coroutineScope.launch {
+                                    bottomSheetState.show()
+                                }
+                            },
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = ""
+                    )
+                }
             }
         }
-    }
-    item {
-        Spacer(modifier = Modifier.height(75.dp))
     }
 }
 
@@ -522,7 +555,6 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
     val localURI = LocalUriHandler.current
     val localClipBoard = LocalClipboardManager.current
     var didDataGetAddedInDB = false
-    bookMarksVM.doesThisExistsInNewsDBIconTxt(imageURL = newsBottomSheetContentImpl.imageURL)
     val bottomList = listOf(
         NewsBottomSheetContent(
             title = bookMarksVM.bookMarkText.value,
@@ -549,8 +581,9 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
                         HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
                             true
                     }
-                    bookMarksVM.doesThisExistsInNewsDBIconTxt(bookMarksVM.imgURL)
+                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                 }
+                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
             }),
         NewsBottomSheetContent(
             title = "Open in browser",
@@ -563,6 +596,7 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
             icon = Icons.Default.ContentCopy,
             onClick = {
                 localClipBoard.setText(AnnotatedString(newsBottomSheetContentImpl.sourceURL))
+                Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
             }),
         NewsBottomSheetContent(
             title = "Share",
@@ -574,6 +608,7 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
                     Intent.EXTRA_TEXT,
                     "Checkout top-headline:\n${newsBottomSheetContentImpl.title}\nsource:\n${newsBottomSheetContentImpl.sourceURL}"
                 )
+                intent.type = "text/plain"
                 val activity = context as Activity?
                 activity?.startActivity(intent)
             }),

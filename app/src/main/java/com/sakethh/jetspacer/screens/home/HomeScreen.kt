@@ -58,6 +58,7 @@ import com.google.accompanist.web.rememberWebViewState
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.R
+import com.sakethh.jetspacer.downloads.DownloadImpl
 import com.sakethh.jetspacer.localDB.*
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
@@ -211,7 +212,7 @@ fun HomeScreen(navController: NavController) {
                                         context,
                                         "Refreshing data in a moment",
                                         Toast.LENGTH_SHORT
-                                    ) .show()
+                                    ).show()
                                 }
                                 delay(2000L)
                                 isRefreshing.value = false
@@ -263,6 +264,7 @@ fun HomeScreen(navController: NavController) {
                                 this.mediaType = "image"
                                 this.isBookMarked = true
                                 this.category = "APOD"
+                                this.hdImageURL=homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
                                 this.addedToLocalDBOn = formattedDate
                             })
                     }.invokeOnCompletion {
@@ -279,7 +281,8 @@ fun HomeScreen(navController: NavController) {
                         }
                         bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                     }
-                }
+                },
+                imageHDURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
             )
         },
         sheetState = bottomSheetState,
@@ -310,7 +313,7 @@ fun HomeScreen(navController: NavController) {
                         APODSideIconButton(
                             imageVector = Icons.Outlined.Settings,
                             onClick = {
-                                      navController.navigate(NavigationRoutes.SETTINGS_SCREEN)
+                                navController.navigate(NavigationRoutes.SETTINGS_SCREEN)
                             },
                             iconBtnModifier = Modifier
                                 .padding(end = 15.dp, top = 20.dp)
@@ -399,7 +402,7 @@ fun HomeScreen(navController: NavController) {
                                 shimmerHighLightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                                 singleRawCard = true
                             )
-                            androidx.compose.material3. Divider(
+                            androidx.compose.material3.Divider(
                                 thickness = 0.dp,
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.padding(
@@ -476,7 +479,7 @@ fun HomeScreen(navController: NavController) {
                                         .layoutId("titleWithIcon")
                                 )
                             }
-                            androidx.compose.material3. Divider(
+                            androidx.compose.material3.Divider(
                                 thickness = 0.dp,
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.padding(
@@ -496,7 +499,7 @@ fun HomeScreen(navController: NavController) {
                                 lineHeight = 18.sp,
                                 textAlign = TextAlign.Start
                             )
-                            androidx.compose.material3. Divider(
+                            androidx.compose.material3.Divider(
                                 thickness = 0.dp,
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.padding(
@@ -571,6 +574,7 @@ fun HomeScreen(navController: NavController) {
                                         this.mediaType = "image"
                                         this.isBookMarked = true
                                         this.category = "APOD"
+                                        this.hdImageURL=homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
                                         this.addedToLocalDBOn = formattedDate
                                     })
                             }.invokeOnCompletion {
@@ -616,7 +620,8 @@ fun HomeScreen(navController: NavController) {
                             }
                             HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                                 false
-                        }
+                        },
+                        apodHDImageURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
                     )
                 }
                 /*Astronomical Data*/
@@ -658,7 +663,7 @@ fun HomeScreen(navController: NavController) {
                                         .layoutId("cardDescription")
                                 )
                             }
-                            androidx.compose.material3. Divider(
+                            androidx.compose.material3.Divider(
                                 thickness = 0.dp,
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.padding(
@@ -678,7 +683,7 @@ fun HomeScreen(navController: NavController) {
                                 lineHeight = 18.sp,
                                 textAlign = TextAlign.Start
                             )
-                            androidx.compose.material3. Divider(
+                            androidx.compose.material3.Divider(
                                 thickness = 0.dp,
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.padding(
@@ -849,7 +854,7 @@ fun CardRowGrid(
     isRHSShimmerVisible: Boolean? = null,
     isRHSShimmering: Boolean = false,
     rhsShimmerColor: Color? = null,
-    rhsShimmerHighlightColor: Color? = null
+    rhsShimmerHighlightColor: Color? = null,
 ) {
     AppTheme {
         Row(
@@ -907,7 +912,7 @@ fun CardForRowGridRaw(
     color: Color? = null,
     shimmerHighLightColor: Color? = null,
     isShimmering: Boolean = false,
-    singleRawCard: Boolean? = null
+    singleRawCard: Boolean? = null,
 ) {
     val lhsTextColumnModifier = if (!inSpaceScreen) {
         Modifier.padding(15.dp)
@@ -1021,6 +1026,7 @@ fun WebViewModified(url: String?, embedString: String? = null, modifier: Modifie
 fun APODCardComposable(
     homeScreenViewModel: HomeScreenViewModel,
     imageURL: String = "",
+    apodHDImageURL:String,
     apodDate: String = "",
     apodDescription: String = "",
     apodTitle: String = "",
@@ -1036,7 +1042,7 @@ fun APODCardComposable(
     capturedOnSol: String,
     capturedBy: String,
     roverName: String,
-    onConfirmButtonClick: () -> Unit = {}
+    onConfirmButtonClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -1075,7 +1081,8 @@ fun APODCardComposable(
                     inAPODBottomSheetContent = inAPODBottomSheetContent,
                     onBookMarkButtonClick = {
                         onBookMarkButtonClick()
-                    }
+                    },
+                    hdImageURLForAPOD = apodHDImageURL
                 )
                 Icon(
                     imageVector = Icons.Default.Image,
@@ -1165,7 +1172,7 @@ fun APODCardComposable(
                     )
                 }
             }
-            androidx.compose.material3. Divider(
+            androidx.compose.material3.Divider(
                 thickness = 0.dp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.padding(
@@ -1246,14 +1253,16 @@ fun APODCardComposable(
 @Composable
 fun AlertDialogForDeletingFromDB(
     bookMarkedCategory: String,
-    onConfirmBtnClick: () -> Unit
+    onConfirmBtnClick: () -> Unit,
 ) {
 
     val dialogText: String = if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
         "Are you sure want to remove this image captured by the rover from bookmarks which is stored locally on your device? This can't be undone."
-    } else if(bookMarkedCategory==Constants.SAVED_IN_NEWS_DB) {
+    } else if (bookMarkedCategory == Constants.SAVED_IN_NEWS_DB) {
         "Are you sure want to remove this NEWS publication from bookmarks which is stored locally on your device? This can't be undone."
-    }else {
+    } else if (bookMarkedCategory == Constants.IN_SETTINGS_SCREEN) {
+        "Are you sure want to remove all bookmarks which are stored locally on your device? This can't be undone."
+    } else {
         "Are you sure want to remove this APOD publication from bookmarks which is stored locally on your device? This can't be undone."
     }
     AppTheme {
@@ -1288,7 +1297,7 @@ fun AlertDialogForDeletingFromDB(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onPrimary)
                 ) {
                     Text(
-                        text = "Remove it ASAP!",
+                        text = if (bookMarkedCategory == Constants.IN_SETTINGS_SCREEN) "Remove them ASAP!" else "Remove it ASAP!",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -1325,7 +1334,7 @@ fun APODSideIconButton(
         color = iconBtnColor
     ),
     iconColor: androidx.compose.ui.graphics.Color,
-    iconModifier: Modifier
+    iconModifier: Modifier,
 ) {
     IconButton(
         onClick = { onClick() },
@@ -1345,7 +1354,7 @@ fun APODSideIconButton(
 fun DropDownMenuItemModified(
     text: String,
     onClick: () -> Unit,
-    imageVector: ImageVector
+    imageVector: ImageVector,
 ) {
     DropdownMenuItem(
         text = {
@@ -1371,6 +1380,7 @@ fun DropDownMenuItemModified(
 fun APODMediaLayout(
     homeScreenViewModel: HomeScreenViewModel,
     imageURL: String,
+    hdImageURLForAPOD:String,
     onBookMarkButtonClick: () -> Unit,
     inAPODBottomSheetContent: Boolean,
     imageOnClick: () -> Unit = {},
@@ -1440,7 +1450,7 @@ fun APODMediaLayout(
                         text = "Open in browser",
                         onClick = {
                             isMoreClicked.value = false
-                            localUriHandler.openUri("https://apod.nasa.gov/apod/")
+                            localUriHandler.openUri(imageURL)
                         },
                         imageVector = Icons.Outlined.OpenInBrowser
                     )
@@ -1484,7 +1494,19 @@ fun APODMediaLayout(
                     )
                     DropDownMenuItemModified(
                         text = "Download",
-                        onClick = { isMoreClicked.value = false },
+                        onClick = {
+                            isMoreClicked.value = false
+                            val randomTitle = UUID.randomUUID().toString().substring(0,6)
+                            DownloadImpl(context = context).downloadNewFile(
+                                url = hdImageURLForAPOD,
+                                title = "$randomTitle.jpg"
+                            )
+                            Toast.makeText(
+                                context,
+                                "Downloading started, check notifications for more information",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
                         imageVector = Icons.Outlined.FileDownload
                     )
                 }
@@ -1493,7 +1515,18 @@ fun APODMediaLayout(
             if (!inAPODBottomSheetContent) {
                 APODSideIconButton(
                     imageVector = Icons.Outlined.FileDownload,
-                    onClick = { },
+                    onClick = {
+                        val randomTitle = UUID.randomUUID().toString().substring(0,6)
+                        DownloadImpl(context = context).downloadNewFile(
+                            url = hdImageURLForAPOD,
+                            title = "$randomTitle.jpg"
+                        )
+                        Toast.makeText(
+                            context,
+                            "Downloading started, check notifications for more information",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    },
                     iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
                         apodIconButtonTransparencyValue
                     ),
@@ -1550,7 +1583,7 @@ fun APODMediaLayout(
 fun Modifier.shimmer(
     visible: Boolean,
     color: Color,
-    shimmerHighLightColor: Color
+    shimmerHighLightColor: Color,
 ): Modifier {
     return this.placeholder(
         visible = visible,

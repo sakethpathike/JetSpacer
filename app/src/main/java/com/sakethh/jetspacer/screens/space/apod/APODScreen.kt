@@ -46,6 +46,7 @@ import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.R
+import com.sakethh.jetspacer.downloads.DownloadImpl
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.screens.Status
@@ -72,6 +73,7 @@ fun APODScreen(navController: NavController) {
     val apodScreenVM: APODScreenVM = viewModel()
     val coroutineScope = rememberCoroutineScope()
     val apodURL = rememberSaveable { mutableStateOf("") }
+    val apodHDURL = rememberSaveable { mutableStateOf("") }
     val apodTitle = rememberSaveable { mutableStateOf("") }
     val apodDate = rememberSaveable { mutableStateOf("") }
     val apodDescription = rememberSaveable { mutableStateOf("") }
@@ -163,6 +165,7 @@ fun APODScreen(navController: NavController) {
                                                 this.isBookMarked = true
                                                 this.category = "APOD"
                                                 this.addedToLocalDBOn = formattedDate
+                                                this.hdImageURL = apodHDURL.value
                                             })
                                     }.invokeOnCompletion {
                                         if (didDataGetAddedInDB) {
@@ -177,7 +180,8 @@ fun APODScreen(navController: NavController) {
                                         }
                                         bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                                     }
-                                }
+                                },
+                                imageHDURL = apodHDURL.value
                             )
                         },
                         sheetState = bottomSheetState,
@@ -210,6 +214,7 @@ fun APODScreen(navController: NavController) {
                                                     apodItem.explanation.toString()
                                                 apodTitle.value = apodItem.title.toString()
                                                 apodMediaType.value = apodItem.media_type.toString()
+                                                apodHDURL.value=apodItem.hdurl.toString()
                                                 bottomSheetState.show()
                                             }
                                         },
@@ -291,7 +296,8 @@ fun APODBottomSheetContent(
     apodDescription: String,
     apodMediaType: String,
     onBookMarkClick: () -> Unit,
-    inBookMarkScreen: Boolean? = null
+    inBookMarkScreen: Boolean? = null,
+    imageHDURL:String
 ) {
     val bookMarksVM: BookMarksVM = viewModel()
     bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
@@ -311,7 +317,8 @@ fun APODBottomSheetContent(
                     imageURL = apodURL,
                     apodMediaType = apodMediaType,
                     inAPODBottomSheetContent = true,
-                    onBookMarkButtonClick = onBookMarkClick
+                    onBookMarkButtonClick = onBookMarkClick,
+                    hdImageURLForAPOD = imageHDURL
                 )
             }
         }
@@ -356,6 +363,7 @@ fun APODBottomSheetContent(
                                             this.isBookMarked = true
                                             this.category = "APOD"
                                             this.addedToLocalDBOn = formattedDate
+                                            this.hdImageURL=imageHDURL
                                         })
                                 }.invokeOnCompletion {
                                     if (didDataGetAddedInDB) {
@@ -378,7 +386,18 @@ fun APODBottomSheetContent(
                         textColor = MaterialTheme.colorScheme.onPrimary
                     )
                     APODBottomSheetChip(
-                        onClick = { },
+                        onClick = {
+                            val randomTitle = UUID.randomUUID().toString().substring(0,6)
+                            DownloadImpl(context = context).downloadNewFile(
+                                url = imageHDURL,
+                                title = "$randomTitle.jpg"
+                            )
+                            Toast.makeText(
+                                context,
+                                "Downloading started, check notifications for more information",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                                  },
                         imageVector = Icons.Outlined.FileDownload,
                         iconColor = MaterialTheme.colorScheme.onPrimary,
                         text = "Download",

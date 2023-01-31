@@ -16,12 +16,13 @@ import kotlinx.coroutines.coroutineScope
 class NewsRepo : NewsService {
     override suspend fun getCustomNewsList(page: Int): List<List<Article>> {
         val _data = mutableStateListOf<Deferred<List<Article>>>()
+        val client = HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=$page&apiKey=${Constants.NEWS_API_API_KEY}")
+            .body<NewsDTO>()
         coroutineScope {
             val data = async {
                 try {
                     HomeScreenViewModel.Network.isConnectionSucceed.value = true
-                    HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=$page&apiKey=${Constants.NEWS_API_API_KEY}")
-                        .body<NewsDTO>().articles
+                    client.articles
                 } catch (_: Exception) {
                     HomeScreenViewModel.Network.isConnectionSucceed.value = false
                     emptyList()
@@ -33,10 +34,11 @@ class NewsRepo : NewsService {
     }
 
     override suspend fun getStatus(): String {
+        val client = HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=1&apiKey=${Constants.NEWS_API_API_KEY}")
+            .body<NewsDTO>()
         return try {
             HomeScreenViewModel.Network.isConnectionSucceed.value = true
-            HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=1&apiKey=${Constants.NEWS_API_API_KEY}")
-                .body<NewsDTO>().status
+            client.status
         } catch (_: Exception) {
             HomeScreenViewModel.Network.isConnectionSucceed.value = false
             ""
@@ -44,10 +46,11 @@ class NewsRepo : NewsService {
     }
 
     override suspend fun totalResults(): Int {
+        val client = HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=1&apiKey=${Constants.NEWS_API_API_KEY}")
+            .body<NewsDTO>()
         return try {
             HomeScreenViewModel.Network.isConnectionSucceed.value = true
-            HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=1&apiKey=${Constants.NEWS_API_API_KEY}")
-                .body<NewsDTO>().totalResults
+            client.totalResults
         } catch (_: Exception) {
             HomeScreenViewModel.Network.isConnectionSucceed.value = false
             0

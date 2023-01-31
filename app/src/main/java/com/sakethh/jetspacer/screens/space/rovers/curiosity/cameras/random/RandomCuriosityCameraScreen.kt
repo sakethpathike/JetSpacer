@@ -306,7 +306,8 @@ fun RoverBottomSheetContent(
                         triggerHapticFeedback(context = context)
                         onBookMarkButtonClick()
                         bookMarksVM.doesThisExistsInRoverDBIconTxt(imgURL)
-                    }
+                    },
+                    hdImageURLForAPOD = imgURL
                 )
             }
         }

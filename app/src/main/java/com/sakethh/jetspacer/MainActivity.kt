@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launchWhenCreated {
             readInAppBrowserSetting(dataStore)
             ManifestForCuriosityVM().maxCuriositySol()
+            HomeScreenViewModel().getAPODData()
         }
         GlobalScope.launch {
             HomeScreenViewModel.Network.isConnectedToInternet()
@@ -91,6 +92,7 @@ class MainActivity : ComponentActivity() {
                 val systemColor = rememberSystemUiController()
                 systemColor.setStatusBarColor(MaterialTheme.colorScheme.surface)
                 systemColor.setNavigationBarColor(MaterialTheme.colorScheme.primary)
+                Scaffold(modifier = Modifier) {
                 BottomSheetScaffold(
                     sheetPeekHeight = 0.dp,
                     sheetGesturesEnabled = false,
@@ -137,7 +139,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                }
+                }}
             }
         }
     }

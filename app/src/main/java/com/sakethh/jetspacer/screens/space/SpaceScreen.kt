@@ -23,8 +23,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.layoutId
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,6 +47,7 @@ import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.*
 
 @SuppressLint("NewApi", "SimpleDateFormat")
@@ -104,6 +107,7 @@ fun SpaceScreen(navController: NavController) {
                                 this.isBookMarked = true
                                 this.category = "APOD"
                                 this.addedToLocalDBOn = formattedDate
+                                this.hdImageURL=apodData.value.hdurl.toString()
                             })
                         }.invokeOnCompletion {
                             if (didDataGetAddedInDB) {
@@ -115,7 +119,8 @@ fun SpaceScreen(navController: NavController) {
                             }
                             bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                         }
-                    }
+                    },
+                imageHDURL = apodData.value.hdurl.toString()
                 )
             },
             sheetState = bottomSheetState,
@@ -222,6 +227,7 @@ fun SpaceScreen(navController: NavController) {
                                             this.isBookMarked = true
                                             this.category = "APOD"
                                             this.addedToLocalDBOn = formattedDate
+                                            this.hdImageURL=apodData.value.hdurl.toString()
                                         })
                                 }.invokeOnCompletion {
                                     if (didDataGetAddedInDB) {
@@ -267,7 +273,8 @@ fun SpaceScreen(navController: NavController) {
                                     false
                                 HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                                     false
-                            }
+                            },
+                            apodHDImageURL = apodData.value.hdurl.toString()
                         )
                     }
                     item {
@@ -464,8 +471,9 @@ fun SpaceScreen(navController: NavController) {
         }
 
         if (isDatePickerAlertDialogEnabled.value) {
-                    androidx.compose.material3.AlertDialog(
-                        containerColor = MaterialTheme.colorScheme.surface,
+                    AlertDialog(
+                        backgroundColor = MaterialTheme.colorScheme.surface,
+                        modifier = Modifier.offset(),
                         onDismissRequest = {
                             isDatePickerAlertDialogEnabled.value = false
                         },
@@ -477,11 +485,12 @@ fun SpaceScreen(navController: NavController) {
                                 fontSize = 18.sp
                             )
                         }, text = {
-                            WheelDatePicker(
-                                minYear = 1995,
-                                maxYear = currentYear,
-                                textStyle = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
-                                textColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+                           WheelDatePicker(
+                                minDate= LocalDate.of(1995,6,16),
+                                maxDate = LocalDate.parse(homeScreenViewModel.apodDataFromAPI.value.date.toString()),
+                                textStyle = MaterialTheme.typography.headlineMedium,
+                                textColor = MaterialTheme.colorScheme.onSurface,
+                                size = DpSize(200.dp,100.dp)
                             ) { selectedDate ->
                                 apodURL.value =
                                     "${selectedDate.year}-${selectedDate.monthValue}-${selectedDate.dayOfMonth}"
@@ -521,8 +530,6 @@ fun SpaceScreen(navController: NavController) {
                                 )
                             }
                         })
-
-
         }
         if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
             AlertDialogForDeletingFromDB(

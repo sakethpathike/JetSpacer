@@ -1,28 +1,19 @@
 package com.sakethh.jetspacer.screens.bookMarks
 
 import android.app.Application
-import android.content.Context
-import android.util.Log
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.localDB.*
 import com.sakethh.jetspacer.screens.bookMarks.screens.APODBookMarksScreen
 import com.sakethh.jetspacer.screens.bookMarks.screens.MarsRoversBookMarksScreen
 import com.sakethh.jetspacer.screens.bookMarks.screens.NewsBookmarkScreen
-import com.sakethh.jetspacer.screens.home.HomeScreen
-import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
-import com.sakethh.jetspacer.screens.news.NewsScreen
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
@@ -85,10 +76,10 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
         return dbImplementation.localDBData()
             .doesThisExistsInRoversDB(imageURL = imageURL)
     }
-    suspend fun deleteDataFromNewsDB(imageURL: String): Boolean {
-        dbImplementation.localDBData().deleteFromNewsDB(imageURL = imageURL)
+    suspend fun deleteDataFromNewsDB(sourceURL: String): Boolean {
+        dbImplementation.localDBData().deleteFromNewsDB(sourceURL = sourceURL)
         return dbImplementation.localDBData()
-            .doesThisExistsInNewsDB(imageURL = imageURL)
+            .doesThisExistsInNewsDB(sourceURL = sourceURL)
     }
 
     suspend fun addDataToAPODDB(apodDbDto: APOD_DB_DTO): Boolean {
@@ -119,14 +110,14 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
     }
     suspend fun addDataToNewsDB(newsDB: NewsDB): Boolean {
         return if (dbImplementation.localDBData()
-                .doesThisExistsInNewsDB(imageURL = newsDB.imageURL)
+                .doesThisExistsInNewsDB(sourceURL = newsDB.imageURL)
         ) {
             false
         } else {
             dbImplementation.localDBData()
                 .addNewBookMarkToNewsDB(newsDB = newsDB)
             dbImplementation.localDBData()
-                .doesThisExistsInNewsDB(imageURL = newsDB.imageURL)
+                .doesThisExistsInNewsDB(sourceURL = newsDB.imageURL)
         }
     }
 
@@ -145,11 +136,11 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-    fun doesThisExistsInNewsDBIconTxt(imageURL: String) {
+    fun doesThisExistsInNewsDBIconTxt(sourceURL: String) {
         var doesDataExistsInDB = false
         viewModelScope.launch {
             doesDataExistsInDB = dbImplementation.localDBData()
-                .doesThisExistsInNewsDB(imageURL = imageURL)
+                .doesThisExistsInNewsDB(sourceURL = sourceURL)
         }.invokeOnCompletion {
             if (!doesDataExistsInDB) {
                 bookMarkText.value = "Add to bookmarks"

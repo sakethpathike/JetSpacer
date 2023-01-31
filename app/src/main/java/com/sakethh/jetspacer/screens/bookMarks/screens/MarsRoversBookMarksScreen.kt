@@ -155,6 +155,8 @@ fun MarsRoversBookMarksScreen(navController: NavController) {
                             HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                                 false
                         }
+                    ,
+                        apodHDImageURL = imgURL.value
                     )
                 }
 

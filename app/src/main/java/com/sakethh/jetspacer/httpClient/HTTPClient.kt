@@ -18,6 +18,7 @@ object HTTPClient {
             install(ContentNegotiation) {
                 json(Json {
                     ignoreUnknownKeys = true
+                    coerceInputValues = true
                 })
             }
 
@@ -32,11 +33,14 @@ object HTTPClient {
    val ktorClientWithoutCache = HttpClient(Android) {
         install(ContentNegotiation) {
             json(Json {
+                json(Json {
+                    coerceInputValues = true
                 ignoreUnknownKeys = true
             })
-        }
-        install(Logging){
+        })
+    }
+       install(Logging){
             level=LogLevel.INFO
         }
-    }
+   }
 }

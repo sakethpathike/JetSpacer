@@ -30,7 +30,7 @@ import java.util.Calendar
 open class HomeScreenViewModel(
     private val ipGeolocationFetching: IPGeolocationFetching = IPGeolocationFetching(),
     private val issLocationFetching: ISSLocationFetching = ISSLocationFetching(),
-    private val apodFetching: APODFetching = APODFetching()
+    private val apodFetching: APODFetching = APODFetching(),
 ) : ViewModel() {
     var currentPhaseOfDay: String = ""
     private val coroutineExceptionalHandler =
@@ -87,7 +87,7 @@ open class HomeScreenViewModel(
                         }
                 },
                 async {
-                    apodDataFromAPI.value = apodFetching.getAPOD()
+                    getAPODData()
                 },
                 async {
                     ipGeolocationFetching.getAstronomicalData().collect { ipGeolocationData ->
@@ -98,6 +98,10 @@ open class HomeScreenViewModel(
                 }
             )
         }
+    }
+
+    suspend fun getAPODData() {
+        apodDataFromAPI.value = apodFetching.getAPOD()
     }
 
     object Network {
@@ -120,6 +124,7 @@ open class HomeScreenViewModel(
 
         }
     }
+
     object BookMarkUtils {
         val isAlertDialogEnabledForAPODDB = mutableStateOf(false)
         val isAlertDialogEnabledForRoversDB = mutableStateOf(false)

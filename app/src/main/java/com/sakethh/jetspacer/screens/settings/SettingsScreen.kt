@@ -155,6 +155,15 @@ fun SettingsScreen(
             }
             item {
                 Text(
+                    text = "API Keys",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.titlePadding()
+                )
+            }
+            item {
+                Text(
                     text = "Storage",
                     style = MaterialTheme.typography.headlineLarge,
                     fontSize = 24.sp,
@@ -231,7 +240,7 @@ fun SettingsScreen(
 
         if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
             AlertDialogForDeletingFromDB(
-                bookMarkedCategory = Constants.SAVED_IN_NEWS_DB,
+                bookMarkedCategory = Constants.IN_SETTINGS_SCREEN,
                 onConfirmBtnClick = {
                     triggerHapticFeedback(context = context)
                     coroutineScope.launch {

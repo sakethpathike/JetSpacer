@@ -13,6 +13,7 @@ data class APOD_DB_DTO (
     var description: String = "",
     @PrimaryKey
     var imageURL: String = "",
+    var hdImageURL:String = "",
     var mediaType: String = "",
     var isBookMarked: Boolean = false,
     var category: String = "APOD",
@@ -51,8 +52,8 @@ data class MarsRoversDB(
 @Entity(tableName="newsDB")
 data class NewsDB(
     var title:String="",
-    @PrimaryKey
     var imageURL: String="",
+    @PrimaryKey
     var sourceURL:String="",
     var sourceOfNews:String="",
     var publishedTime:String=""

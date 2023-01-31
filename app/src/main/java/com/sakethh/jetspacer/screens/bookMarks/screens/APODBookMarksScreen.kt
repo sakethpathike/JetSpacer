@@ -54,6 +54,7 @@ fun APODBookMarksScreen(navController: NavController) {
     val bookMarksVM: BookMarksVM = viewModel()
     val bookMarksFromAPODDB = bookMarksVM.bookMarksFromAPODDB.collectAsState().value
     val apodURL = rememberSaveable { mutableStateOf("") }
+    val apodHDURL = rememberSaveable { mutableStateOf("") }
     val apodMediaType = rememberSaveable { mutableStateOf("") }
     val apodDescription = rememberSaveable { mutableStateOf("") }
     val apodTitle = rememberSaveable { mutableStateOf("") }
@@ -72,7 +73,8 @@ fun APODBookMarksScreen(navController: NavController) {
                 onBookMarkClick = {
                     triggerHapticFeedback(context = context)
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = true
-                }
+                },
+                imageHDURL = apodHDURL.value
             )
         },
         sheetState = bottomSheetState,
@@ -98,6 +100,7 @@ fun APODBookMarksScreen(navController: NavController) {
                         imageOnClick = {
                             apodURL.value = apodBookMarkedItem.imageURL
                             apodTitle.value = apodBookMarkedItem.title
+                            apodHDURL.value=apodBookMarkedItem.hdImageURL
                             apodDate.value = apodBookMarkedItem.datePublished
                             apodDescription.value = apodBookMarkedItem.description
                             apodMediaType.value = apodBookMarkedItem.mediaType
@@ -144,7 +147,8 @@ fun APODBookMarksScreen(navController: NavController) {
                             }
                             HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
                                 false
-                        }
+                        },
+                        apodHDImageURL = apodBookMarkedItem.hdImageURL
                     )
                 }
 
