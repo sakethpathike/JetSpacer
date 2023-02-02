@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.screens.news
 import androidx.compose.runtime.mutableStateListOf
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.httpClient.HTTPClient
+import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.news.dto.Article
 import com.sakethh.jetspacer.screens.news.dto.NewsDTO
@@ -16,8 +17,14 @@ import kotlinx.coroutines.coroutineScope
 class NewsRepo : NewsService {
     override suspend fun getCustomNewsList(page: Int): List<List<Article>> {
         val _data = mutableStateListOf<Deferred<List<Article>>>()
-        val client = HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=$page&apiKey=${Constants.NEWS_API_API_KEY}")
-            .body<NewsDTO>()
+        val client = try {
+            HomeScreenViewModel.Network.isConnectionSucceed.value =true
+            HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=$page&apiKey=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNewsAPIKey}")
+                .body()
+        }catch (_:Exception){
+            HomeScreenViewModel.Network.isConnectionSucceed.value=false
+            NewsDTO()
+        }
         coroutineScope {
             val data = async {
                 try {
@@ -34,7 +41,7 @@ class NewsRepo : NewsService {
     }
 
     override suspend fun getStatus(): String {
-        val client = HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=1&apiKey=${Constants.NEWS_API_API_KEY}")
+        val client = HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=1&apiKey=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNewsAPIKey}")
             .body<NewsDTO>()
         return try {
             HomeScreenViewModel.Network.isConnectionSucceed.value = true
@@ -46,7 +53,7 @@ class NewsRepo : NewsService {
     }
 
     override suspend fun totalResults(): Int {
-        val client = HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=1&apiKey=${Constants.NEWS_API_API_KEY}")
+        val client = HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=1&apiKey=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNewsAPIKey}")
             .body<NewsDTO>()
         return try {
             HomeScreenViewModel.Network.isConnectionSucceed.value = true

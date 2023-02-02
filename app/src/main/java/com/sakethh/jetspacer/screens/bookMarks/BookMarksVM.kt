@@ -1,6 +1,7 @@
 package com.sakethh.jetspacer.screens.bookMarks
 
 import android.app.Application
+import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.BookmarkRemove
@@ -8,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.localDB.*
@@ -18,7 +20,29 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 @Suppress("LocalVariableName")
-class BookMarksVM(application: Application) : AndroidViewModel(application) {
+class BookMarksVM() : ViewModel() {
+
+    private val coroutineExceptionalHandler =
+        CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
+
+    init {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
+            dbImplementation.localDBData().getBookMarkedAPODDBDATA().collect {
+                _bookMarksFromAPODDB.emit(it)
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
+            dbImplementation.localDBData().getBookMarkedRoverDBDATA().collect {
+                _bookMarksFromRoversDB.emit(it)
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
+            dbImplementation.localDBData().getBookMarkedNewsDATA().collect {
+                _bookMarksFromNewsDB.emit(it)
+            }
+        }
+    }
+
     val bookMarksScreensData = listOf(
         BookMarksScreensData(
             screenName = "APOD",
@@ -43,27 +67,13 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
     private val _bookMarksFromNewsDB = MutableStateFlow<List<NewsDB>>(emptyList())
     val bookMarksFromNewsDB = _bookMarksFromNewsDB.asStateFlow()
 
-    private val coroutineExceptionalHandler =
-        CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
-    val dbImplementation: DBImplementation =
-        DBImplementation.getLocalDB(application.applicationContext)
+    companion object {
+       lateinit var dbImplementation: DBImplementation
+    }
 
-    init {
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            dbImplementation.localDBData().getBookMarkedAPODDBDATA().collect {
-                _bookMarksFromAPODDB.emit(it)
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            dbImplementation.localDBData().getBookMarkedRoverDBDATA().collect {
-                _bookMarksFromRoversDB.emit(it)
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler){
-            dbImplementation.localDBData().getBookMarkedNewsDATA().collect{
-                _bookMarksFromNewsDB.emit(it)
-            }
-        }
+
+    suspend fun getApiKeys(): List<APIKeysDB> {
+        return dbImplementation.localDBData().getAPIKeys()
     }
 
     suspend fun deleteDataFromAPODDB(imageURL: String): Boolean {
@@ -76,6 +86,7 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
         return dbImplementation.localDBData()
             .doesThisExistsInRoversDB(imageURL = imageURL)
     }
+
     suspend fun deleteDataFromNewsDB(sourceURL: String): Boolean {
         dbImplementation.localDBData().deleteFromNewsDB(sourceURL = sourceURL)
         return dbImplementation.localDBData()
@@ -108,6 +119,7 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
                 .doesThisExistsInRoversDB(imageURL = marsRoversDBDTO.imageURL)
         }
     }
+
     suspend fun addDataToNewsDB(newsDB: NewsDB): Boolean {
         return if (dbImplementation.localDBData()
                 .doesThisExistsInNewsDB(sourceURL = newsDB.imageURL)
@@ -136,6 +148,7 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
     fun doesThisExistsInNewsDBIconTxt(sourceURL: String) {
         var doesDataExistsInDB = false
         viewModelScope.launch {
@@ -171,5 +184,9 @@ class BookMarksVM(application: Application) : AndroidViewModel(application) {
 
 data class BookMarksScreensData(
     val screenName: String,
-    val screenComposable: @Composable (navController: NavController) -> Unit
+    val screenComposable: @Composable (navController: NavController) -> Unit,
 )
+
+enum class ApiType {
+    NASA, NEWS
+}

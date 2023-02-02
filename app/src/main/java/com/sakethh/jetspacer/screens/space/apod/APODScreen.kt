@@ -236,7 +236,10 @@ fun APODScreen(navController: NavController) {
                         Spacer(modifier = Modifier.height(95.dp))
                         StatusScreen(
                             title = "Wait a moment!",
-                            description = "fetching the APOD Data from Space!",
+                            description = "fetching the APOD Data from Space!\n" +
+                                    "\n" +
+                                    "if this take toooooo long,\n" +
+                                    "try changing API Keys from Settings(ಥ _ ಥ)",
                             status = Status.LOADING
                         )
                     }

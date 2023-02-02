@@ -44,4 +44,15 @@ interface DBService {
     suspend fun deleteAllDataFromAPODDB()
     @Query("DELETE FROM newsDB")
     suspend fun deleteAllDataFromNewsDB()
+
+    @Query("SELECT * FROM apiKeys")
+    suspend fun getAPIKeys():List<APIKeysDB>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addAPIKeys(apiKeysDB: APIKeysDB)
+
+    @Query("SELECT EXISTS(SELECT * FROM apiKeys WHERE currentNASAAPIKey = :apiKey)")
+    suspend fun didThisNasaApiKeyGotUpdated(apiKey: String):Boolean
+    @Query("SELECT EXISTS(SELECT * FROM apiKeys WHERE currentNewsAPIKey = :apiKey)")
+    suspend fun didThisNewsApiKeyGotUpdated(apiKey: String):Boolean
 }

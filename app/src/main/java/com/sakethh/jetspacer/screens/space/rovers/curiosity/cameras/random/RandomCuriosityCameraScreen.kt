@@ -11,15 +11,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -156,17 +159,17 @@ fun LazyStaggeredGridState.atLastIndex(): Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
+fun  SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>,inSettingsScreen:Boolean=false) {
     val context= LocalContext.current
     val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
     val manifestForCuriosityVM: ManifestForCuriosityVM = viewModel()
     val isEditedIconClicked = rememberSaveable { mutableStateOf(false) }
-    val supportingText =
+    val supportingText = if(inSettingsScreen) rememberSaveable{ mutableStateOf("Enter API Key without missing a single character") } else
         rememberSaveable(manifestForCuriosityVM.maxCuriositySol.value) { mutableStateOf("value of Sol should be >= 0 and <= ${manifestForCuriosityVM.maxCuriositySol.value}") }
     AppTheme {
         Row(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.primary)
+                .background(if(inSettingsScreen)MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary)
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .animateContentSize(), horizontalArrangement = Arrangement.SpaceAround
@@ -175,8 +178,9 @@ fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     textColor = MaterialTheme.colorScheme.onPrimary,
                     containerColor = MaterialTheme.colorScheme.primary,
-                    cursorColor = MaterialTheme.colorScheme.onPrimary,
-                    focusedBorderColor = MaterialTheme.colorScheme.onPrimary
+                    cursorColor = MaterialTheme.colorScheme.onSurface,
+                    focusedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                    selectionColors = TextSelectionColors(handleColor =MaterialTheme.colorScheme.primary , backgroundColor = MaterialTheme.colorScheme.primary.copy(0.2f))
                 ),
                 singleLine = true,
                 modifier = Modifier
@@ -188,7 +192,7 @@ fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
                 },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Outlined.Search,
+                        imageVector = if(!inSettingsScreen)Icons.Outlined.Search else Icons.Outlined.Update,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
@@ -211,11 +215,19 @@ fun SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>) {
                     isEditedIconClicked.value = false
                     randomCuriosityCameraVM.currentPage.value = 1
                     if(solValue.value==""){
-                        Toast.makeText(
-                            context,
-                            "Value of sol cannot be empty",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        if(!inSettingsScreen){
+                            Toast.makeText(
+                                context,
+                                "Value of sol cannot be empty",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }else{
+                            Toast.makeText(
+                                context,
+                                "API Key cannot be empty",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }else{
                         isEditedIconClicked.value = false
                         randomCuriosityCameraVM.currentPage.value = 1

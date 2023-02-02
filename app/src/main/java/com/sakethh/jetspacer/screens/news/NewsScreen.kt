@@ -178,7 +178,10 @@ fun NewsScreen(navController: NavController) {
                         }
                         StatusScreen(
                             title = "Wait a moment!",
-                            description = "Fetching the latest space-related top headlines from around the globe",
+                            description = "Fetching the latest space-related top headlines from around the globe\n" +
+                                    "\n" +
+                                    "if this take toooooo long,\n" +
+                                    "try changing API Keys from Settings(ಥ _ ಥ)",
                             status = status
                         )
                     }
