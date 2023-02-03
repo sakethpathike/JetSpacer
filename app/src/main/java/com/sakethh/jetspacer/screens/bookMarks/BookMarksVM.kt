@@ -120,17 +120,9 @@ class BookMarksVM() : ViewModel() {
         }
     }
 
-    suspend fun addDataToNewsDB(newsDB: NewsDB): Boolean {
-        return if (dbImplementation.localDBData()
-                .doesThisExistsInNewsDB(sourceURL = newsDB.imageURL)
-        ) {
-            false
-        } else {
-            dbImplementation.localDBData()
-                .addNewBookMarkToNewsDB(newsDB = newsDB)
-            dbImplementation.localDBData()
-                .doesThisExistsInNewsDB(sourceURL = newsDB.imageURL)
-        }
+    suspend fun addDataToNewsDB(newsDB: NewsDB) {
+            dbImplementation.localDBData().addNewBookMarkToNewsDB(newsDB = newsDB)
+        doesThisExistsInNewsDBIconTxt(newsDB.sourceURL)
     }
 
     fun doesThisExistsInAPODIconTxt(imageURL: String) {

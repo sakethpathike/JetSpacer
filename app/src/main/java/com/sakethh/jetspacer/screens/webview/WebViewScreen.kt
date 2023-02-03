@@ -53,7 +53,7 @@ fun WebViewScreen(navController: NavController) {
     val webViewState = rememberWebViewState(url = newsBottomSheetContentImpl.sourceURL)
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    var didDataGetAddedInDB = false
+    var doDataExistsInDB = false
     val modalBottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val localClipBoard = LocalClipboardManager.current
@@ -64,28 +64,31 @@ fun WebViewScreen(navController: NavController) {
             onClick = {
                 triggerHapticFeedback(context = context)
                 coroutineScope.launch {
-                    didDataGetAddedInDB = bookMarksVM.addDataToNewsDB(NewsDB().apply {
-                        this.title = newsBottomSheetContentImpl.title
-                        this.imageURL = newsBottomSheetContentImpl.imageURL
-                        this.sourceOfNews = newsBottomSheetContentImpl.sourceName
-                        this.publishedTime = newsBottomSheetContentImpl.publishedTime
-                        this.sourceURL = newsBottomSheetContentImpl.sourceURL
-                    })
+                    doDataExistsInDB = BookMarksVM.dbImplementation.localDBData()
+                        .doesThisExistsInNewsDB(newsBottomSheetContentImpl.sourceURL)
                 }.invokeOnCompletion {
-                    if (didDataGetAddedInDB) {
+                    if (!doDataExistsInDB) {
+                        coroutineScope.launch {
+                            bookMarksVM.addDataToNewsDB(newsDB = NewsDB().apply {
+                                this.title = newsBottomSheetContentImpl.title
+                                this.imageURL = newsBottomSheetContentImpl.imageURL
+                                this.sourceOfNews = newsBottomSheetContentImpl.sourceName
+                                this.publishedTime = newsBottomSheetContentImpl.publishedTime
+                                this.sourceURL = newsBottomSheetContentImpl.sourceURL
+                            })
+                        }.invokeOnCompletion {
+                            bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                        }
                         Toast.makeText(
                             context,
                             "Added to bookmarks:)",
                             Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        ).show()
                     } else {
                         HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
                             true
                     }
-                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                 }
-                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
             }),
         NewsBottomSheetContent(
             title = "Copy news source link",
@@ -199,6 +202,7 @@ fun WebViewScreen(navController: NavController) {
                         doesExistsInDB =
                             bookMarksVM.deleteDataFromNewsDB(sourceURL = newsBottomSheetContentImpl.sourceURL)
                     }.invokeOnCompletion {
+                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                         if (doesExistsInDB) {
                             Toast.makeText(
                                 context,
@@ -214,9 +218,7 @@ fun WebViewScreen(navController: NavController) {
                             )
                                 .show()
                         }
-                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                     }
-                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
                 }

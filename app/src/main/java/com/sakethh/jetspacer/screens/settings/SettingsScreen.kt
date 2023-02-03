@@ -247,13 +247,12 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.titlePadding()
                     )
-                    Button(
-                        modifier = Modifier
-                            .padding(20.dp)
-                            .wrapContentWidth()
-                            .height(100.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        onClick = {
+                    Text(
+                        text = "Reset API Keys",
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontSize = 17.sp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.titlePadding().background(MaterialTheme.colorScheme.primary).clickable {
                             coroutineScope.launch {
                                 BookMarksVM.dbImplementation.localDBData()
                                     .addAPIKeys(apiKeysDB = APIKeysDB().apply {
@@ -268,15 +267,8 @@ fun SettingsScreen(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
-                        }) {
-                        Text(
-                            text = "Reset API Keys",
-                            style = MaterialTheme.typography.headlineLarge,
-                            fontSize = 17.sp,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.titlePadding()
-                        )
-                    }
+                        }
+                    )
                 }
 
             }

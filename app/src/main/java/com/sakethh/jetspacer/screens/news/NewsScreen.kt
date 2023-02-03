@@ -59,6 +59,7 @@ import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.news.dto.Article
 import com.sakethh.jetspacer.screens.settings.redirectToWeb
+import com.sakethh.jetspacer.screens.webview.WebViewUtils
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import io.ktor.http.*
 import kotlinx.coroutines.*
@@ -68,7 +69,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun NewsScreen(navController: NavController) {
-    NewsVM.NewsData.currentPage = 0
+    NewsVM.NewsData.currentPage = 1
     val newsVM: NewsVM = viewModel()
     val topHeadLinesData = newsVM.topHeadLinesListFromAPI
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -221,6 +222,7 @@ fun NewsScreen(navController: NavController) {
                                         onClick = {
                                             if (shouldLoadMoreData.value) {
                                                 shouldLoadMoreData.value = false
+                                                NewsVM.NewsData.currentPage++
                                                 coroutineScope.launch {
                                                     newsVM.loadTopHeadLinesData()
                                                 }.invokeOnCompletion {
@@ -280,6 +282,7 @@ fun NewsScreen(navController: NavController) {
                             bookMarksVM.deleteDataFromNewsDB(sourceURL = newsBottomSheetContentImpl.sourceURL)
                         modalBottomSheetState.hide()
                     }.invokeOnCompletion {
+                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                         if (doesExistsInDB) {
                             Toast.makeText(
                                 context,
@@ -288,6 +291,7 @@ fun NewsScreen(navController: NavController) {
                             )
                                 .show()
                         } else {
+                            bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                             Toast.makeText(
                                 context,
                                 "Removed from bookmarks:)",
@@ -409,15 +413,17 @@ fun LazyListScope.newsUI(
                             .align(Alignment.BottomEnd)
                             .clickable {
                                 newsBottomSheetContentImpl.imageURL = it.urlToImage
-                                bookMarksVM.doesThisExistsInNewsDBIconTxt(
-                                    sourceURL = newsBottomSheetContentImpl.sourceURL
-                                )
                                 newsBottomSheetContentImpl.publishedTime = it.publishedAt
                                 newsBottomSheetContentImpl.sourceName = it.source.name
                                 newsBottomSheetContentImpl.sourceURL = it.url
+                                bookMarksVM.doesThisExistsInNewsDBIconTxt(
+                                    sourceURL = newsBottomSheetContentImpl.sourceURL
+                                )
                                 newsBottomSheetContentImpl.title = it.title
                                 coroutineScope.launch {
                                     bottomSheetState.show()
+                                }.invokeOnCompletion {
+                                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                                 }
                             },
                         imageVector = Icons.Filled.MoreVert,
@@ -520,15 +526,15 @@ fun LazyListScope.newsUI(
                             .align(Alignment.BottomEnd)
                             .clickable {
                                 newsBottomSheetContentImpl.imageURL = it.imageURL
-                                bookMarksVM.doesThisExistsInNewsDBIconTxt(
-                                    sourceURL = newsBottomSheetContentImpl.sourceURL
-                                )
                                 newsBottomSheetContentImpl.publishedTime = it.publishedTime
                                 newsBottomSheetContentImpl.sourceName = it.sourceOfNews
                                 newsBottomSheetContentImpl.sourceURL = it.sourceURL
                                 newsBottomSheetContentImpl.title = it.title
+                                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                                 coroutineScope.launch {
                                     bottomSheetState.show()
+                                }.invokeOnCompletion {
+                                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                                 }
                             },
                         imageVector = Icons.Filled.MoreVert,
@@ -557,7 +563,8 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
     val bookMarksVM: BookMarksVM = viewModel()
     val localURI = LocalUriHandler.current
     val localClipBoard = LocalClipboardManager.current
-    var didDataGetAddedInDB = false
+    var doDataExistsInDB = false
+    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
     val bottomList = listOf(
         NewsBottomSheetContent(
             title = bookMarksVM.bookMarkText.value,
@@ -565,33 +572,37 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
             onClick = {
                 triggerHapticFeedback(context = context)
                 coroutineScope.launch {
-                    didDataGetAddedInDB = bookMarksVM.addDataToNewsDB(NewsDB().apply {
-                        this.title = newsBottomSheetContentImpl.title
-                        this.imageURL = newsBottomSheetContentImpl.imageURL
-                        this.sourceOfNews = newsBottomSheetContentImpl.sourceName
-                        this.publishedTime = newsBottomSheetContentImpl.publishedTime
-                        this.sourceURL = newsBottomSheetContentImpl.sourceURL
-                    })
+                    doDataExistsInDB = BookMarksVM.dbImplementation.localDBData()
+                        .doesThisExistsInNewsDB(newsBottomSheetContentImpl.sourceURL)
                 }.invokeOnCompletion {
-                    if (didDataGetAddedInDB) {
+                    if (!doDataExistsInDB) {
+                        coroutineScope.launch {
+                            bookMarksVM.addDataToNewsDB(newsDB = NewsDB().apply {
+                                this.title = newsBottomSheetContentImpl.title
+                                this.imageURL = newsBottomSheetContentImpl.imageURL
+                                this.sourceOfNews = newsBottomSheetContentImpl.sourceName
+                                this.publishedTime = newsBottomSheetContentImpl.publishedTime
+                                this.sourceURL = newsBottomSheetContentImpl.sourceURL
+                            })
+                        }.invokeOnCompletion {
+                            bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                        }
                         Toast.makeText(
                             context,
                             "Added to bookmarks:)",
                             Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        ).show()
                     } else {
                         HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
                             true
                     }
-                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                 }
-                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
             }),
         NewsBottomSheetContent(
             title = "Open in browser",
             icon = Icons.Default.OpenInBrowser,
             onClick = {
+                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                 localURI.openUri(newsBottomSheetContentImpl.sourceURL)
             }),
         NewsBottomSheetContent(

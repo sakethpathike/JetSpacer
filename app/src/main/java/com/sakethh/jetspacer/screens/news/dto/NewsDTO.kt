@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 
 @kotlinx.serialization.Serializable
 data class NewsDTO(
-    @SerialName("urlToImage")
+    @SerialName("articles")
     val articles: List<Article> = emptyList(),
     @SerialName("status")
     val status: String = "",

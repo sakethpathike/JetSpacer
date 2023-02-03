@@ -15,20 +15,20 @@ class NewsVM(private val newsRepo: NewsRepo = NewsRepo()) : ViewModel() {
     val _topHeadLinesListFromAPI = mutableStateOf<List<Article>>(emptyList())
     val topHeadLinesListFromAPI = mutableStateOf<List<Article>>(emptyList())
     val totalNewsCount = mutableStateOf(0)
+    private val coroutineExceptionalHandler =
+        CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
                 loadTopHeadLinesData()
-            }
         }
     }
 
     suspend fun loadTopHeadLinesData() {
-        NewsData.currentPage++
         coroutineScope {
             awaitAll(async {
-                _topHeadLinesListFromAPI.value = newsRepo.getCustomNewsList(page = NewsData.currentPage).component1()
+                _topHeadLinesListFromAPI.value =
+                    newsRepo.getCustomNewsList(page = NewsData.currentPage).component1()
                 topHeadLinesListFromAPI.value += _topHeadLinesListFromAPI.value
             },
                 async {
@@ -49,6 +49,6 @@ class NewsVM(private val newsRepo: NewsRepo = NewsRepo()) : ViewModel() {
     }
 
     object NewsData {
-        var currentPage = 0
+        var currentPage = 1
     }
 }

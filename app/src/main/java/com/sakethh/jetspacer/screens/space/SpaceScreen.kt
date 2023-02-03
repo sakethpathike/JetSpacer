@@ -3,7 +3,6 @@ package com.sakethh.jetspacer.screens.space
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,7 +14,6 @@ import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -23,34 +21,31 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.layoutId
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.commandiron.wheel_picker_compose.WheelDatePicker
-import com.commandiron.wheel_picker_compose.core.SelectorProperties
-import com.google.accompanist.web.AccompanistWebViewClient
-import com.google.accompanist.web.WebView
-import com.google.accompanist.web.WebViewState
-import com.google.accompanist.web.rememberWebViewState
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
-import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
+import com.vanpra.composematerialdialogs.MaterialDialog
+import com.vanpra.composematerialdialogs.datetime.date.DatePickerColors
+import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
+import com.vanpra.composematerialdialogs.datetime.date.datepicker
+import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 @SuppressLint("NewApi", "SimpleDateFormat")
@@ -72,10 +67,9 @@ fun SpaceScreen(navController: NavController) {
             }
         }
     }
-
+    val datePickerState = rememberMaterialDialogState()
     val spaceScreenVM: SpaceScreenVM = viewModel()
     val context = LocalContext.current
-    val isDatePickerAlertDialogEnabled = rememberSaveable { mutableStateOf(false) }
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val apodData = spaceScreenVM.apodDateData
@@ -211,7 +205,7 @@ fun SpaceScreen(navController: NavController) {
                             cardTopPaddingValue = 0.dp,
                             inSpaceScreen = true,
                             changeDateChipOnClick = {
-                                isDatePickerAlertDialogEnabled.value = true
+                                datePickerState.show()
                             },
                             apodMediaType = apodData.value.media_type.toString(),
                             inAPODBottomSheetContent = false,
@@ -475,9 +469,72 @@ fun SpaceScreen(navController: NavController) {
                 )
             }
         }
+        val customApodDate = remember { mutableStateOf("") }
+        val dateFormat=DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        MaterialDialog(backgroundColor=MaterialTheme.colorScheme.primary,shape = RoundedCornerShape(10.dp), dialogState = datePickerState, buttons = {
+            positiveButton(text = "Change date NOW", onClick = {
+                triggerHapticFeedback(context = context)
+                datePickerState.hide()
+                coroutineScope.launch {
+                    spaceScreenVM.getAPODDateData(customApodDate.value)
+                }
+            })
+            negativeButton(text = "Never mind", onClick = { datePickerState.hide() })
+        }) {
+            datepicker(
+                colors = DatePickerDefaults.colors(
+                    headerBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+                    headerTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                    calendarHeaderTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                    dateActiveBackgroundColor=MaterialTheme.colorScheme.onPrimary,
+                    dateInactiveBackgroundColor= Color.Transparent,
+                    dateActiveTextColor=MaterialTheme.colorScheme.primary,
+                    dateInactiveTextColor=MaterialTheme.colorScheme.onPrimary
+                ),
+                initialDate = LocalDate.now().minusDays(2),
+                title = "Pick a date",
+                yearRange = 1995..LocalDate.now().year
+            ){
+                customApodDate.value=it.format(dateFormat).toString()
+            }
+        }
 
-        if (isDatePickerAlertDialogEnabled.value) {
-            androidx.compose.material3.AlertDialog(
+        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+            AlertDialogForDeletingFromDB(
+                bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                onConfirmBtnClick = {
+                    triggerHapticFeedback(context = context)
+                    coroutineScope.launch {
+                        didDataGetAddedInDB =
+                            bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                    }.invokeOnCompletion {
+                        if (didDataGetAddedInDB) {
+                            Toast.makeText(
+                                context,
+                                "Bookmark didn't got removed as expected, report it:(",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Removed from bookmarks:)",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
+                        bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                    }
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
+                }
+            )
+        }
+    }
+}
+
+/*
+androidx.compose.material3.AlertDialog(
                 modifier = Modifier
                     .clip(RoundedCornerShape(10.dp))
                     .padding(20.dp)
@@ -532,9 +589,7 @@ fun SpaceScreen(navController: NavController) {
                             modifier = Modifier.align(Alignment.End),
                             onClick = {
                                 isDatePickerAlertDialogEnabled.value = false
-                                coroutineScope.launch {
-                                    spaceScreenVM.getAPODDateData(apodURL.value)
-                                }
+
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
                         ) {
@@ -544,40 +599,7 @@ fun SpaceScreen(navController: NavController) {
                                 color = MaterialTheme.colorScheme.surface
                             )
                         }
-
                     }
                 })
-        }
-        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
-            AlertDialogForDeletingFromDB(
-                bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
-                onConfirmBtnClick = {
-                    triggerHapticFeedback(context = context)
-                    coroutineScope.launch {
-                        didDataGetAddedInDB =
-                            bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
-                    }.invokeOnCompletion {
-                        if (didDataGetAddedInDB) {
-                            Toast.makeText(
-                                context,
-                                "Bookmark didn't got removed as expected, report it:(",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Removed from bookmarks:)",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        }
-                        bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                    }
-                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
-                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
-                }
-            )
-        }
-    }
-}
+
+* */

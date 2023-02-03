@@ -39,7 +39,11 @@ class APODPaginationFetching(private val apodImplementation: APODImplementation 
         calendar.add(Calendar.DATE, -initialFetchingValue)
         val startDate = dateFormat.format(calendar.time)
         currentAPODDate = apodImplementation.getAPOD().date ?: LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE).toString()
-        val stringToDate = dateFormat.parse(currentAPODDate) ?: Date()
+        val stringToDate = try {
+            dateFormat.parse(currentAPODDate)
+        }catch(_:Exception){
+            Date()
+        }
         val endDate = if (primaryInitForAPODEndDate != 0) {
             dateFormat.format(stringToDate.time.minus(15))
         } else {
