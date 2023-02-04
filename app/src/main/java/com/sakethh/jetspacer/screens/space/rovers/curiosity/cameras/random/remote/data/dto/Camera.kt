@@ -1,7 +1,7 @@
 package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto
 
+import androidx.annotation.Keep
 import kotlinx.serialization.SerialName
-
 @kotlinx.serialization.Serializable
 data class Camera(
     @SerialName("full_name")

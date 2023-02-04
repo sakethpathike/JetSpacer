@@ -1,7 +1,7 @@
 package com.sakethh.jetspacer.screens.news.dto
 
+import androidx.annotation.Keep
 import kotlinx.serialization.SerialName
-
 @kotlinx.serialization.Serializable
 data class Article(
     @SerialName("author")

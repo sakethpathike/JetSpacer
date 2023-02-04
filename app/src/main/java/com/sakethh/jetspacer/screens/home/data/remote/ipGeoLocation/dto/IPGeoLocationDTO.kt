@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.dto
 
+import androidx.annotation.Keep
 import kotlinx.serialization.SerialName
 
 @kotlinx.serialization.Serializable

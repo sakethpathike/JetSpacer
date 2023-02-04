@@ -1,8 +1,8 @@
 package com.sakethh.jetspacer.screens.space.remote.data.marsWeather.dto
 
+import androidx.annotation.Keep
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
-
 @kotlinx.serialization.Serializable
 data class MarsWeatherDTO(
     @SerialName("TZ_Data")
