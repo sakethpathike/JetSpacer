@@ -90,8 +90,12 @@ fun NewsBookmarkScreen(navController: NavController) {
                     bookMarkedData = bookMarkedData,
                     coroutineScope = coroutineScope,
                     newsBottomSheetContentImpl = newsBottomSheetContentImpl,
-                    navController = navController
+                    navController = navController,
+                    bookMarksVM = bookMarksVM
                 )
+                item {
+                    Spacer(modifier = Modifier.height(75.dp))
+                }
             }}
         }
 
@@ -102,8 +106,11 @@ fun NewsBookmarkScreen(navController: NavController) {
                 onConfirmBtnClick = {
                     triggerHapticFeedback(context = context)
                     coroutineScope.launch {
+                        bottomSheetState.hide()
+                    }
+                    coroutineScope.launch {
                         doesExistsInDB =
-                            bookMarksVM.deleteDataFromNewsDB(imageURL = newsBottomSheetContentImpl.imageURL)
+                            bookMarksVM.deleteDataFromNewsDB(sourceURL = newsBottomSheetContentImpl.sourceURL)
                     }.invokeOnCompletion {
                         if (doesExistsInDB) {
                             Toast.makeText(
@@ -120,7 +127,7 @@ fun NewsBookmarkScreen(navController: NavController) {
                             )
                                 .show()
                         }
-                        bookMarksVM.doesThisExistsInNewsDBIconTxt(imageURL = newsBottomSheetContentImpl.imageURL)
+                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                     }
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false

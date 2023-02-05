@@ -3,7 +3,6 @@ package com.sakethh.jetspacer.screens.space
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,13 +14,14 @@ import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,26 +29,27 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.layoutId
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.commandiron.wheel_picker_compose.WheelDatePicker
-import com.google.accompanist.web.AccompanistWebViewClient
-import com.google.accompanist.web.WebView
-import com.google.accompanist.web.WebViewState
-import com.google.accompanist.web.rememberWebViewState
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
-import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
+import com.vanpra.composematerialdialogs.MaterialDialog
+import com.vanpra.composematerialdialogs.datetime.date.DatePickerColors
+import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
+import com.vanpra.composematerialdialogs.datetime.date.datepicker
+import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 @SuppressLint("NewApi", "SimpleDateFormat")
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SpaceScreen(navController: NavController) {
 
@@ -66,10 +67,9 @@ fun SpaceScreen(navController: NavController) {
             }
         }
     }
-
+    val datePickerState = rememberMaterialDialogState()
     val spaceScreenVM: SpaceScreenVM = viewModel()
     val context = LocalContext.current
-    val isDatePickerAlertDialogEnabled = rememberSaveable { mutableStateOf(false) }
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val apodData = spaceScreenVM.apodDateData
@@ -104,6 +104,7 @@ fun SpaceScreen(navController: NavController) {
                                 this.isBookMarked = true
                                 this.category = "APOD"
                                 this.addedToLocalDBOn = formattedDate
+                                this.hdImageURL = apodData.value.hdurl.toString()
                             })
                         }.invokeOnCompletion {
                             if (didDataGetAddedInDB) {
@@ -115,7 +116,8 @@ fun SpaceScreen(navController: NavController) {
                             }
                             bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                         }
-                    }
+                    },
+                    imageHDURL = apodData.value.hdurl.toString()
                 )
             },
             sheetState = bottomSheetState,
@@ -203,7 +205,7 @@ fun SpaceScreen(navController: NavController) {
                             cardTopPaddingValue = 0.dp,
                             inSpaceScreen = true,
                             changeDateChipOnClick = {
-                                isDatePickerAlertDialogEnabled.value = true
+                                datePickerState.show()
                             },
                             apodMediaType = apodData.value.media_type.toString(),
                             inAPODBottomSheetContent = false,
@@ -222,6 +224,7 @@ fun SpaceScreen(navController: NavController) {
                                             this.isBookMarked = true
                                             this.category = "APOD"
                                             this.addedToLocalDBOn = formattedDate
+                                            this.hdImageURL = apodData.value.hdurl.toString()
                                         })
                                 }.invokeOnCompletion {
                                     if (didDataGetAddedInDB) {
@@ -267,7 +270,8 @@ fun SpaceScreen(navController: NavController) {
                                     false
                                 HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                                     false
-                            }
+                            },
+                            apodHDImageURL = apodData.value.hdurl.toString()
                         )
                     }
                     item {
@@ -379,7 +383,8 @@ fun SpaceScreen(navController: NavController) {
                             CardRowGrid(
                                 lhsCardTitle = "Atmosphere",
                                 lhsCardValue = marsWeatherData.atmo_opacity,
-                                isLHSShimmerVisible = marsWeatherData.atmo_opacity.toString().isEmpty(),
+                                isLHSShimmerVisible = marsWeatherData.atmo_opacity.toString()
+                                    .isEmpty(),
                                 lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                                 rhsCardTitle = "Local UV Irradiance",
@@ -414,7 +419,8 @@ fun SpaceScreen(navController: NavController) {
                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                                 rhsCardTitle = "Max GTS Temperature",
                                 rhsCardValue = marsWeatherData.max_gts_temp.toString(),
-                                isRHSShimmerVisible = marsWeatherData.max_gts_temp.toString().isBlank(),
+                                isRHSShimmerVisible = marsWeatherData.max_gts_temp.toString()
+                                    .isBlank(),
                                 isLHSShimmering = marsWeatherData.min_gts_temp == 0,
                                 isRHSShimmering = marsWeatherData.max_gts_temp.toString().isBlank(),
                                 rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
@@ -428,7 +434,8 @@ fun SpaceScreen(navController: NavController) {
                                 lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                                 isRHSShimmerVisible = marsWeatherData.TZ_Data.isBlank(),
-                                isLHSShimmering = marsWeatherData.unitOfMeasure.toString().isEmpty(),
+                                isLHSShimmering = marsWeatherData.unitOfMeasure.toString()
+                                    .isEmpty(),
                                 isRHSShimmering = marsWeatherData.TZ_Data.isBlank(),
                                 rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
                                 rhsCardTitle = "Timezone",
@@ -462,68 +469,36 @@ fun SpaceScreen(navController: NavController) {
                 )
             }
         }
-
-        if (isDatePickerAlertDialogEnabled.value) {
-                    androidx.compose.material3.AlertDialog(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        onDismissRequest = {
-                            isDatePickerAlertDialogEnabled.value = false
-                        },
-                        title = {
-                            androidx.compose.material3.Text(
-                                text = "Pick a date!",
-                                style = MaterialTheme.typography.headlineLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 18.sp
-                            )
-                        }, text = {
-                            WheelDatePicker(
-                                minYear = 1995,
-                                maxYear = currentYear,
-                                textStyle = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
-                                textColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
-                            ) { selectedDate ->
-                                apodURL.value =
-                                    "${selectedDate.year}-${selectedDate.monthValue}-${selectedDate.dayOfMonth}"
-                            }
-                        }, confirmButton = {
-                            androidx.compose.material3.Button(
-                                onClick = {
-                                    isDatePickerAlertDialogEnabled.value =
-                                        false
-                                    coroutineScope.launch {
-                                        spaceScreenVM.getAPODDateData(apodURL.value)
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
-                            ) {
-                                androidx.compose.material3.Text(
-                                    text = "Change date NOW!",
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    color = MaterialTheme.colorScheme.surface
-                                )
-                            }
-                        }, dismissButton = {
-                            androidx.compose.material3.OutlinedButton(
-                                onClick = {
-                                    isDatePickerAlertDialogEnabled.value =
-                                        false
-                                },
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.onSurface
-                                )
-                            ) {
-                                androidx.compose.material3.Text(
-                                    text = "Not really(¬_¬ )",
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        })
-
-
+        val customApodDate = remember { mutableStateOf("") }
+        val dateFormat=DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        MaterialDialog(backgroundColor=MaterialTheme.colorScheme.primary,shape = RoundedCornerShape(10.dp), dialogState = datePickerState, buttons = {
+            positiveButton(text = "Change date NOW", onClick = {
+                triggerHapticFeedback(context = context)
+                datePickerState.hide()
+                coroutineScope.launch {
+                    spaceScreenVM.getAPODDateData(customApodDate.value)
+                }
+            })
+            negativeButton(text = "Never mind", onClick = { datePickerState.hide() })
+        }) {
+            datepicker(
+                colors = DatePickerDefaults.colors(
+                    headerBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+                    headerTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                    calendarHeaderTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                    dateActiveBackgroundColor=MaterialTheme.colorScheme.onPrimary,
+                    dateInactiveBackgroundColor= Color.Transparent,
+                    dateActiveTextColor=MaterialTheme.colorScheme.primary,
+                    dateInactiveTextColor=MaterialTheme.colorScheme.onPrimary
+                ),
+                initialDate = LocalDate.now().minusDays(2),
+                title = "Pick a date",
+                yearRange = 1995..LocalDate.now().year
+            ){
+                customApodDate.value=it.format(dateFormat).toString()
+            }
         }
+
         if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
             AlertDialogForDeletingFromDB(
                 bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
@@ -557,3 +532,74 @@ fun SpaceScreen(navController: NavController) {
         }
     }
 }
+
+/*
+androidx.compose.material3.AlertDialog(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .padding(20.dp)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                onDismissRequest = {
+                    isDatePickerAlertDialogEnabled.value = false
+                }, content = {
+                    Column(
+                        modifier = Modifier
+                            .padding(20.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    ) {
+                        androidx.compose.material3.Text(
+                            text = "Pick a date!",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 18.sp
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        WheelDatePicker(
+                            minDate = LocalDate.of(1995, 6, 16),
+                            maxDate = LocalDate.parse(homeScreenViewModel.apodDataFromAPI.value.date.toString()),
+                            textStyle = MaterialTheme.typography.headlineMedium,
+                            textColor = MaterialTheme.colorScheme.onSurface
+                        ) { selectedDate ->
+                            apodURL.value =
+                                "${selectedDate.year}-${selectedDate.monthValue}-${selectedDate.dayOfMonth}"
+                        }
+                        Spacer(modifier = Modifier.height(15.dp))
+                        androidx.compose.material3.OutlinedButton(
+                            modifier = Modifier.align(Alignment.End),
+                            onClick = {
+                                isDatePickerAlertDialogEnabled.value =
+                                    false
+                            },
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.onSurface
+                            )
+                        ) {
+                            androidx.compose.material3.Text(
+                                text = "Not really(¬_¬ )",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(15.dp))
+                        androidx.compose.material3.Button(
+                            modifier = Modifier.align(Alignment.End),
+                            onClick = {
+                                isDatePickerAlertDialogEnabled.value = false
+
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
+                        ) {
+                            androidx.compose.material3.Text(
+                                text = "Change date NOW!",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.surface
+                            )
+                        }
+                    }
+                })
+
+* */

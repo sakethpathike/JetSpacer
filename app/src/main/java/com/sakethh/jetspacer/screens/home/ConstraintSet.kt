@@ -23,7 +23,6 @@ val constraintSet = ConstraintSet {
     val bookMarkIcon = createRefFor("bookMarkIcon")
     val downloadIcon = createRefFor("downloadIcon")
 
-
     constrain(cardIconConstraintRef) {
         top.linkTo(parent.top)
         start.linkTo(parent.start)

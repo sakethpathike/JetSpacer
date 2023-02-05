@@ -1,6 +1,5 @@
 package com.sakethh.jetspacer.localDB
 
-import android.content.Context
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
@@ -29,15 +28,15 @@ interface DBService {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addNewBookMarkToNewsDB(newsDB: NewsDB)
 
-    @Query("DELETE from newsDB WHERE imageURL = :imageURL")
-    suspend fun deleteFromNewsDB(imageURL: String)
+    @Query("DELETE from newsDB WHERE sourceURL = :sourceURL")
+    suspend fun deleteFromNewsDB(sourceURL: String)
 
     @Query("SELECT EXISTS(SELECT * FROM apod_db WHERE imageURL = :imageURL)")
     suspend fun doesThisExistsInAPODDB(imageURL: String):Boolean
     @Query("SELECT EXISTS(SELECT * FROM marsRovers_db WHERE imageURL = :imageURL)")
     suspend fun doesThisExistsInRoversDB(imageURL: String):Boolean
-    @Query("SELECT EXISTS(SELECT * FROM newsDB WHERE imageURL = :imageURL)")
-    suspend fun doesThisExistsInNewsDB(imageURL: String):Boolean
+    @Query("SELECT EXISTS(SELECT * FROM newsDB WHERE sourceURL = :sourceURL)")
+    suspend fun doesThisExistsInNewsDB(sourceURL: String):Boolean
 
     @Query("DELETE FROM marsRovers_db")
     suspend fun deleteAllDataFromMarsDB()
@@ -45,4 +44,15 @@ interface DBService {
     suspend fun deleteAllDataFromAPODDB()
     @Query("DELETE FROM newsDB")
     suspend fun deleteAllDataFromNewsDB()
+
+    @Query("SELECT * FROM apiKeys")
+    suspend fun getAPIKeys():List<APIKeysDB>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addAPIKeys(apiKeysDB: APIKeysDB)
+
+    @Query("SELECT EXISTS(SELECT * FROM apiKeys WHERE currentNASAAPIKey = :apiKey)")
+    suspend fun didThisNasaApiKeyGotUpdated(apiKey: String):Boolean
+    @Query("SELECT EXISTS(SELECT * FROM apiKeys WHERE currentNewsAPIKey = :apiKey)")
+    suspend fun didThisNewsApiKeyGotUpdated(apiKey: String):Boolean
 }

@@ -1,11 +1,13 @@
 package com.sakethh.jetspacer.screens.webview
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -34,6 +36,7 @@ import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.news.NewsBottomSheetContent
 import com.sakethh.jetspacer.screens.news.NewsBottomSheetContentImpl
+import com.sakethh.jetspacer.screens.webview.WebViewUtils.newsBottomSheetContentImpl
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.launch
 
@@ -41,15 +44,16 @@ object WebViewUtils {
     var newsBottomSheetContentImpl = NewsBottomSheetContentImpl()
 }
 
+@SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun WebViewScreen(navController: NavController) {
-    val webViewState = rememberWebViewState(url = WebViewUtils.newsBottomSheetContentImpl.sourceURL)
-    val newsBottomSheetContentImpl = NewsBottomSheetContentImpl().copy()
     val bookMarksVM: BookMarksVM = viewModel()
+    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+    val webViewState = rememberWebViewState(url = newsBottomSheetContentImpl.sourceURL)
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    var didDataGetAddedInDB = false
+    var doDataExistsInDB = false
     val modalBottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val localClipBoard = LocalClipboardManager.current
@@ -60,26 +64,30 @@ fun WebViewScreen(navController: NavController) {
             onClick = {
                 triggerHapticFeedback(context = context)
                 coroutineScope.launch {
-                    didDataGetAddedInDB = bookMarksVM.addDataToNewsDB(NewsDB().apply {
-                        this.title = newsBottomSheetContentImpl.title
-                        this.imageURL = newsBottomSheetContentImpl.imageURL
-                        this.sourceOfNews = newsBottomSheetContentImpl.sourceName
-                        this.publishedTime = newsBottomSheetContentImpl.publishedTime
-                        this.sourceURL = newsBottomSheetContentImpl.sourceURL
-                    })
+                    doDataExistsInDB = BookMarksVM.dbImplementation.localDBData()
+                        .doesThisExistsInNewsDB(newsBottomSheetContentImpl.sourceURL)
                 }.invokeOnCompletion {
-                    if (didDataGetAddedInDB) {
+                    if (!doDataExistsInDB) {
+                        coroutineScope.launch {
+                            bookMarksVM.addDataToNewsDB(newsDB = NewsDB().apply {
+                                this.title = newsBottomSheetContentImpl.title
+                                this.imageURL = newsBottomSheetContentImpl.imageURL
+                                this.sourceOfNews = newsBottomSheetContentImpl.sourceName
+                                this.publishedTime = newsBottomSheetContentImpl.publishedTime
+                                this.sourceURL = newsBottomSheetContentImpl.sourceURL
+                            })
+                        }.invokeOnCompletion {
+                            bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                        }
                         Toast.makeText(
                             context,
                             "Added to bookmarks:)",
                             Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        ).show()
                     } else {
                         HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
                             true
                     }
-                    bookMarksVM.doesThisExistsInNewsDBIconTxt(newsBottomSheetContentImpl.imageURL)
                 }
             }),
         NewsBottomSheetContent(
@@ -98,6 +106,7 @@ fun WebViewScreen(navController: NavController) {
                     Intent.EXTRA_TEXT,
                     "Checkout top-headline:\n${newsBottomSheetContentImpl.title}\nsource:\n${newsBottomSheetContentImpl.sourceURL}"
                 )
+                intent.type = "text/plain"
                 val activity = context as Activity?
                 activity?.startActivity(intent)
             }),
@@ -105,6 +114,7 @@ fun WebViewScreen(navController: NavController) {
             title = "More",
             icon = Icons.Default.MoreVert,
             onClick = {
+                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                 coroutineScope.launch {
                     modalBottomSheetState.show()
                 }
@@ -120,8 +130,18 @@ fun WebViewScreen(navController: NavController) {
         }
     }
     AppTheme {
-        ModalBottomSheetLayout(sheetState = modalBottomSheetState, sheetContent = {
-            NewsBottomSheetContent(newsBottomSheetContentImpl = WebViewUtils.newsBottomSheetContentImpl)
+        ModalBottomSheetLayout(sheetShape =
+        RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp),
+            sheetState = modalBottomSheetState, sheetContent = {Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .background(MaterialTheme.colorScheme.primary)
+            ) {
+                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                Spacer(modifier = Modifier.height(20.dp))
+                NewsBottomSheetContent(newsBottomSheetContentImpl = newsBottomSheetContentImpl)
+                Spacer(modifier = Modifier.height(20.dp))}
         }) {
             Scaffold(topBar = {
                 TopAppBar(modifier = Modifier
@@ -143,6 +163,8 @@ fun WebViewScreen(navController: NavController) {
                     }
                 })
             }, bottomBar = {
+                if(enableBtmBarInWebView){
+                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                 TopAppBar(actions = {
                     bottomList.forEach {
                         IconButton(
@@ -158,9 +180,12 @@ fun WebViewScreen(navController: NavController) {
                             )
                         }
                     }
-                }, title = {})
+                }, title = {})}
             }) {
                 WebView(
+                    onCreated = {webView->
+                        webView.settings.javaScriptEnabled=true
+                    },
                     state = webViewState, modifier = Modifier
                         .padding(it)
                         .fillMaxSize()
@@ -175,8 +200,9 @@ fun WebViewScreen(navController: NavController) {
                     triggerHapticFeedback(context = context)
                     coroutineScope.launch {
                         doesExistsInDB =
-                            bookMarksVM.deleteDataFromNewsDB(imageURL = newsBottomSheetContentImpl.imageURL)
+                            bookMarksVM.deleteDataFromNewsDB(sourceURL = newsBottomSheetContentImpl.sourceURL)
                     }.invokeOnCompletion {
+                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
                         if (doesExistsInDB) {
                             Toast.makeText(
                                 context,
@@ -192,7 +218,6 @@ fun WebViewScreen(navController: NavController) {
                             )
                                 .show()
                         }
-                        bookMarksVM.doesThisExistsInNewsDBIconTxt(imageURL = newsBottomSheetContentImpl.imageURL)
                     }
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
@@ -201,3 +226,5 @@ fun WebViewScreen(navController: NavController) {
         }
     }
 }
+
+var enableBtmBarInWebView=false

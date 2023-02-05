@@ -4,10 +4,15 @@ package com.sakethh.jetspacer.screens.home
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.material.BottomSheetScaffoldState
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.jetspacer.httpClient.HTTPClient
+import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODFetching
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.IPGeolocationFetching
@@ -25,7 +30,7 @@ import java.util.Calendar
 open class HomeScreenViewModel(
     private val ipGeolocationFetching: IPGeolocationFetching = IPGeolocationFetching(),
     private val issLocationFetching: ISSLocationFetching = ISSLocationFetching(),
-    private val apodFetching: APODFetching = APODFetching()
+    private val apodFetching: APODFetching = APODFetching(),
 ) : ViewModel() {
     var currentPhaseOfDay: String = ""
     private val coroutineExceptionalHandler =
@@ -82,7 +87,7 @@ open class HomeScreenViewModel(
                         }
                 },
                 async {
-                    apodDataFromAPI.value = apodFetching.getAPOD()
+                    getAPODData()
                 },
                 async {
                     ipGeolocationFetching.getAstronomicalData().collect { ipGeolocationData ->
@@ -93,6 +98,10 @@ open class HomeScreenViewModel(
                 }
             )
         }
+    }
+
+    suspend fun getAPODData() {
+        apodDataFromAPI.value = apodFetching.getAPOD()
     }
 
     object Network {
@@ -115,7 +124,6 @@ open class HomeScreenViewModel(
 
         }
     }
-
 
     object BookMarkUtils {
         val isAlertDialogEnabledForAPODDB = mutableStateOf(false)

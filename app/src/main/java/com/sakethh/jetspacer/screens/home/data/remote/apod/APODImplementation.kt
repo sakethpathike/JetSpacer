@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.screens.home.data.remote.apod
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import io.ktor.client.*
@@ -15,8 +16,8 @@ import kotlinx.coroutines.coroutineScope
 
 class APODImplementation(
     private val ktorClient: HttpClient,
-    private val apodURL: String = Constants.APOD_URL
-) : APODService {
+    private val apodURL: String,
+) : APODService{
     override suspend fun getAPOD(): APOD_DTO {
         return try {
             HomeScreenViewModel.Network.isConnectionSucceed.value = true

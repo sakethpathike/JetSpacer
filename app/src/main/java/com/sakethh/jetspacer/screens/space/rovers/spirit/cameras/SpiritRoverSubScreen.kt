@@ -268,7 +268,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
             })
             val statusDescriptionForLoadingScreen =
                 if (cameraName != SpiritCamerasVM.SpiritCameras.RANDOM) {
-                    "fetching the images from this camera that were captured on sol ${currentScreenSolValue.value}"
+                    "fetching the images from this camera that were captured on sol ${currentScreenSolValue.value}\n\nif this take toooooo long,\ntry changing API Keys from Settings(ಥ _ ಥ)"
                 } else {
                     "fetching the images that were captured on sol ${currentScreenSolValue.value}"
                 }

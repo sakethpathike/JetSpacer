@@ -294,9 +294,15 @@ fun CuriosityCamerasScreen(cameraName: CuriosityCamerasVM.CuriosityCameras) {
                 })
                 val statusDescriptionForLoadingScreen =
                     if (cameraName != CuriosityCamerasVM.CuriosityCameras.RANDOM) {
-                        "fetching the images from this camera that were captured on sol ${currentScreenSolValue.value}"
+                        "fetching the images from this camera that were captured on sol ${currentScreenSolValue.value}\n" +
+                                "\n" +
+                                "if this take toooooo long,\n" +
+                                "try changing API Keys from Settings(ಥ _ ಥ)"
                     } else {
-                        "fetching the images that were captured on sol ${currentScreenSolValue.value}"
+                        "fetching the images that were captured on sol ${currentScreenSolValue.value}\n" +
+                                "\n" +
+                                "if this take toooooo long,\n" +
+                                "try changing API Keys from Settings(ಥ _ ಥ)"
                     }
                 val statusDescriptionFor404Screen =
                     if (cameraName != CuriosityCamerasVM.CuriosityCameras.RANDOM) {

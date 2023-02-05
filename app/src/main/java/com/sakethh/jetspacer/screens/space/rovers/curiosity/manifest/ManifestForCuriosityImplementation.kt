@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest
 
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.httpClient.HTTPClient
+import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Camera
@@ -24,7 +25,7 @@ class ManifestForCuriosityImplementation : ManifestService {
 suspend inline fun <reified T : Any> manifestForCuriosityDataRequest(roverName: String): T {
     return try {
         HomeScreenViewModel.Network.isConnectionSucceed.value = true
-        HTTPClient.ktorClientWithCache.get("https://api.nasa.gov/mars-photos/api/v1/manifests/$roverName?api_key=${Constants.NASA_APIKEY}")
+        HTTPClient.ktorClientWithCache.get("https://api.nasa.gov/mars-photos/api/v1/manifests/$roverName?api_key=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNASAAPIKey}")
             .body()
     }catch (_:Exception){
         HomeScreenViewModel.Network.isConnectionSucceed.value = false

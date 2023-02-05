@@ -11,7 +11,7 @@ import io.ktor.http.auth.HttpAuthHeader.Parameters.Realm
 import kotlinx.coroutines.flow.Flow
 
 @Database(
-    entities = [NewsDB::class,APOD_DB_DTO::class, MarsRoversDBDTO::class],
+    entities = [NewsDB::class,APOD_DB_DTO::class, MarsRoversDBDTO::class,APIKeysDB::class],
     version = 1,
     exportSchema = false
 )
