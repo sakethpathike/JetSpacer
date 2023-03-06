@@ -43,14 +43,17 @@ The latest stable release of JetSpacer is available on [GitHub Releases](https:/
 - Certain UI elements are not optimized for different screen sizes
 - The UI implementation of the NASA video APOD Card requires improvement
 
-## Upcoming Features 
+## Upcoming Updates 
 - Option to manually select the theme, instead of referring to system settings by default
 - Improved user interface for better user experience
 - Optimization of UI elements for different screen sizes
 - Search and sorting options in bookmarks
 - Caching wherever possible
+- New UI for Bookmarks, Settings, News, Home Screen(s)
+- New section for exploring few selected space related subreddit(s)
+- Max usage of News-API (as of now, app only retrieves Top-Headlines)
 
-#### Note: This project is in development and new features and improvements will be added over time.
+#### Note: This project is in active development and new features and improvements will be added over time.
 
 ## License 
 ```
