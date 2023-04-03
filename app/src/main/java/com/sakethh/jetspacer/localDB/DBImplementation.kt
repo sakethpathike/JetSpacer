@@ -1,24 +1,31 @@
 package com.sakethh.jetspacer.localDB
 
 import android.content.Context
-import android.widget.Toast
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.sakethh.jetspacer.screens.home.HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB
-import com.sakethh.jetspacer.screens.home.HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB
-import io.ktor.http.auth.HttpAuthHeader.Parameters.Realm
-import kotlinx.coroutines.flow.Flow
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [NewsDB::class,APOD_DB_DTO::class, MarsRoversDBDTO::class,APIKeysDB::class],
-    version = 1,
-    exportSchema = false
+    entities = [NewsDB::class, APOD_DB_DTO::class, MarsRoversDBDTO::class, APIKeysDB::class, BookMarkScreenGridNames::class],
+    version = 2,
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    exportSchema = true
 )
 abstract class DBImplementation : RoomDatabase() {
     abstract fun localDBData(): DBService
 
     companion object {
+        private val MigrationFrom1To2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `bookMarkScreen_GridNames` (\n" +
+                        "  `name` TEXT NOT NULL PRIMARY KEY,\n" +
+                        "  `imgUrlForGrid` TEXT\n" +
+                        ")\n")
+            }
+        }
         @Volatile
         private var dbInstance: DBImplementation? = null
         fun getLocalDB(context: Context): DBImplementation {
@@ -29,7 +36,7 @@ abstract class DBImplementation : RoomDatabase() {
                         context.applicationContext,
                         DBImplementation::class.java,
                         "bookmarks_db"
-                    ).build()
+                    ).addMigrations(migrations = arrayOf(MigrationFrom1To2)).build()
                     dbInstance = roomDBInstance
                     return roomDBInstance
                 }
