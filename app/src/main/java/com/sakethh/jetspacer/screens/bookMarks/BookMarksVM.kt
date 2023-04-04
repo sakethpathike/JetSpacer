@@ -1,14 +1,11 @@
 package com.sakethh.jetspacer.screens.bookMarks
 
-import android.app.Application
-import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -68,7 +65,7 @@ class BookMarksVM() : ViewModel() {
     val bookMarksFromNewsDB = _bookMarksFromNewsDB.asStateFlow()
 
     companion object {
-       lateinit var dbImplementation: DBImplementation
+        lateinit var dbImplementation: DBImplementation
     }
 
 
@@ -121,7 +118,7 @@ class BookMarksVM() : ViewModel() {
     }
 
     suspend fun addDataToNewsDB(newsDB: NewsDB) {
-            dbImplementation.localDBData().addNewBookMarkToNewsDB(newsDB = newsDB)
+        dbImplementation.localDBData().addNewBookMarkToNewsDB(newsDB = newsDB)
         doesThisExistsInNewsDBIconTxt(newsDB.sourceURL)
     }
 
@@ -173,6 +170,7 @@ class BookMarksVM() : ViewModel() {
         }
     }
 }
+
 
 data class BookMarksScreensData(
     val screenName: String,

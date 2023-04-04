@@ -327,128 +327,90 @@ fun HomeScreen(navController: NavController) {
                         )
                     }
                 }
-                /*Geolocation*/
+
+                /*APOD*/
+                var doesExistsInDB = false
                 item {
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                        modifier = Modifier
-                            .padding(start = 15.dp, end = 15.dp, top = 30.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                    ) {
-                        Column {
-                            ConstraintLayout(constraintSet = constraintSet) {
-                                Icon(
-                                    imageVector = Icons.Default.MyLocation,
-                                    contentDescription = "Icon Of \"My Location\"",
-                                    modifier = Modifier
-                                        .padding(top = 15.dp, start = 15.dp)
-                                        .size(25.dp)
-                                        .layoutId("cardIcon"),
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                                Text(
-                                    text = "Your Geolocation Data",
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = 18.sp,
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    modifier = Modifier
-                                        .padding(start = 10.dp, top = 10.dp)
-                                        .layoutId("cardTitle")
-                                )
-                                Text(
-                                    text = "Based on your I.P address",
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = 14.sp,
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    modifier = Modifier
-                                        .padding(start = 10.dp, top = 2.dp)
-                                        .layoutId("cardDescription")
-                                )
+                    APODCardComposable(
+                        homeScreenViewModel = homeScreenViewModel,
+                        imageURL = apodURL,
+                        apodDate = apodDate,
+                        apodDescription = apodDescription,
+                        apodTitle = apodTitle,
+                        imageOnClick = {
+                            coroutineScope.launch {
+                                bottomSheetState.show()
                             }
-                            androidx.compose.material3.Divider(
-                                thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.padding(
-                                    start = 25.dp,
-                                    end = 25.dp,
-                                    top = 15.dp,
-                                    bottom = 15.dp
-                                )
-                            )
-                            CardForRowGridRaw(
-                                title = "I.P address",
-                                value = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.ip.toString(),
-                                cardModifier = Modifier
-                                    .wrapContentHeight()
-                                    .fillMaxWidth()
-                                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                                isShimmering = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.ip.toString() == "null",
-                                visible = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.ip.toString() == "null",
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                shimmerHighLightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                singleRawCard = true
-                            )
-                            CardForRowGridRaw(
-                                title = "Location",
-                                value = "${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.city}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov}, ${homeScreenViewModel.geolocationDTODataFromAPI.value.location?.country_name}",
-                                cardModifier = Modifier
-                                    .wrapContentHeight()
-                                    .fillMaxWidth()
-                                    .padding(15.dp),
-                                isShimmering = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov.toString() == "null",
-                                visible = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.state_prov.toString() == "null",
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                shimmerHighLightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                singleRawCard = true
-                            )
-                            androidx.compose.material3.Divider(
-                                thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.padding(
-                                    start = 25.dp,
-                                    end = 25.dp,
-                                    top = 0.dp,
-                                    bottom = 15.dp
-                                )
-                            )
-                            CardForRowGridRaw(
-                                title = "Zip code",
-                                value = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.zipcode.toString(),
-                                cardModifier = Modifier
-                                    .wrapContentHeight()
-                                    .fillMaxWidth()
-                                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                                isShimmering = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.zipcode.toString() == "null",
-                                visible = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.zipcode.toString() == "null",
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                shimmerHighLightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                singleRawCard = true
-
-                            )
-                            CardRowGrid(
-                                lhsCardTitle = "Latitude",
-                                lhsCardValue = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.latitude.toString(),
-                                isLHSShimmerVisible = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.latitude.toString()
-                                    .isEmpty(),
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                rhsCardTitle = "Longitude",
-                                rhsCardValue = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude.toString(),
-                                isRHSShimmerVisible = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude.toString()
-                                    .isEmpty(),
-                                isLHSShimmering = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.latitude.toString()
-                                    .isEmpty(),
-                                isRHSShimmering = homeScreenViewModel.geolocationDTODataFromAPI.value.location?.longitude.toString()
-                                    .isEmpty(),
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-
-                                )
-                            Spacer(modifier = Modifier.height(15.dp))
-                        }
-                    }
+                        },
+                        apodMediaType = apodMediaType,
+                        inAPODBottomSheetContent = false,
+                        bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                        onBookMarkButtonClick = {
+                            triggerHapticFeedback(context = context)
+                            bookMarksVM.imgURL = apodURL
+                            val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                            val formattedDate = dateFormat.format(Date())
+                            coroutineScope.launch {
+                                didDataGetAddedInDB =
+                                    bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                        this.title = apodTitle
+                                        this.datePublished = apodDate
+                                        this.description = apodDescription
+                                        this.imageURL = apodURL
+                                        this.mediaType = "image"
+                                        this.isBookMarked = true
+                                        this.category = "APOD"
+                                        this.hdImageURL=homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
+                                        this.addedToLocalDBOn = formattedDate
+                                    })
+                            }.invokeOnCompletion {
+                                if (didDataGetAddedInDB) {
+                                    Toast.makeText(
+                                        context,
+                                        "Added to bookmarks:)",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                } else {
+                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                        true
+                                }
+                                bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                            }
+                        },
+                        capturedOnSol = "",
+                        capturedBy = "",
+                        roverName = "",
+                        onConfirmButtonClick = {
+                            triggerHapticFeedback(context = context)
+                            coroutineScope.launch {
+                                doesExistsInDB =
+                                    bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                            }.invokeOnCompletion {
+                                if (doesExistsInDB) {
+                                    Toast.makeText(
+                                        context,
+                                        "Bookmark didn't got removed as expected, report it:(",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Removed from bookmarks:)",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                }
+                                bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                            }
+                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                                false
+                        },
+                        apodHDImageURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
+                    )
                 }
+
                 /*ISS Location*/
                 item {
                     Card(
@@ -541,88 +503,6 @@ fun HomeScreen(navController: NavController) {
                             Spacer(modifier = Modifier.height(15.dp))
                         }
                     }
-                }
-                /*APOD*/
-                var doesExistsInDB = false
-                item {
-                    APODCardComposable(
-                        homeScreenViewModel = homeScreenViewModel,
-                        imageURL = apodURL,
-                        apodDate = apodDate,
-                        apodDescription = apodDescription,
-                        apodTitle = apodTitle,
-                        imageOnClick = {
-                            coroutineScope.launch {
-                                bottomSheetState.show()
-                            }
-                        },
-                        apodMediaType = apodMediaType,
-                        inAPODBottomSheetContent = false,
-                        bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
-                        onBookMarkButtonClick = {
-                            triggerHapticFeedback(context = context)
-                            bookMarksVM.imgURL = apodURL
-                            val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                            val formattedDate = dateFormat.format(Date())
-                            coroutineScope.launch {
-                                didDataGetAddedInDB =
-                                    bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
-                                        this.title = apodTitle
-                                        this.datePublished = apodDate
-                                        this.description = apodDescription
-                                        this.imageURL = apodURL
-                                        this.mediaType = "image"
-                                        this.isBookMarked = true
-                                        this.category = "APOD"
-                                        this.hdImageURL=homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-                                        this.addedToLocalDBOn = formattedDate
-                                    })
-                            }.invokeOnCompletion {
-                                if (didDataGetAddedInDB) {
-                                    Toast.makeText(
-                                        context,
-                                        "Added to bookmarks:)",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-                                } else {
-                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                        true
-                                }
-                                bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                            }
-                        },
-                        capturedOnSol = "",
-                        capturedBy = "",
-                        roverName = "",
-                        onConfirmButtonClick = {
-                            triggerHapticFeedback(context = context)
-                            coroutineScope.launch {
-                                doesExistsInDB =
-                                    bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
-                            }.invokeOnCompletion {
-                                if (doesExistsInDB) {
-                                    Toast.makeText(
-                                        context,
-                                        "Bookmark didn't got removed as expected, report it:(",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Removed from bookmarks:)",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-                                }
-                                bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                            }
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                                false
-                        },
-                        apodHDImageURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-                    )
                 }
                 /*Astronomical Data*/
                 item {

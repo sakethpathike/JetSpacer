@@ -35,6 +35,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.localDB.APIKeysDB
+import com.sakethh.jetspacer.localDB.BookMarkScreenGridNames
 import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.navigation.BottomNavigationComposable
 import com.sakethh.jetspacer.navigation.MainNavigation
@@ -45,12 +46,16 @@ import com.sakethh.jetspacer.screens.settings.readInAppBrowserSetting
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestForCuriosityVM
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(
-        ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class,
+        ExperimentalMaterial3Api::class,
+        DelicateCoroutinesApi::class,
         ExperimentalMaterialApi::class
     )
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
@@ -101,19 +106,18 @@ class MainActivity : ComponentActivity() {
                 systemColor.setStatusBarColor(MaterialTheme.colorScheme.surface)
                 systemColor.setNavigationBarColor(MaterialTheme.colorScheme.primary)
                 Scaffold(modifier = Modifier) {
-                    BottomSheetScaffold(
-                        sheetPeekHeight = 0.dp,
+                    BottomSheetScaffold(sheetPeekHeight = 0.dp,
                         sheetGesturesEnabled = false,
                         drawerBackgroundColor = Color.Transparent,
                         drawerContentColor = Color.Transparent,
                         drawerScrimColor = Color.Transparent,
                         backgroundColor = Color.Transparent,
                         sheetBackgroundColor = Color.Transparent,
-                        scaffoldState = bottomBarSheetState, sheetContent = {
+                        scaffoldState = bottomBarSheetState,
+                        sheetContent = {
                             BottomNavigationComposable(navController = navController)
                         }) {
-                        BottomSheetScaffold(
-                            scaffoldState = bottomSheetState,
+                        BottomSheetScaffold(scaffoldState = bottomSheetState,
                             sheetPeekHeight = 0.dp,
                             sheetGesturesEnabled = false,
                             drawerBackgroundColor = Color.Transparent,
@@ -125,7 +129,9 @@ class MainActivity : ComponentActivity() {
                                 Snackbar(
                                     containerColor = MaterialTheme.colorScheme.secondary,
                                     modifier = Modifier
-                                        .padding(bottom = 80.dp, start = 20.dp, end = 20.dp)
+                                        .padding(
+                                            bottom = 80.dp, start = 20.dp, end = 20.dp
+                                        )
                                         .wrapContentHeight()
                                         .fillMaxWidth(),
                                     shape = RoundedCornerShape(5.dp)
@@ -141,9 +147,8 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }) {
-                        MainNavigation(
-                                navController = navController,
-                                dataStore = dataStore
+                            MainNavigation(
+                                navController = navController, dataStore = dataStore
                             )
                         }
 
@@ -153,14 +158,54 @@ class MainActivity : ComponentActivity() {
         }
         BookMarksVM.dbImplementation = DBImplementation.getLocalDB(context = this)
         CoroutineScope(Dispatchers.Default).launch {
-            if (BookMarksVM.dbImplementation.localDBData().getAPIKeys().isEmpty()) {
-                BookMarksVM.dbImplementation.localDBData()
-                    .addAPIKeys(apiKeysDB = APIKeysDB().apply {
-                        this.id = "apiKey"
-                        this.currentNewsAPIKey = Constants.NEWS_API_API_KEY
-                        this.currentNASAAPIKey = Constants.NASA_APIKEY
-                    })
-            }
+            awaitAll(async {
+                if (BookMarksVM.dbImplementation.localDBData().getAPIKeys().isEmpty()) {
+                    BookMarksVM.dbImplementation.localDBData()
+                        .addAPIKeys(apiKeysDB = APIKeysDB().apply {
+                            this.id = "apiKey"
+                            this.currentNewsAPIKey = Constants.NEWS_API_API_KEY
+                            this.currentNASAAPIKey = Constants.NASA_APIKEY
+                        })
+                }
+            }, async {
+                // saved :-
+                if (BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
+                        .count() == 0 && BookMarksVM.dbImplementation.localDBData()
+                        .getBookMarkedAPODDBDATA().first()
+                        .isNotEmpty() || BookMarksVM.dbImplementation.localDBData()
+                        .getCustomBookMarkTopicData()
+                        .count() == 0 && BookMarksVM.dbImplementation.localDBData()
+                        .getBookMarkedNewsDATA().first()
+                        .isNotEmpty() || BookMarksVM.dbImplementation.localDBData()
+                        .getCustomBookMarkTopicData()
+                        .count() == 0 && BookMarksVM.dbImplementation.localDBData()
+                        .getBookMarkedRoverDBDATA().first()
+                        .isNotEmpty()
+                ) {
+                    val imgURL: String =
+                        if (BookMarksVM.dbImplementation.localDBData().getBookMarkedAPODDBDATA()
+                                .first()
+                                .isNotEmpty()
+                        ) {
+                            BookMarksVM.dbImplementation.localDBData().getBookMarkedAPODDBDATA()
+                                .first()[0].imageURL
+                        } else if (BookMarksVM.dbImplementation.localDBData()
+                                .getBookMarkedNewsDATA()
+                                .first().isNotEmpty()
+                        ) {
+                            BookMarksVM.dbImplementation.localDBData().getBookMarkedNewsDATA()
+                                .first()[0].imageURL
+                        } else {
+                            BookMarksVM.dbImplementation.localDBData().getBookMarkedRoverDBDATA()
+                                .first()[0].imageURL
+                        }
+                }
+            },
+                async {
+
+                }
+            )
+
         }
     }
 }

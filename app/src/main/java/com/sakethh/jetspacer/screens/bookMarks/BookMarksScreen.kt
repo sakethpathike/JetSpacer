@@ -6,6 +6,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
@@ -54,25 +57,34 @@ fun BookMarksScreen(navController: NavController) {
     }
     val bookMarksVM: BookMarksVM = viewModel()
     val selectedChipIndex = rememberSaveable { mutableStateOf(0) }
-
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     AppTheme {
-        Column {
-            LazyColumn(
+        Scaffold(modifier = Modifier.background(MaterialTheme.colorScheme.surface), topBar = {
+            TopAppBar(scrollBehavior = scrollBehavior, title = {
+                Text(
+                    text = "Bookmarks",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 22.sp,
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier.padding(top = 30.dp, start = 15.dp)
+                )
+            })
+        }) {
+            LazyVerticalGrid(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .background(MaterialTheme.colorScheme.surface)
+                    .fillMaxSize()
+                    .padding(it),
+                columns = GridCells.Adaptive(250.dp)
             ) {
-                item {
-                    Text(
-                        text = "Bookmarks",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 22.sp,
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier.padding(top = 30.dp, start = 15.dp)
-                    )
-                }
-                stickyHeader {
+
+            }
+        }
+    }
+}
+
+/*
+
+    stickyHeader {
                     Row(
                         modifier = Modifier
                             .background(MaterialTheme.colorScheme.surface)
@@ -104,8 +116,6 @@ fun BookMarksScreen(navController: NavController) {
                         }
                     }
                 }
-            }
-            bookMarksVM.bookMarksScreensData[selectedChipIndex.value].screenComposable(navController)
-        }
-    }
-}
+
+                bookMarksVM.bookMarksScreensData[selectedChipIndex.value].screenComposable(navController)
+* */

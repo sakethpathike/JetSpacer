@@ -19,8 +19,14 @@ interface DBService {
     @Query("SELECT * FROM newsDB ORDER BY imageURL ASC")
     fun getBookMarkedNewsDATA(): Flow<List<NewsDB>>
 
+    @Query("SELECT * FROM bookMarkScreen_GridNames ORDER BY name ASC")
+    fun getCustomBookMarkTopicData(): Flow<List<BookMarkScreenGridNames>>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addNewBookMarkToRoverDB(marsRoverDbDto: MarsRoversDBDTO)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun addCustomBookMarkTopic(bookMarkScreenGridNames: BookMarkScreenGridNames)
 
     @Query("DELETE from marsRovers_db WHERE imageURL = :imageURL")
     suspend fun deleteFromRoverDB(imageURL: String)
