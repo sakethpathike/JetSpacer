@@ -608,11 +608,11 @@ fun SettingsScreen(
 }
 
 fun Modifier.titlePadding(): Modifier {
-    return this.padding(start = 15.dp, top = 25.dp, end = 20.dp)
+    return this.padding(start = 15.dp, top = 20.dp, end = 20.dp)
 }
 
 fun Modifier.descriptionPadding(): Modifier {
-    return this.padding(start = 15.dp, top = 8.dp, end = 20.dp)
+    return this.padding(start = 15.dp, top = 8.dp, end = 20.dp, bottom = 20.dp)
 }
 
 @Composable

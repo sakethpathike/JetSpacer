@@ -53,7 +53,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class,
+@OptIn(
+    ExperimentalMaterial3Api::class,
     ExperimentalFoundationApi::class
 )
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -61,7 +62,7 @@ import java.util.*
 fun ModifiedLazyVerticalGrid(
     listData: List<Photo>,
     loadMoreButtonBooleanExpression: Boolean,
-    onLoadMoreImagesBtnPress: () -> Unit
+    onLoadMoreImagesBtnPress: () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val roversScreenVM: RoversScreenVM = viewModel()
@@ -159,29 +160,27 @@ fun LazyStaggeredGridState.atLastIndex(): Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun  SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>,inSettingsScreen:Boolean=false) {
-    val context= LocalContext.current
+fun SolTextField(
+    onContinueClick: () -> Unit,
+    solValue: MutableState<String>,
+    inSettingsScreen: Boolean = false,
+) {
+    val context = LocalContext.current
     val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
     val manifestForCuriosityVM: ManifestForCuriosityVM = viewModel()
     val isEditedIconClicked = rememberSaveable { mutableStateOf(false) }
-    val supportingText = if(inSettingsScreen) rememberSaveable{ mutableStateOf("Enter API Key without missing a single character") } else
-        rememberSaveable(manifestForCuriosityVM.maxCuriositySol.value) { mutableStateOf("value of Sol should be >= 0 and <= ${manifestForCuriosityVM.maxCuriositySol.value}") }
+    val supportingText =
+        if (inSettingsScreen) rememberSaveable { mutableStateOf("Enter API Key without missing a single character") } else
+            rememberSaveable(manifestForCuriosityVM.maxCuriositySol.value) { mutableStateOf("value of Sol should be >= 0 and <= ${manifestForCuriosityVM.maxCuriositySol.value}") }
     AppTheme {
         Row(
             modifier = Modifier
-                .background(if(inSettingsScreen)MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary)
+                .background(if (inSettingsScreen) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary)
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .animateContentSize(), horizontalArrangement = Arrangement.SpaceAround
         ) {
-            OutlinedTextField(
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    textColor = MaterialTheme.colorScheme.onPrimary,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    cursorColor = MaterialTheme.colorScheme.onSurface,
-                    focusedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                    selectionColors = TextSelectionColors(handleColor =MaterialTheme.colorScheme.primary , backgroundColor = MaterialTheme.colorScheme.primary.copy(0.2f))
-                ),
+            TextField(
                 singleLine = true,
                 modifier = Modifier
                     .padding(top = 15.dp)
@@ -192,7 +191,7 @@ fun  SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>,in
                 },
                 leadingIcon = {
                     Icon(
-                        imageVector = if(!inSettingsScreen)Icons.Outlined.Search else Icons.Outlined.Update,
+                        imageVector = if (!inSettingsScreen) Icons.Outlined.Search else Icons.Outlined.Update,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
@@ -214,21 +213,21 @@ fun  SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>,in
                 keyboardActions = KeyboardActions(onSearch = {
                     isEditedIconClicked.value = false
                     randomCuriosityCameraVM.currentPage.value = 1
-                    if(solValue.value==""){
-                        if(!inSettingsScreen){
+                    if (solValue.value == "") {
+                        if (!inSettingsScreen) {
                             Toast.makeText(
                                 context,
                                 "Value of sol cannot be empty",
                                 Toast.LENGTH_SHORT
                             ).show()
-                        }else{
+                        } else {
                             Toast.makeText(
                                 context,
                                 "API Key cannot be empty",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                    }else{
+                    } else {
                         isEditedIconClicked.value = false
                         randomCuriosityCameraVM.currentPage.value = 1
                         onContinueClick()
@@ -257,13 +256,21 @@ fun  SolTextField(onContinueClick: () -> Unit, solValue: MutableState<String>,in
                 APODSideIconButton(
                     imageVector = Icons.Outlined.Done,
                     onClick = {
-                        if(solValue.value==""){
-                            Toast.makeText(
-                                context,
-                                "Value of sol cannot be empty",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }else{
+                        if (solValue.value == "") {
+                            if (!inSettingsScreen) {
+                                Toast.makeText(
+                                    context,
+                                    "Value of sol cannot be empty",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "API Key cannot be empty",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } else {
                             isEditedIconClicked.value = false
                             randomCuriosityCameraVM.currentPage.value = 1
                             onContinueClick()
@@ -297,7 +304,7 @@ fun RoverBottomSheetContent(
     launchingDate: String,
     landingDate: String,
     onBookMarkButtonClick: () -> Unit,
-    onConfirmBookMarkDeletionButtonClick: () -> Unit
+    onConfirmBookMarkDeletionButtonClick: () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val bookMarksVM: BookMarksVM = viewModel()

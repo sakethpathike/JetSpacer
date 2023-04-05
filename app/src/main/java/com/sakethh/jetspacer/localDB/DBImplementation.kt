@@ -14,7 +14,10 @@ import kotlinx.serialization.json.Json
     autoMigrations = [AutoMigration(from = 1, to = 2)],
     exportSchema = true
 )
-@TypeConverters(BookMarkTypeConverterForCustomBookMarks::class,BookMarkDataConverterForCustomBookMarks::class)
+@TypeConverters(
+    BookMarkTypeConverterForCustomBookMarks::class,
+    BookMarkDataConverterForCustomBookMarks::class
+)
 abstract class DBImplementation : RoomDatabase() {
     abstract fun localDBData(): DBService
 
@@ -25,13 +28,14 @@ abstract class DBImplementation : RoomDatabase() {
                     "CREATE TABLE IF NOT EXISTS `bookMarkScreen_GridNames` (\n" +
                             "    `name` TEXT NOT NULL,\n" +
                             "    `imgUrlForGrid` TEXT NOT NULL,\n" +
-                            "    `data` BLOB NOT NULL,\n" +
-                            "    `savedDataType` BLOB NOT NULL,\n" +
+                            "    `data` TEXT NOT NULL,\n" +
+                            "    `savedDataType` TEXT NOT NULL,\n" +
                             "    PRIMARY KEY(`name`)\n" +
                             ");\n"
                 )
             }
         }
+
 
         @Volatile
         private var dbInstance: DBImplementation? = null
@@ -44,9 +48,7 @@ abstract class DBImplementation : RoomDatabase() {
                         DBImplementation::class.java,
                         "bookmarks_db"
                     ).addMigrations(
-                        migrations = arrayOf(
-                            MigrationFrom1To2
-                        )
+                        migrations = arrayOf(MigrationFrom1To2)
                     )
                         .build()
                     dbInstance = roomDBInstance

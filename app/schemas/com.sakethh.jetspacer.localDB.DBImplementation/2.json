@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "db0078c8119c6a5476c690f8e4b2bf37",
+    "identityHash": "54e4a828075896c9ff2d785d2aee3d28",
     "entities": [
       {
         "tableName": "newsDB",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`title` TEXT NOT NULL, `imageURL` TEXT NOT NULL, `sourceURL` TEXT NOT NULL, `sourceOfNews` TEXT NOT NULL, `publishedTime` TEXT NOT NULL, PRIMARY KEY(`imageURL`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`title` TEXT NOT NULL, `imageURL` TEXT NOT NULL, `sourceURL` TEXT NOT NULL, `sourceOfNews` TEXT NOT NULL, `publishedTime` TEXT NOT NULL, PRIMARY KEY(`sourceURL`))",
         "fields": [
           {
             "fieldPath": "title",
@@ -42,7 +42,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "imageURL"
+            "sourceURL"
           ]
         },
         "indices": [],
@@ -270,7 +270,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'db0078c8119c6a5476c690f8e4b2bf37')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '54e4a828075896c9ff2d785d2aee3d28')"
     ]
   }
 }

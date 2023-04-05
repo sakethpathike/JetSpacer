@@ -6,50 +6,39 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.*
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.datastore.createDataStore
 import androidx.datastore.preferences.createDataStore
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.localDB.APIKeysDB
 import com.sakethh.jetspacer.localDB.BookMarkScreenGridNames
 import com.sakethh.jetspacer.localDB.DBImplementation
+import com.sakethh.jetspacer.localDB.SavedDataType
 import com.sakethh.jetspacer.navigation.BottomNavigationComposable
 import com.sakethh.jetspacer.navigation.MainNavigation
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.settings.readInAppBrowserSetting
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestForCuriosityVM
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.toList
-import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -199,13 +188,81 @@ class MainActivity : ComponentActivity() {
                             BookMarksVM.dbImplementation.localDBData().getBookMarkedRoverDBDATA()
                                 .first()[0].imageURL
                         }
+                    BookMarksVM.dbImplementation.localDBData()
+                        .addCustomBookMarkTopic(
+                            bookMarkScreenGridNames = BookMarkScreenGridNames(
+                                name = "Saved",
+                                imgUrlForGrid = imgURL,
+                                data = emptyList(),
+                                savedDataType = SavedDataType.ALL
+                            )
+                        )
                 }
             },
                 async {
-
+                    BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
+                        .collect { list ->
+                            val doesAPODDataInCustomBookMarkTableExists = list.any { element ->
+                                return@any element.name == "APOD"
+                            }
+                            if (!doesAPODDataInCustomBookMarkTableExists && BookMarksVM.dbImplementation.localDBData()
+                                    .getBookMarkedAPODDBDATA().first().isNotEmpty()
+                            ) {
+                                BookMarksVM.dbImplementation.localDBData().addCustomBookMarkTopic(
+                                    BookMarkScreenGridNames(
+                                        name = "APOD",
+                                        imgUrlForGrid = BookMarksVM.dbImplementation.localDBData()
+                                            .getBookMarkedAPODDBDATA().first().random().imageURL,
+                                        data = emptyList(),
+                                        savedDataType = SavedDataType.APOD
+                                    )
+                                )
+                            }
+                        }
+                },
+                async {
+                    BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
+                        .collect { list ->
+                            val doesNewsDataInCustomBookMarkTableExists = list.any { element ->
+                                return@any element.name == "News"
+                            }
+                            if (!doesNewsDataInCustomBookMarkTableExists && BookMarksVM.dbImplementation.localDBData()
+                                    .getBookMarkedNewsDATA().first().isNotEmpty()
+                            ) {
+                                BookMarksVM.dbImplementation.localDBData().addCustomBookMarkTopic(
+                                    BookMarkScreenGridNames(
+                                        name = "News",
+                                        imgUrlForGrid = BookMarksVM.dbImplementation.localDBData()
+                                            .getBookMarkedNewsDATA().first().random().imageURL,
+                                        data = emptyList(),
+                                        savedDataType = SavedDataType.NEWS
+                                    )
+                                )
+                            }
+                        }
+                },
+                async {
+                    BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
+                        .collect { list ->
+                            val doesRoversDataInCustomBookMarkTableExists = list.any { element ->
+                                return@any element.name == "Rovers"
+                            }
+                            if (!doesRoversDataInCustomBookMarkTableExists && BookMarksVM.dbImplementation.localDBData()
+                                    .getBookMarkedRoverDBDATA().first().isNotEmpty()
+                            ) {
+                                BookMarksVM.dbImplementation.localDBData().addCustomBookMarkTopic(
+                                    BookMarkScreenGridNames(
+                                        name = "Rovers",
+                                        imgUrlForGrid = BookMarksVM.dbImplementation.localDBData()
+                                            .getBookMarkedRoverDBDATA().first().random().imageURL,
+                                        data = emptyList(),
+                                        savedDataType = SavedDataType.ROVERS
+                                    )
+                                )
+                            }
+                        }
                 }
             )
-
         }
     }
 }

@@ -3,12 +3,15 @@ package com.sakethh.jetspacer.localDB
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.room.*
+import kotlinx.serialization.Serializable
 import java.util.*
 import kotlin.collections.List
 
+@Serializable
 sealed class BookMarkType
 
 @Entity(tableName = "apod_db")
+@Serializable
 data class APOD_DB_DTO(
     @ColumnInfo(name = "title")
     var title: String = "",
@@ -32,6 +35,7 @@ data class APOD_DB_DTO(
 ):BookMarkType()
 
 @Entity(tableName = "apiKeys")
+@Serializable
 data class APIKeysDB(
     var currentNASAAPIKey: String = "",
     var currentNewsAPIKey: String = "",
@@ -40,6 +44,7 @@ data class APIKeysDB(
 ):BookMarkType()
 
 @Entity(tableName = "marsRovers_db")
+@Serializable
 data class MarsRoversDBDTO(
     @PrimaryKey
     @ColumnInfo(name = "imageURL")
@@ -67,6 +72,7 @@ data class MarsRoversDBDTO(
 ):BookMarkType()
 
 @Entity(tableName = "bookMarkScreen_GridNames")
+@Serializable
 data class BookMarkScreenGridNames( // for custom bookmark topic
     @PrimaryKey
     @ColumnInfo(name = "name")
@@ -99,12 +105,13 @@ data class MarsRoversDB(
 ):BookMarkType()
 
 @Entity(tableName = "newsDB")
+@Serializable
 data class NewsDB(
     @ColumnInfo(name = "title")
     var title: String = "",
-    @PrimaryKey
     @ColumnInfo(name = "imageURL")
     var imageURL: String = "",
+    @PrimaryKey
     @ColumnInfo(name = "sourceURL")
     var sourceURL: String = "",
     @ColumnInfo(name = "sourceOfNews")
