@@ -9,7 +9,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18588ca3-8822-4166-859a-33b9544748e4" name="Changes" comment="re changes in migration">
+    <list default="true" id="18588ca3-8822-4166-859a-33b9544748e4" name="Changes" comment="changes in migration code and others">
       <change afterPath="$PROJECT_DIR$/.gradle/7.5/checksums/checksums.lock" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.gradle/7.5/checksums/sha1-checksums.bin" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.gradle/7.5/dependencies-accessors/dependencies-accessors.lock" afterDir="false" />
@@ -25,22 +25,17 @@
       <change afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.gradle/vcs-1/gc.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/build/generated/source/kapt/debug/com/sakethh/jetspacer/localDB/DBImplementation_AutoMigration_1_2_Impl.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/build/generated/source/kapt/debug/com/sakethh/jetspacer/localDB/DBImplementation_Impl.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/build/generated/source/kapt/debug/com/sakethh/jetspacer/localDB/DBService_Impl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/Constants.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/values/ids.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/build/generated/source/buildConfig/debug/com/sakethh/jetspacer/BuildConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/generated/source/buildConfig/debug/com/sakethh/jetspacer/BuildConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/schemas/com.sakethh.jetspacer.localDB.DBImplementation/1.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/schemas/com.sakethh.jetspacer.localDB.DBImplementation/2.json" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreen.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreenVM.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/MainActivity.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBDTO.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBDTO.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBImplementation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBImplementation.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/Navigation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/Navigation.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/NavigationRoutes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/NavigationRoutes.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksVM.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksVM.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/settings/SettingsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/settings/SettingsScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/RandomCuriosityCameraScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/RandomCuriosityCameraScreen.kt" afterDir="false" />
     </list>
@@ -49,11 +44,19 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[192.168.0.158:5555]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
     </projectState>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Kotlin File" />
+        <option value="Kotlin Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -158,7 +161,14 @@
       <option name="project" value="LOCAL" />
       <updated>1680624328630</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="changes in migration code and others">
+      <created>1680710294231</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1680710294231</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -175,6 +185,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="migrated local database from version 1 to 2" />
     <MESSAGE value="re changes in migration" />
-    <option name="LAST_COMMIT_MESSAGE" value="re changes in migration" />
+    <MESSAGE value="changes in migration code and others" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes in migration code and others" />
   </component>
 </project>

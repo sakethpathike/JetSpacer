@@ -147,122 +147,14 @@ class MainActivity : ComponentActivity() {
         }
         BookMarksVM.dbImplementation = DBImplementation.getLocalDB(context = this)
         CoroutineScope(Dispatchers.Default).launch {
-            awaitAll(async {
-                if (BookMarksVM.dbImplementation.localDBData().getAPIKeys().isEmpty()) {
-                    BookMarksVM.dbImplementation.localDBData()
-                        .addAPIKeys(apiKeysDB = APIKeysDB().apply {
-                            this.id = "apiKey"
-                            this.currentNewsAPIKey = Constants.NEWS_API_API_KEY
-                            this.currentNASAAPIKey = Constants.NASA_APIKEY
-                        })
-                }
-            }, async {
-                // saved :-
-                if (BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
-                        .count() == 0 && BookMarksVM.dbImplementation.localDBData()
-                        .getBookMarkedAPODDBDATA().first()
-                        .isNotEmpty() || BookMarksVM.dbImplementation.localDBData()
-                        .getCustomBookMarkTopicData()
-                        .count() == 0 && BookMarksVM.dbImplementation.localDBData()
-                        .getBookMarkedNewsDATA().first()
-                        .isNotEmpty() || BookMarksVM.dbImplementation.localDBData()
-                        .getCustomBookMarkTopicData()
-                        .count() == 0 && BookMarksVM.dbImplementation.localDBData()
-                        .getBookMarkedRoverDBDATA().first()
-                        .isNotEmpty()
-                ) {
-                    val imgURL: String =
-                        if (BookMarksVM.dbImplementation.localDBData().getBookMarkedAPODDBDATA()
-                                .first()
-                                .isNotEmpty()
-                        ) {
-                            BookMarksVM.dbImplementation.localDBData().getBookMarkedAPODDBDATA()
-                                .first()[0].imageURL
-                        } else if (BookMarksVM.dbImplementation.localDBData()
-                                .getBookMarkedNewsDATA()
-                                .first().isNotEmpty()
-                        ) {
-                            BookMarksVM.dbImplementation.localDBData().getBookMarkedNewsDATA()
-                                .first()[0].imageURL
-                        } else {
-                            BookMarksVM.dbImplementation.localDBData().getBookMarkedRoverDBDATA()
-                                .first()[0].imageURL
-                        }
-                    BookMarksVM.dbImplementation.localDBData()
-                        .addCustomBookMarkTopic(
-                            bookMarkScreenGridNames = BookMarkScreenGridNames(
-                                name = "Saved",
-                                imgUrlForGrid = imgURL,
-                                data = emptyList(),
-                                savedDataType = SavedDataType.ALL
-                            )
-                        )
-                }
-            },
-                async {
-                    BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
-                        .collect { list ->
-                            val doesAPODDataInCustomBookMarkTableExists = list.any { element ->
-                                return@any element.name == "APOD"
-                            }
-                            if (!doesAPODDataInCustomBookMarkTableExists && BookMarksVM.dbImplementation.localDBData()
-                                    .getBookMarkedAPODDBDATA().first().isNotEmpty()
-                            ) {
-                                BookMarksVM.dbImplementation.localDBData().addCustomBookMarkTopic(
-                                    BookMarkScreenGridNames(
-                                        name = "APOD",
-                                        imgUrlForGrid = BookMarksVM.dbImplementation.localDBData()
-                                            .getBookMarkedAPODDBDATA().first().random().imageURL,
-                                        data = emptyList(),
-                                        savedDataType = SavedDataType.APOD
-                                    )
-                                )
-                            }
-                        }
-                },
-                async {
-                    BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
-                        .collect { list ->
-                            val doesNewsDataInCustomBookMarkTableExists = list.any { element ->
-                                return@any element.name == "News"
-                            }
-                            if (!doesNewsDataInCustomBookMarkTableExists && BookMarksVM.dbImplementation.localDBData()
-                                    .getBookMarkedNewsDATA().first().isNotEmpty()
-                            ) {
-                                BookMarksVM.dbImplementation.localDBData().addCustomBookMarkTopic(
-                                    BookMarkScreenGridNames(
-                                        name = "News",
-                                        imgUrlForGrid = BookMarksVM.dbImplementation.localDBData()
-                                            .getBookMarkedNewsDATA().first().random().imageURL,
-                                        data = emptyList(),
-                                        savedDataType = SavedDataType.NEWS
-                                    )
-                                )
-                            }
-                        }
-                },
-                async {
-                    BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
-                        .collect { list ->
-                            val doesRoversDataInCustomBookMarkTableExists = list.any { element ->
-                                return@any element.name == "Rovers"
-                            }
-                            if (!doesRoversDataInCustomBookMarkTableExists && BookMarksVM.dbImplementation.localDBData()
-                                    .getBookMarkedRoverDBDATA().first().isNotEmpty()
-                            ) {
-                                BookMarksVM.dbImplementation.localDBData().addCustomBookMarkTopic(
-                                    BookMarkScreenGridNames(
-                                        name = "Rovers",
-                                        imgUrlForGrid = BookMarksVM.dbImplementation.localDBData()
-                                            .getBookMarkedRoverDBDATA().first().random().imageURL,
-                                        data = emptyList(),
-                                        savedDataType = SavedDataType.ROVERS
-                                    )
-                                )
-                            }
-                        }
-                }
-            )
+            if (BookMarksVM.dbImplementation.localDBData().getAPIKeys().isEmpty()) {
+                BookMarksVM.dbImplementation.localDBData()
+                    .addAPIKeys(apiKeysDB = APIKeysDB().apply {
+                        this.id = "apiKey"
+                        this.currentNewsAPIKey = Constants.NEWS_API_API_KEY
+                        this.currentNASAAPIKey = Constants.NASA_APIKEY
+                    })
+            }
         }
     }
 }

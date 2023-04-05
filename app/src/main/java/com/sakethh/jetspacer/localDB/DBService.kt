@@ -50,6 +50,8 @@ interface DBService {
     suspend fun deleteAllDataFromAPODDB()
     @Query("DELETE FROM newsDB")
     suspend fun deleteAllDataFromNewsDB()
+    @Query("DELETE FROM bookMarkScreen_GridNames")
+    suspend fun deleteAllDataFromCustomBookMarkDB()
 
     @Query("SELECT * FROM apiKeys")
     suspend fun getAPIKeys():List<APIKeysDB>

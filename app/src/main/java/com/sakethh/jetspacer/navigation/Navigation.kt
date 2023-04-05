@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksScreen
+import com.sakethh.jetspacer.screens.bookMarks.screens.SelectedBookMarkScreen
 import com.sakethh.jetspacer.screens.home.HomeScreen
 import com.sakethh.jetspacer.screens.news.NewsScreen
 import com.sakethh.jetspacer.screens.settings.SettingsScreen
@@ -44,6 +45,9 @@ fun MainNavigation(navController: NavHostController,dataStore: DataStore<Prefere
         }
         composable(route = NavigationRoutes.WEB_VIEW_SCREEN){
             WebViewScreen(navController = navController)
+        }
+        composable(route = NavigationRoutes.SELECTED_BOOKMARKS_SCREEN){
+            SelectedBookMarkScreen(navController = navController)
         }
     }
 }

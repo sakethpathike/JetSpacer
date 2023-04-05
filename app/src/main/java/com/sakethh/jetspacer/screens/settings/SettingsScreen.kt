@@ -442,7 +442,7 @@ fun SettingsScreen(
                         HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
                     },
                     title = "Clear Bookmarks",
-                    description = "Remove all bookmarks from local database. Cache won't be removed."
+                    description = "Remove all bookmarks from local database including custom folders. Cache won't be removed."
                 )
             }
             item {
@@ -556,6 +556,8 @@ fun SettingsScreen(
                             BookMarksVM.dbImplementation.localDBData().deleteAllDataFromMarsDB()
                         }, async {
                             BookMarksVM.dbImplementation.localDBData().deleteAllDataFromNewsDB()
+                        },async {
+                            BookMarksVM.dbImplementation.localDBData().deleteAllDataFromCustomBookMarkDB()
                         })
                     }.invokeOnCompletion {
                         Toast.makeText(context, "Deleted all bookmarks:)", Toast.LENGTH_SHORT)

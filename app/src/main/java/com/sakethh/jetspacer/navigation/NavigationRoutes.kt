@@ -6,6 +6,7 @@ object NavigationRoutes {
     const val APOD_SCREEN = "apodScreen"
     const val ROVERS_SCREEN = "roversScreen"
     const val BOOKMARKS_SCREEN = "bookMarksScreen"
+    const val SELECTED_BOOKMARKS_SCREEN = "selectedBookMarksScreen"
     const val SETTINGS_SCREEN = "settingsScreen"
     const val WEB_VIEW_SCREEN = "webViewScreen"
     const val NEWS_SCREEN = "newsScreen"

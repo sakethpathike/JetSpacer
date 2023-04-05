@@ -207,8 +207,8 @@ fun SolTextField(
                     )
                 },
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Search
+                    keyboardType = if(!inSettingsScreen)KeyboardType.Number else KeyboardType.Ascii,
+                    imeAction = if(!inSettingsScreen) ImeAction.Search else ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(onSearch = {
                     isEditedIconClicked.value = false
