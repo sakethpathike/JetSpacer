@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "54e4a828075896c9ff2d785d2aee3d28",
+    "identityHash": "0277316012a41aa928282b26fe737123",
     "entities": [
       {
         "tableName": "newsDB",
@@ -230,7 +230,7 @@
       },
       {
         "tableName": "bookMarkScreen_GridNames",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `imgUrlForGrid` TEXT NOT NULL, `data` TEXT NOT NULL, `savedDataType` TEXT NOT NULL, PRIMARY KEY(`name`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `imgUrlForGrid` TEXT NOT NULL, `data` TEXT NOT NULL, PRIMARY KEY(`name`))",
         "fields": [
           {
             "fieldPath": "name",
@@ -249,12 +249,6 @@
             "columnName": "data",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "savedDataType",
-            "columnName": "savedDataType",
-            "affinity": "TEXT",
-            "notNull": true
           }
         ],
         "primaryKey": {
@@ -270,7 +264,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '54e4a828075896c9ff2d785d2aee3d28')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0277316012a41aa928282b26fe737123')"
     ]
   }
 }

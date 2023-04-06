@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
@@ -65,18 +66,16 @@ fun BookMarksScreen(navController: NavController) {
 
     }
     val bookMarksVM: BookMarksVM = viewModel()
-    val selectedBookMarkScreenVM:SelectedBookMarkScreenVM= viewModel()
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
             bookMarksVM.loadDefaultCustomFoldersForBookMarks()
         }
     }
-    val bookMarkGridData =
-        BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData().collectAsState(
+    val bookMarkGridData = bookMarksVM.localDB.getCustomBookMarkTopicData().collectAsState(
             initial = listOf(
                 BookMarkScreenGridNames(
                     "", "",
-                    emptyList(), SavedDataType.ALL
+                    emptyList()
                 )
             )
         ).value
@@ -99,9 +98,9 @@ fun BookMarksScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(it),
-                    columns = GridCells.Adaptive(150.dp)
+                    columns = GridCells.Adaptive(135.dp)
                 ) {
-                    items(bookMarkGridData) { element ->
+                    itemsIndexed(bookMarkGridData) { index, element ->
                         Column(
                             modifier = Modifier
                                 .padding(
@@ -114,27 +113,27 @@ fun BookMarksScreen(navController: NavController) {
                                     RoundedCornerShape(5.dp)
                                 )
                                 .clickable {
-                                    selectedBookMarkScreenVM.selectedBookMarkMetaData.savedType=element.savedDataType
-                                    selectedBookMarkScreenVM.selectedBookMarkMetaData.name=element.name
-                                    navController.navigate(NavigationRoutes.SELECTED_BOOKMARKS_SCREEN)
+                                    SelectedBookMarkScreenVM().selectedBookMarkIndex=index.also {
+                                        navController.navigate(NavigationRoutes.SELECTED_BOOKMARKS_SCREEN)
+                                    }
                                 }
-                                /*.border(
+                                .border(
                                     BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface),
                                     RoundedCornerShape(5.dp)
-                                )*/
+                                )
                                 .background(MaterialTheme.colorScheme.primary)
                         ) {
                             Coil_Image().CoilImage(
                                 imgURL = element.imgUrlForGrid,
                                 contentDescription = "",
-                                modifier = Modifier.height(150.dp),
+                                modifier = Modifier.height(135.dp),
                                 onError = painterResource(id = R.drawable.baseline_image_24),
                                 contentScale = ContentScale.Crop
                             )
-                           /* Divider(
+                            Divider(
                                 thickness = 1.dp,
                                 color = MaterialTheme.colorScheme.onPrimary
-                            )*/
+                            )
                             Text(
                                 text = element.name,
                                 color = MaterialTheme.colorScheme.onPrimary,
@@ -142,8 +141,7 @@ fun BookMarksScreen(navController: NavController) {
                                 style = MaterialTheme.typography.headlineMedium,
                                 modifier = Modifier.padding(10.dp),
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontWeight = FontWeight.SemiBold
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -159,41 +157,3 @@ fun BookMarksScreen(navController: NavController) {
         }
     }
 }
-
-/*
-
-    stickyHeader {
-                    Row(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(10.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                    ) {
-                        bookMarksVM.bookMarksScreensData.forEachIndexed { index, bookMarksScreensData ->
-                            FilterChip(
-                                modifier = Modifier.padding(end = 10.dp),
-                                selected = selectedChipIndex.value == index,
-                                onClick = {
-                                    selectedChipIndex.value = index
-                                },
-                                label = {
-                                    Text(
-                                        text = bookMarksScreensData.screenName,
-                                        color = if (selectedChipIndex.value == index) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onSurface,
-                                        style = MaterialTheme.typography.headlineMedium
-                                    )
-                                },
-                                border = FilterChipDefaults.filterChipBorder(
-                                    selectedBorderColor = MaterialTheme.colorScheme.onSurface,
-                                    borderWidth = 1.dp,
-                                    borderColor = MaterialTheme.colorScheme.onSurface
-                                ),
-                                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = MaterialTheme.colorScheme.onSurface)
-                            )
-                        }
-                    }
-                }
-
-                bookMarksVM.bookMarksScreensData[selectedChipIndex.value].screenComposable(navController)
-* */

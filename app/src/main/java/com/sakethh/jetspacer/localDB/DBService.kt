@@ -19,7 +19,7 @@ interface DBService {
     @Query("SELECT * FROM newsDB ORDER BY imageURL ASC")
     fun getBookMarkedNewsDATA(): Flow<List<NewsDB>>
 
-    @Query("SELECT * FROM bookMarkScreen_GridNames ORDER BY name ASC")
+   @Query("SELECT * FROM bookMarkScreen_GridNames ORDER BY name ASC")
     fun getCustomBookMarkTopicData(): Flow<List<BookMarkScreenGridNames>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -36,6 +36,9 @@ interface DBService {
 
     @Query("DELETE from newsDB WHERE sourceURL = :sourceURL")
     suspend fun deleteFromNewsDB(sourceURL: String)
+
+    @Query("DELETE from bookMarkScreen_GridNames WHERE name = :name")
+    suspend fun deleteFromCustomBookmarksDB(name: String)
 
     @Query("SELECT EXISTS(SELECT * FROM apod_db WHERE imageURL = :imageURL)")
     suspend fun doesThisExistsInAPODDB(imageURL: String):Boolean

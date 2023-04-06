@@ -15,11 +15,11 @@ import kotlinx.serialization.json.Json
     exportSchema = true
 )
 @TypeConverters(
-    BookMarkTypeConverterForCustomBookMarks::class,
     BookMarkDataConverterForCustomBookMarks::class
 )
 abstract class DBImplementation : RoomDatabase() {
     abstract fun localDBData(): DBService
+    
 
     companion object {
         private val MigrationFrom1To2 = object : Migration(1, 2) {
@@ -29,13 +29,11 @@ abstract class DBImplementation : RoomDatabase() {
                             "    `name` TEXT NOT NULL,\n" +
                             "    `imgUrlForGrid` TEXT NOT NULL,\n" +
                             "    `data` TEXT NOT NULL,\n" +
-                            "    `savedDataType` TEXT NOT NULL,\n" +
                             "    PRIMARY KEY(`name`)\n" +
                             ");\n"
                 )
             }
         }
-
 
         @Volatile
         private var dbInstance: DBImplementation? = null
@@ -58,29 +56,16 @@ abstract class DBImplementation : RoomDatabase() {
     }
 }
 
-class BookMarkTypeConverterForCustomBookMarks {
-
-    @TypeConverter
-    fun convertToString(value: SavedDataType): String {
-        return value.name
-    }
-
-    @TypeConverter
-    fun retrieveConvertedData(value: String): SavedDataType {
-        return enumValueOf(value)
-    }
-}
-
 class BookMarkDataConverterForCustomBookMarks {
     private val json = Json { encodeDefaults = true }
 
     @TypeConverter
-    fun convertToString(value: List<BookMarkType>): String {
+    fun convertToString(value: List<CustomBookMarkData>): String {
         return json.encodeToString(value)
     }
 
     @TypeConverter
-    fun convertToList(value: String): List<BookMarkType> {
+    fun convertToList(value: String): List<CustomBookMarkData> {
         return json.decodeFromString(value)
     }
 }

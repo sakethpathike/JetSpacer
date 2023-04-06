@@ -71,6 +71,8 @@ data class MarsRoversDBDTO(
     var addedToLocalDBOn: String = "",
 ):BookMarkType()
 
+@Serializable
+data class CustomBookMarkData(val dataType: SavedDataType,val data:BookMarkType)
 @Entity(tableName = "bookMarkScreen_GridNames")
 @Serializable
 data class BookMarkScreenGridNames( // for custom bookmark topic
@@ -81,14 +83,11 @@ data class BookMarkScreenGridNames( // for custom bookmark topic
     var imgUrlForGrid: String,
     @ColumnInfo(name = "data")
     @TypeConverters(BookMarkDataConverterForCustomBookMarks::class)
-    var data: List<BookMarkType>,
-    @ColumnInfo(name = "savedDataType")
-    @TypeConverters(BookMarkTypeConverterForCustomBookMarks::class)
-    var savedDataType: SavedDataType
+    var data: List<CustomBookMarkData>
 )
-
+@Serializable
 enum class SavedDataType {
-    APOD, ROVERS, NEWS, ALL
+    APOD, ROVERS, NEWS, ALL, NONE
 }
 
 data class MarsRoversDB(

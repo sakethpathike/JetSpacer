@@ -67,7 +67,7 @@ class BookMarksVM() : ViewModel() {
         lateinit var dbImplementation: DBImplementation
     }
 
-
+    val localDB = dbImplementation.localDBData()
     suspend fun getApiKeys(): List<APIKeysDB> {
         return dbImplementation.localDBData().getAPIKeys()
     }
@@ -186,10 +186,12 @@ class BookMarksVM() : ViewModel() {
                                         name = "APOD",
                                         imgUrlForGrid = BookMarksVM.dbImplementation.localDBData()
                                             .getBookMarkedAPODDBDATA().first().random().imageURL,
-                                        data = emptyList(),
-                                        savedDataType = SavedDataType.APOD
+                                        data = emptyList()
                                     )
                                 )
+                            } else if(doesAPODDataInCustomBookMarkTableExists && dbImplementation.localDBData()
+                                    .getBookMarkedAPODDBDATA().first().isEmpty()){
+                                dbImplementation.localDBData().deleteFromCustomBookmarksDB(name = "APOD")
                             }
                         }
                 },
@@ -207,10 +209,12 @@ class BookMarksVM() : ViewModel() {
                                         name = "News",
                                         imgUrlForGrid = BookMarksVM.dbImplementation.localDBData()
                                             .getBookMarkedNewsDATA().first().random().imageURL,
-                                        data = emptyList(),
-                                        savedDataType = SavedDataType.NEWS
+                                        data = emptyList()
                                     )
                                 )
+                            } else if(doesNewsDataInCustomBookMarkTableExists && dbImplementation.localDBData()
+                                    .getBookMarkedNewsDATA().first().isEmpty()){
+                                dbImplementation.localDBData().deleteFromCustomBookmarksDB(name = "News")
                             }
                         }
                 },
@@ -228,15 +232,17 @@ class BookMarksVM() : ViewModel() {
                                         name = "Rovers",
                                         imgUrlForGrid = BookMarksVM.dbImplementation.localDBData()
                                             .getBookMarkedRoverDBDATA().first().random().imageURL,
-                                        data = emptyList(),
-                                        savedDataType = SavedDataType.ROVERS
+                                        data = emptyList()
                                     )
                                 )
+                            } else if(doesRoversDataInCustomBookMarkTableExists && dbImplementation.localDBData()
+                                    .getBookMarkedRoverDBDATA().first().isEmpty()){
+                                dbImplementation.localDBData().deleteFromCustomBookmarksDB(name = "Rovers")
                             }
                         }
                 })
         }
-        if (BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
+       /* if (BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
                 .count() == 0 && BookMarksVM.dbImplementation.localDBData()
                 .getBookMarkedAPODDBDATA().first()
                 .isNotEmpty() || BookMarksVM.dbImplementation.localDBData()
@@ -275,7 +281,7 @@ class BookMarksVM() : ViewModel() {
                         savedDataType = SavedDataType.ALL
                     )
                 )
-        }
+        }*/
     }
 }
 
