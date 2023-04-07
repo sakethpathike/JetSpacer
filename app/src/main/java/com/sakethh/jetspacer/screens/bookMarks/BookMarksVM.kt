@@ -10,9 +10,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.localDB.*
-import com.sakethh.jetspacer.screens.bookMarks.screens.APODBookMarksScreen
-import com.sakethh.jetspacer.screens.bookMarks.screens.MarsRoversBookMarksScreen
-import com.sakethh.jetspacer.screens.bookMarks.screens.NewsBookmarkScreen
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
@@ -39,17 +36,7 @@ class BookMarksVM() : ViewModel() {
             }
         }
    * */
-    val bookMarksScreensData = listOf(
-        BookMarksScreensData(
-            screenName = "APOD",
-            screenComposable = { APODBookMarksScreen(navController = it) }),
-        BookMarksScreensData(
-            screenName = "Mars Rover",
-            screenComposable = { MarsRoversBookMarksScreen(navController = it) }),
-        BookMarksScreensData(
-            screenName = "News",
-            screenComposable = { NewsBookmarkScreen(navController = it) })
-    )
+
     var imgURL = ""
     private val _bookMarksFromAPODDB = MutableStateFlow<List<APOD_DB_DTO>>(emptyList())
     val bookMarksFromAPODDB = _bookMarksFromAPODDB.asStateFlow()

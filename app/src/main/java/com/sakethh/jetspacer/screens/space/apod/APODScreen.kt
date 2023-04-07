@@ -52,7 +52,6 @@ import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
-import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.atLastIndex

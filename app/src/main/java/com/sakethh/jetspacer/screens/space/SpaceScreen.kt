@@ -34,7 +34,6 @@ import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
-import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.vanpra.composematerialdialogs.MaterialDialog

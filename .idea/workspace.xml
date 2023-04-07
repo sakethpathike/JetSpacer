@@ -9,7 +9,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18588ca3-8822-4166-859a-33b9544748e4" name="Changes" comment="changes in migration code and others">
+    <list default="true" id="18588ca3-8822-4166-859a-33b9544748e4" name="Changes" comment="changes in bookmarks ui and related">
       <change afterPath="$PROJECT_DIR$/.gradle/7.5/checksums/checksums.lock" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.gradle/7.5/checksums/sha1-checksums.bin" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.gradle/7.5/dependencies-accessors/dependencies-accessors.lock" afterDir="false" />
@@ -28,16 +28,22 @@
       <change afterPath="$PROJECT_DIR$/app/build/generated/source/kapt/debug/com/sakethh/jetspacer/localDB/DBImplementation_AutoMigration_1_2_Impl.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/build/generated/source/kapt/debug/com/sakethh/jetspacer/localDB/DBImplementation_Impl.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/build/generated/source/kapt/debug/com/sakethh/jetspacer/localDB/DBService_Impl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreenVM.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/MainActivity.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/Navigation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/Navigation.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/NavigationRoutes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/NavigationRoutes.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksVM.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksVM.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/APODBookMarksScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/MarsRoversBookMarksScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/NewsBookMarksScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreenVM.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreenVM.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/HomeScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/HomeScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/news/NewsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/news/NewsScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/settings/SettingsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/settings/SettingsScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/SpaceScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/SpaceScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/apod/APODScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/apod/APODScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/RoversScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/RoversScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/RandomCuriosityCameraScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/RandomCuriosityCameraScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/webview/WebViewScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/webview/WebViewScreen.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -168,7 +174,14 @@
       <option name="project" value="LOCAL" />
       <updated>1680710294231</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="changes in bookmarks ui and related">
+      <created>1680719370896</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1680719370896</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -186,6 +199,7 @@
     <MESSAGE value="migrated local database from version 1 to 2" />
     <MESSAGE value="re changes in migration" />
     <MESSAGE value="changes in migration code and others" />
-    <option name="LAST_COMMIT_MESSAGE" value="changes in migration code and others" />
+    <MESSAGE value="changes in bookmarks ui and related" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes in bookmarks ui and related" />
   </component>
 </project>

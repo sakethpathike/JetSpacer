@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class SelectedBookMarkScreenVM : ViewModel() {
-    var selectedBookMarkIndex=0
+    companion object{
+        var selectedBookMarkIndex=0
+    }
     private val _selectedBookMarkData = MutableStateFlow(BookMarkScreenGridNames("","",
         emptyList()
     ))

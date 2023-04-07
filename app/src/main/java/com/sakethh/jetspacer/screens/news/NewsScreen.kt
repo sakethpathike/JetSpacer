@@ -54,9 +54,9 @@ import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
-import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
+import com.sakethh.jetspacer.screens.home.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.news.dto.Article
 import com.sakethh.jetspacer.screens.settings.redirectToWeb
 import com.sakethh.jetspacer.screens.webview.WebViewUtils

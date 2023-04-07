@@ -113,7 +113,7 @@ fun BookMarksScreen(navController: NavController) {
                                     RoundedCornerShape(5.dp)
                                 )
                                 .clickable {
-                                    SelectedBookMarkScreenVM().selectedBookMarkIndex=index.also {
+                                    SelectedBookMarkScreenVM.selectedBookMarkIndex=index.also {
                                         navController.navigate(NavigationRoutes.SELECTED_BOOKMARKS_SCREEN)
                                     }
                                 }

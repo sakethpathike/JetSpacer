@@ -31,9 +31,9 @@ import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
-import com.sakethh.jetspacer.screens.bookMarks.screens.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
+import com.sakethh.jetspacer.screens.home.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RoverBottomSheetContent
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
