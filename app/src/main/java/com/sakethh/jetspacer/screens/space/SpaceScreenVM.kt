@@ -21,6 +21,8 @@ class SpaceScreenVM(
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
     val marsWeatherDTO = mutableStateOf(MarsWeatherDTO())
 
+    val btmSheetType= mutableStateOf(HomeScreenViewModel.BtmSheetType.Details)
+
     init {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
             loadData()

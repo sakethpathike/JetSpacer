@@ -40,6 +40,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
 
+
+lateinit var currentDestination:String
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(
@@ -65,7 +67,7 @@ class MainActivity : ComponentActivity() {
             val bottomSheetState = rememberBottomSheetScaffoldState()
             val bottomBarSheetState = rememberBottomSheetScaffoldState()
             val _currentDestination = navController.currentBackStackEntryAsState()
-            val currentDestination =
+            currentDestination =
                 rememberSaveable(inputs = arrayOf(_currentDestination.value?.destination?.route)) {
                     _currentDestination.value?.destination?.route.toString()
                 }

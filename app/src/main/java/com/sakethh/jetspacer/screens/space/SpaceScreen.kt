@@ -31,13 +31,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
+import com.sakethh.jetspacer.localDB.CustomBookMarkData
+import com.sakethh.jetspacer.localDB.SavedDataType
 import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.bookMarks.screens.BtmSaveComposableContent
+import com.sakethh.jetspacer.screens.constraintSet
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.vanpra.composematerialdialogs.MaterialDialog
-import com.vanpra.composematerialdialogs.datetime.date.DatePickerColors
 import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -81,43 +84,72 @@ fun SpaceScreen(navController: NavController) {
     AppTheme {
         ModalBottomSheetLayout(
             sheetContent = {
-                APODBottomSheetContent(
-                    homeScreenViewModel = homeScreenViewModel,
-                    apodURL = apodData.value.url.toString(),
-                    apodTitle = apodData.value.title.toString(),
-                    apodDate = apodData.value.date.toString(),
-                    apodDescription = apodData.value.explanation.toString(),
-                    apodMediaType = apodData.value.media_type.toString(),
-                    onBookMarkClick = {
-                        triggerHapticFeedback(context = context)
-                        bookMarksVM.imgURL = apodData.value.url.toString()
-                        coroutineScope.launch {
-                            val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                            val formattedDate = dateFormat.format(Date())
-                            didDataGetAddedInDB = bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
-                                this.title = apodData.value.title.toString()
-                                this.datePublished = apodData.value.date.toString()
-                                this.description = apodData.value.explanation.toString()
-                                this.imageURL = apodData.value.url.toString()
-                                this.mediaType = "image"
-                                this.isBookMarked = true
-                                this.category = "APOD"
-                                this.addedToLocalDBOn = formattedDate
-                                this.hdImageURL = apodData.value.hdurl.toString()
-                            })
-                        }.invokeOnCompletion {
-                            if (didDataGetAddedInDB) {
-                                Toast.makeText(context, "Added to bookmarks:)", Toast.LENGTH_SHORT)
-                                    .show()
-                            } else {
-                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                    true
-                            }
-                            bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                        }
-                    },
-                    imageHDURL = apodData.value.hdurl.toString()
-                )
+                when (spaceScreenVM.btmSheetType.value) {
+                    HomeScreenViewModel.BtmSheetType.Details -> {
+                        APODBottomSheetContent(
+                            homeScreenViewModel = homeScreenViewModel,
+                            apodURL = apodData.value.url.toString(),
+                            apodTitle = apodData.value.title.toString(),
+                            apodDate = apodData.value.date.toString(),
+                            apodDescription = apodData.value.explanation.toString(),
+                            apodMediaType = apodData.value.media_type.toString(),
+                            onBookMarkClick = {
+                                triggerHapticFeedback(context = context)
+                                bookMarksVM.imgURL = apodData.value.url.toString()
+                                coroutineScope.launch {
+                                    val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                                    val formattedDate = dateFormat.format(Date())
+                                    didDataGetAddedInDB =
+                                        bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                            this.title = apodData.value.title.toString()
+                                            this.datePublished = apodData.value.date.toString()
+                                            this.description = apodData.value.explanation.toString()
+                                            this.imageURL = apodData.value.url.toString()
+                                            this.mediaType = "image"
+                                            this.isBookMarked = true
+                                            this.category = "APOD"
+                                            this.addedToLocalDBOn = formattedDate
+                                            this.hdImageURL = apodData.value.hdurl.toString()
+                                        })
+                                }.invokeOnCompletion {
+                                    if (didDataGetAddedInDB) {
+                                        Toast.makeText(
+                                            context,
+                                            "Added to bookmarks:)",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                            .show()
+                                    } else {
+                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                            true
+                                    }
+                                    bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                                }
+                            },
+                            imageHDURL = apodData.value.hdurl.toString()
+                        )
+                    }
+
+                    HomeScreenViewModel.BtmSheetType.BookMarkCollection -> {
+                        BtmSaveComposableContent(
+                            coroutineScope = coroutineScope,
+                            modalBottomSheetState = bottomSheetState,
+                            data = CustomBookMarkData(
+                                dataType = SavedDataType.APOD,
+                                data = APOD_DB_DTO().apply {
+                                    this.title = apodData.value.title.toString()
+                                    this.datePublished = apodData.value.date.toString()
+                                    this.imageURL = apodData.value.url.toString()
+                                    this.description = apodData.value.explanation.toString()
+                                    this.hdImageURL = apodData.value.hdurl.toString()
+                                    this.isBookMarked = true
+                                    this.mediaType = "image"
+                                }
+                            )
+                        )
+                    }
+
+                }
             },
             sheetState = bottomSheetState,
             sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
@@ -237,6 +269,21 @@ fun SpaceScreen(navController: NavController) {
                                             true
                                     }
                                     bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
+                                }
+                            },
+                            onBookmarkLongPress = {
+                                coroutineScope.launch {
+                                    if (bottomSheetState.isVisible) {
+                                        bottomSheetState.hide()
+                                        spaceScreenVM.btmSheetType.value =
+                                            HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                    }
+                                }.invokeOnCompletion {
+                                    spaceScreenVM.btmSheetType.value =
+                                        HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                    coroutineScope.launch {
+                                        bottomSheetState.show()
+                                    }
                                 }
                             },
                             capturedOnSol = "",
@@ -469,32 +516,36 @@ fun SpaceScreen(navController: NavController) {
             }
         }
         val customApodDate = remember { mutableStateOf("") }
-        val dateFormat=DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        MaterialDialog(backgroundColor=MaterialTheme.colorScheme.primary,shape = RoundedCornerShape(10.dp), dialogState = datePickerState, buttons = {
-            positiveButton(text = "Change date NOW", onClick = {
-                triggerHapticFeedback(context = context)
-                datePickerState.hide()
-                coroutineScope.launch {
-                    spaceScreenVM.getAPODDateData(customApodDate.value)
-                }
-            })
-            negativeButton(text = "Never mind", onClick = { datePickerState.hide() })
-        }) {
+        val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        MaterialDialog(
+            backgroundColor = MaterialTheme.colorScheme.primary,
+            shape = RoundedCornerShape(10.dp),
+            dialogState = datePickerState,
+            buttons = {
+                positiveButton(text = "Change date NOW", onClick = {
+                    triggerHapticFeedback(context = context)
+                    datePickerState.hide()
+                    coroutineScope.launch {
+                        spaceScreenVM.getAPODDateData(customApodDate.value)
+                    }
+                })
+                negativeButton(text = "Never mind", onClick = { datePickerState.hide() })
+            }) {
             datepicker(
                 colors = DatePickerDefaults.colors(
                     headerBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
                     headerTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
                     calendarHeaderTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
-                    dateActiveBackgroundColor=MaterialTheme.colorScheme.onPrimary,
-                    dateInactiveBackgroundColor= Color.Transparent,
-                    dateActiveTextColor=MaterialTheme.colorScheme.primary,
-                    dateInactiveTextColor=MaterialTheme.colorScheme.onPrimary
+                    dateActiveBackgroundColor = MaterialTheme.colorScheme.onPrimary,
+                    dateInactiveBackgroundColor = Color.Transparent,
+                    dateActiveTextColor = MaterialTheme.colorScheme.primary,
+                    dateInactiveTextColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 initialDate = LocalDate.now().minusDays(2),
                 title = "Pick a date",
                 yearRange = 1995..LocalDate.now().year
-            ){
-                customApodDate.value=it.format(dateFormat).toString()
+            ) {
+                customApodDate.value = it.format(dateFormat).toString()
             }
         }
 

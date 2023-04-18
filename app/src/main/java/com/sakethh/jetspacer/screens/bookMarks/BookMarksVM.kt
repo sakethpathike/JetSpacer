@@ -49,7 +49,6 @@ class BookMarksVM() : ViewModel() {
 
     private val _bookMarksFromNewsDB = MutableStateFlow<List<NewsDB>>(emptyList())
     val bookMarksFromNewsDB = _bookMarksFromNewsDB.asStateFlow()
-
     companion object {
         lateinit var dbImplementation: DBImplementation
     }

@@ -31,6 +31,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -59,8 +60,9 @@ import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.news.dto.Article
 import com.sakethh.jetspacer.screens.settings.redirectToWeb
-import com.sakethh.jetspacer.screens.webview.WebViewUtils
 import com.sakethh.jetspacer.ui.theme.AppTheme
+import com.sakethh.jetspacer.ui.theme.md_theme_dark_onSurface
+import com.sakethh.jetspacer.ui.theme.newsBtmSheetGradient
 import io.ktor.http.*
 import kotlinx.coroutines.*
 import java.util.*
@@ -77,7 +79,6 @@ fun NewsScreen(navController: NavController) {
     val context = LocalContext.current
     val shouldLoadMoreData = rememberSaveable { mutableStateOf(true) }
     val isRefreshing = remember { mutableStateOf(false) }
-    val newsBottomSheetContentImpl = NewsBottomSheetContentImpl().copy()
     val modalBottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     BackHandler {
@@ -147,8 +148,7 @@ fun NewsScreen(navController: NavController) {
                         .wrapContentHeight()
                         .background(MaterialTheme.colorScheme.primary)
                 ) {
-                    Spacer(modifier = Modifier.height(20.dp))
-                    NewsBottomSheetContent(newsBottomSheetContentImpl = newsBottomSheetContentImpl)
+                    NewsBottomSheetContent(newsBottomSheetMutableStateDTO = NewsVM.newsBottomSheetContentImpl.value)
                     Spacer(modifier = Modifier.height(70.dp))
                 }
             }) {
@@ -198,7 +198,7 @@ fun NewsScreen(navController: NavController) {
                                 topHeadLinesData = topHeadLinesData,
                                 bottomSheetState = modalBottomSheetState,
                                 coroutineScope = coroutineScope,
-                                newsBottomSheetContentImpl = newsBottomSheetContentImpl,
+                                newsBottomSheetContentImpl = NewsVM.newsBottomSheetContentImpl.value,
                                 navController = navController,
                                 bookMarksVM = bookMarksVM
                             )
@@ -279,10 +279,10 @@ fun NewsScreen(navController: NavController) {
                     triggerHapticFeedback(context = context)
                     coroutineScope.launch {
                         doesExistsInDB =
-                            bookMarksVM.deleteDataFromNewsDB(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                            bookMarksVM.deleteDataFromNewsDB(sourceURL = NewsVM.newsBottomSheetContentImpl.value.sourceURL.value)
                         modalBottomSheetState.hide()
                     }.invokeOnCompletion {
-                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = NewsVM.newsBottomSheetContentImpl.value.sourceURL.value)
                         if (doesExistsInDB) {
                             Toast.makeText(
                                 context,
@@ -291,7 +291,7 @@ fun NewsScreen(navController: NavController) {
                             )
                                 .show()
                         } else {
-                            bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                            bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = NewsVM.newsBottomSheetContentImpl.value.sourceURL.value)
                             Toast.makeText(
                                 context,
                                 "Removed from bookmarks:)",
@@ -299,7 +299,7 @@ fun NewsScreen(navController: NavController) {
                             )
                                 .show()
                         }
-                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = NewsVM.newsBottomSheetContentImpl.value.sourceURL.value)
                     }
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = false
                     HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value = false
@@ -316,7 +316,7 @@ fun LazyListScope.newsUI(
     topHeadLinesData: MutableState<List<Article>>? = null,
     coroutineScope: CoroutineScope,
     bookMarkedData: State<List<NewsDB>>? = null,
-    newsBottomSheetContentImpl: NewsBottomSheetContentImpl,
+    newsBottomSheetContentImpl: NewsBottomSheetMutableStateDTO,
     navController: NavController,
     bookMarksVM: BookMarksVM,
 ) {
@@ -331,11 +331,11 @@ fun LazyListScope.newsUI(
                         navController = navController,
                         newsBottomSheetContentImpl = newsBottomSheetContentImpl,
                         onClick = {
-                            newsBottomSheetContentImpl.imageURL = it.urlToImage
-                            newsBottomSheetContentImpl.publishedTime = it.publishedAt
-                            newsBottomSheetContentImpl.sourceName = it.source.name
-                            newsBottomSheetContentImpl.sourceURL = it.url
-                            newsBottomSheetContentImpl.title = it.title
+                            newsBottomSheetContentImpl.imageURL.value = it.urlToImage
+                            newsBottomSheetContentImpl.publishedTime.value = it.publishedAt
+                            newsBottomSheetContentImpl.sourceName.value = it.source.name
+                            newsBottomSheetContentImpl.sourceURL.value = it.url
+                            newsBottomSheetContentImpl.title.value = it.title
                         }
                     )
             ) {
@@ -412,19 +412,21 @@ fun LazyListScope.newsUI(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .clickable {
-                                newsBottomSheetContentImpl.imageURL = it.urlToImage
-                                newsBottomSheetContentImpl.publishedTime = it.publishedAt
-                                newsBottomSheetContentImpl.sourceName = it.source.name
-                                newsBottomSheetContentImpl.sourceURL = it.url
+                                newsBottomSheetContentImpl.imageURL.value = it.urlToImage
+                                newsBottomSheetContentImpl.publishedTime.value = it.publishedAt
+                                newsBottomSheetContentImpl.sourceName.value = it.source.name
+                                newsBottomSheetContentImpl.sourceURL.value = it.url
                                 bookMarksVM.doesThisExistsInNewsDBIconTxt(
-                                    sourceURL = newsBottomSheetContentImpl.sourceURL
+                                    sourceURL = newsBottomSheetContentImpl.sourceURL.value
                                 )
-                                newsBottomSheetContentImpl.title = it.title
-                                coroutineScope.launch {
-                                    bottomSheetState.show()
-                                }.invokeOnCompletion {
-                                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
-                                }
+                                newsBottomSheetContentImpl.title.value = it.title
+                                coroutineScope
+                                    .launch {
+                                        bottomSheetState.show()
+                                    }
+                                    .invokeOnCompletion {
+                                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL.value)
+                                    }
                             },
                         imageVector = Icons.Filled.MoreVert,
                         contentDescription = ""
@@ -444,11 +446,11 @@ fun LazyListScope.newsUI(
                         navController = navController,
                         newsBottomSheetContentImpl = newsBottomSheetContentImpl,
                         onClick = {
-                            newsBottomSheetContentImpl.imageURL = it.imageURL
-                            newsBottomSheetContentImpl.publishedTime = it.publishedTime
-                            newsBottomSheetContentImpl.sourceName = it.sourceOfNews
-                            newsBottomSheetContentImpl.sourceURL = it.sourceURL
-                            newsBottomSheetContentImpl.title = it.title
+                            newsBottomSheetContentImpl.imageURL.value = it.imageURL
+                            newsBottomSheetContentImpl.publishedTime.value = it.publishedTime
+                            newsBottomSheetContentImpl.sourceName.value = it.sourceOfNews
+                            newsBottomSheetContentImpl.sourceURL.value = it.sourceURL
+                            newsBottomSheetContentImpl.title.value = it.title
                         }
                     )
             ) {
@@ -525,17 +527,19 @@ fun LazyListScope.newsUI(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .clickable {
-                                newsBottomSheetContentImpl.imageURL = it.imageURL
-                                newsBottomSheetContentImpl.publishedTime = it.publishedTime
-                                newsBottomSheetContentImpl.sourceName = it.sourceOfNews
-                                newsBottomSheetContentImpl.sourceURL = it.sourceURL
-                                newsBottomSheetContentImpl.title = it.title
-                                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
-                                coroutineScope.launch {
-                                    bottomSheetState.show()
-                                }.invokeOnCompletion {
-                                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
-                                }
+                                newsBottomSheetContentImpl.imageURL.value = it.imageURL
+                                newsBottomSheetContentImpl.publishedTime.value = it.publishedTime
+                                newsBottomSheetContentImpl.sourceName.value = it.sourceOfNews
+                                newsBottomSheetContentImpl.sourceURL.value = it.sourceURL
+                                newsBottomSheetContentImpl.title.value = it.title
+                                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL.value)
+                                coroutineScope
+                                    .launch {
+                                        bottomSheetState.show()
+                                    }
+                                    .invokeOnCompletion {
+                                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL.value)
+                                    }
                             },
                         imageVector = Icons.Filled.MoreVert,
                         contentDescription = ""
@@ -548,23 +552,23 @@ fun LazyListScope.newsUI(
 
 data class NewsBottomSheetContent(val title: String, val icon: ImageVector, val onClick: () -> Unit)
 
-data class NewsBottomSheetContentImpl(
-    var imageURL: String = "",
-    var sourceName: String = "",
-    var title: String = "",
-    var publishedTime: String = "",
-    var sourceURL: String = "",
+data class NewsBottomSheetMutableStateDTO(
+    var imageURL: MutableState<String> = mutableStateOf(""),
+    var sourceName: MutableState<String> = mutableStateOf(""),
+    var title: MutableState<String> = mutableStateOf(""),
+    var publishedTime: MutableState<String> = mutableStateOf(""),
+    var sourceURL: MutableState<String> = mutableStateOf(""),
 )
 
 @Composable
-fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImpl) {
+fun NewsBottomSheetContent(newsBottomSheetMutableStateDTO: NewsBottomSheetMutableStateDTO) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val bookMarksVM: BookMarksVM = viewModel()
     val localURI = LocalUriHandler.current
     val localClipBoard = LocalClipboardManager.current
     var doDataExistsInDB = false
-    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetMutableStateDTO.sourceURL.value)
     val bottomList = listOf(
         NewsBottomSheetContent(
             title = bookMarksVM.bookMarkText.value,
@@ -573,19 +577,20 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
                 triggerHapticFeedback(context = context)
                 coroutineScope.launch {
                     doDataExistsInDB = BookMarksVM.dbImplementation.localDBData()
-                        .doesThisExistsInNewsDB(newsBottomSheetContentImpl.sourceURL)
+                        .doesThisExistsInNewsDB(newsBottomSheetMutableStateDTO.sourceURL.value)
                 }.invokeOnCompletion {
                     if (!doDataExistsInDB) {
                         coroutineScope.launch {
                             bookMarksVM.addDataToNewsDB(newsDB = NewsDB().apply {
-                                this.title = newsBottomSheetContentImpl.title
-                                this.imageURL = newsBottomSheetContentImpl.imageURL
-                                this.sourceOfNews = newsBottomSheetContentImpl.sourceName
-                                this.publishedTime = newsBottomSheetContentImpl.publishedTime
-                                this.sourceURL = newsBottomSheetContentImpl.sourceURL
+                                this.title = newsBottomSheetMutableStateDTO.title.value
+                                this.imageURL = newsBottomSheetMutableStateDTO.imageURL.value
+                                this.sourceOfNews = newsBottomSheetMutableStateDTO.sourceName.value
+                                this.publishedTime =
+                                    newsBottomSheetMutableStateDTO.publishedTime.value
+                                this.sourceURL = newsBottomSheetMutableStateDTO.sourceURL.value
                             })
                         }.invokeOnCompletion {
-                            bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                            bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetMutableStateDTO.sourceURL.value)
                         }
                         Toast.makeText(
                             context,
@@ -602,14 +607,14 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
             title = "Open in browser",
             icon = Icons.Default.OpenInBrowser,
             onClick = {
-                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
-                localURI.openUri(newsBottomSheetContentImpl.sourceURL)
+                bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetMutableStateDTO.sourceURL.value)
+                localURI.openUri(newsBottomSheetMutableStateDTO.sourceURL.value)
             }),
         NewsBottomSheetContent(
             title = "Copy news source link",
             icon = Icons.Default.ContentCopy,
             onClick = {
-                localClipBoard.setText(AnnotatedString(newsBottomSheetContentImpl.sourceURL))
+                localClipBoard.setText(AnnotatedString(newsBottomSheetMutableStateDTO.sourceURL.value))
                 Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
             }),
         NewsBottomSheetContent(
@@ -620,7 +625,7 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
                 intent.action = Intent.ACTION_SEND
                 intent.putExtra(
                     Intent.EXTRA_TEXT,
-                    "Checkout top-headline:\n${newsBottomSheetContentImpl.title}\nsource:\n${newsBottomSheetContentImpl.sourceURL}"
+                    "Checkout top-headline:\n${newsBottomSheetMutableStateDTO.title.value}\nsource:\n${newsBottomSheetMutableStateDTO.sourceURL.value}"
                 )
                 intent.type = "text/plain"
                 val activity = context as Activity?
@@ -632,6 +637,54 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.primary)
     ) {
+        androidx.compose.material3.Card(
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onPrimary), modifier = Modifier
+                .padding(15.dp)
+                .fillMaxWidth()
+                .height(200.dp), shape = RoundedCornerShape(10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                Coil_Image().CoilImage(
+                    imgURL = newsBottomSheetMutableStateDTO.imageURL.value,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    onError = painterResource(id = R.drawable.baseline_image_24),
+                    contentScale = ContentScale.Crop
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.Transparent,
+                                    newsBtmSheetGradient
+                                ), startY = 200f
+                            )
+                        )
+                )
+                Text(
+                    text = newsBottomSheetMutableStateDTO.title.value,
+                    fontSize = 18.sp,
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .align(Alignment.BottomStart),
+                    textAlign = TextAlign.Start,
+                    lineHeight = 20.sp,
+                    maxLines = 2,
+                    color = md_theme_dark_onSurface,
+                    overflow = TextOverflow.Ellipsis,
+                    minLines = 1
+                )
+            }
+        }
         bottomList.forEach {
             Row(
                 modifier = Modifier
@@ -640,13 +693,13 @@ fun NewsBottomSheetContent(newsBottomSheetContentImpl: NewsBottomSheetContentImp
                     .background(MaterialTheme.colorScheme.primary)
                     .clickable { it.onClick() }
             ) {
-                Spacer(modifier = Modifier.width(20.dp))
+                Spacer(modifier = Modifier.width(15.dp))
                 androidx.compose.material.Icon(
                     imageVector = it.icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
-                Spacer(modifier = Modifier.width(25.dp))
+                Spacer(modifier = Modifier.width(20.dp))
                 Text(
                     text = it.title,
                     color = MaterialTheme.colorScheme.onPrimary,

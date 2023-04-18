@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.screens.settings
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
@@ -44,7 +45,7 @@ import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.triggerHapticFeedback
-import com.sakethh.jetspacer.screens.news.NewsBottomSheetContentImpl
+import com.sakethh.jetspacer.screens.news.NewsBottomSheetMutableStateDTO
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.SolTextField
 import com.sakethh.jetspacer.screens.webview.WebViewUtils
 import com.sakethh.jetspacer.screens.webview.enableBtmBarInWebView
@@ -55,6 +56,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun SettingsScreen(
@@ -210,7 +212,11 @@ fun SettingsScreen(
                         .redirectToWeb(
                             navController = navController,
                             inSettingsScreen = true,
-                            newsBottomSheetContentImpl = NewsBottomSheetContentImpl(sourceURL = "https://2fpvxo3g.bearblog.dev/nasa-api-keys/"),
+                            newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+                                sourceURL = mutableStateOf(
+                                    "https://2fpvxo3g.bearblog.dev/nasa-api-keys/"
+                                )
+                            ),
                             onClick = {})
                         .padding(bottom = 10.dp)
                         .fillMaxWidth(),
@@ -224,7 +230,11 @@ fun SettingsScreen(
                         .redirectToWeb(
                             navController = navController,
                             inSettingsScreen = true,
-                            newsBottomSheetContentImpl = NewsBottomSheetContentImpl(sourceURL = "https://2fpvxo3g.bearblog.dev/news-apis-api-keys/"),
+                            newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+                                sourceURL = mutableStateOf(
+                                    "https://2fpvxo3g.bearblog.dev/news-apis-api-keys/"
+                                )
+                            ),
                             onClick = {})
                         .padding(bottom = 10.dp)
                         .fillMaxWidth(),
@@ -252,22 +262,30 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.headlineLarge,
                         fontSize = 17.sp,
                         color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.titlePadding().background(MaterialTheme.colorScheme.primary).clickable {
-                            coroutineScope.launch {
-                                BookMarksVM.dbImplementation.localDBData()
-                                    .addAPIKeys(apiKeysDB = APIKeysDB().apply {
-                                        this.currentNASAAPIKey = Constants.NASA_APIKEY
-                                        this.currentNewsAPIKey = Constants.NEWS_API_API_KEY
-                                        this.id = "apiKey"
-                                    })
-                            }.invokeOnCompletion {
-                                Toast.makeText(
-                                    context,
-                                    "Changed API Keys to default , this may break app purpose at any time:(",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                        modifier = Modifier
+                            .titlePadding()
+                            .background(MaterialTheme.colorScheme.primary)
+                            .clickable {
+                                coroutineScope
+                                    .launch {
+                                        BookMarksVM.dbImplementation
+                                            .localDBData()
+                                            .addAPIKeys(apiKeysDB = APIKeysDB().apply {
+                                                this.currentNASAAPIKey = Constants.NASA_APIKEY
+                                                this.currentNewsAPIKey = Constants.NEWS_API_API_KEY
+                                                this.id = "apiKey"
+                                            })
+                                    }
+                                    .invokeOnCompletion {
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                "Changed API Keys to default , this may break app purpose at any time:(",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                    }
                             }
-                        }
                     )
                 }
 
@@ -277,7 +295,11 @@ fun SettingsScreen(
                     modifier = Modifier.redirectToWeb(
                         navController = navController,
                         inSettingsScreen = true,
-                        newsBottomSheetContentImpl = NewsBottomSheetContentImpl(sourceURL = "https://2fpvxo3g.bearblog.dev/nasa-api-keys/"),
+                        newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+
+                            sourceURL = mutableStateOf("https://2fpvxo3g.bearblog.dev/nasa-api-keys/")
+
+                        ),
                         onClick = {}),
                     title = "NASA API-KEY",
                     description = "Enter the API key in the text box below; this key will be used to access NASA's API. Your key is stored on the local device itself:)\nPsst: JetSpacer will verify if your entered api key is valid or not to avoid further destruction, your welcome."
@@ -353,7 +375,11 @@ fun SettingsScreen(
                     modifier = Modifier.redirectToWeb(
                         navController = navController,
                         inSettingsScreen = true,
-                        newsBottomSheetContentImpl = NewsBottomSheetContentImpl(sourceURL = "https://2fpvxo3g.bearblog.dev/news-apis-api-keys/"),
+                        newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+                            sourceURL = mutableStateOf(
+                                "https://2fpvxo3g.bearblog.dev/news-apis-api-keys/"
+                            )
+                        ),
                         onClick = {}),
                     title = "NEWS API-KEY",
                     description = "Enter the API key in the text box below; this key will be used to access NewsApi.org's API. Your key is stored on the local device itself:)\nPsst: JetSpacer will verify if your entered api key is valid or not to avoid further destruction, your welcome."
@@ -468,7 +494,11 @@ fun SettingsScreen(
                 IndividualSettingItemComposable(
                     modifier = Modifier.redirectToWeb(
                         navController = navController,
-                        newsBottomSheetContentImpl = NewsBottomSheetContentImpl(sourceURL = "https://github.com/sakethpathike/JetSpacer"),
+                        newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+                            sourceURL = mutableStateOf(
+                                "https://github.com/sakethpathike/JetSpacer"
+                            )
+                        ),
                         {}, inSettingsScreen = true
                     ),
                     title = "Source code",
@@ -491,7 +521,11 @@ fun SettingsScreen(
                 IndividualSettingItemComposable(
                     modifier = Modifier.redirectToWeb(
                         navController = navController,
-                        newsBottomSheetContentImpl = NewsBottomSheetContentImpl(sourceURL = "https://twitter.com/jetspacerapp"),
+                        newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+                            sourceURL = mutableStateOf(
+                                "https://twitter.com/jetspacerapp"
+                            )
+                        ),
                         {}, inSettingsScreen = true
                     ),
                     title = "Twitter",
@@ -508,7 +542,11 @@ fun SettingsScreen(
                         .fillMaxWidth()
                         .redirectToWeb(
                             navController = navController,
-                            newsBottomSheetContentImpl = NewsBottomSheetContentImpl(sourceURL = "https://www.flaticon.com/authors/iconfield"),
+                            newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+                                sourceURL = mutableStateOf(
+                                    "https://www.flaticon.com/authors/iconfield"
+                                )
+                            ),
                             inSettingsScreen = true,
                             onClick = {})
                 ) {
@@ -556,8 +594,9 @@ fun SettingsScreen(
                             BookMarksVM.dbImplementation.localDBData().deleteAllDataFromMarsDB()
                         }, async {
                             BookMarksVM.dbImplementation.localDBData().deleteAllDataFromNewsDB()
-                        },async {
-                            BookMarksVM.dbImplementation.localDBData().deleteAllDataFromCustomBookMarkDB()
+                        }, async {
+                            BookMarksVM.dbImplementation.localDBData()
+                                .deleteAllDataFromCustomBookMarkDB()
                         })
                     }.invokeOnCompletion {
                         Toast.makeText(context, "Deleted all bookmarks:)", Toast.LENGTH_SHORT)
@@ -655,7 +694,7 @@ object Settings {
 
 fun Modifier.redirectToWeb(
     navController: NavController,
-    newsBottomSheetContentImpl: NewsBottomSheetContentImpl,
+    newsBottomSheetContentImpl: NewsBottomSheetMutableStateDTO,
     onClick: () -> Unit,
     inSettingsScreen: Boolean = false,
 ): Modifier = composed {
@@ -667,7 +706,7 @@ fun Modifier.redirectToWeb(
             WebViewUtils.newsBottomSheetContentImpl = newsBottomSheetContentImpl
             navController.navigate(NavigationRoutes.WEB_VIEW_SCREEN)
         } else {
-            localUriHandler.openUri(newsBottomSheetContentImpl.sourceURL)
+            localUriHandler.openUri(newsBottomSheetContentImpl.sourceURL.value)
         }
     }
 }

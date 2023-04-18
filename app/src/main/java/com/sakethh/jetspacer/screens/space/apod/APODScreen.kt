@@ -3,7 +3,6 @@ package com.sakethh.jetspacer.screens.space.apod
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,8 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -48,13 +45,11 @@ import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.downloads.DownloadImpl
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
-import com.sakethh.jetspacer.localDB.DBImplementation
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.constraintSet
 import com.sakethh.jetspacer.screens.home.*
-import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
-import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.atLastIndex
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -142,6 +137,7 @@ fun APODScreen(navController: NavController) {
                     ModalBottomSheetLayout(
                         sheetContent = {
                             APODBottomSheetContent(
+                                inCustomBookmarkScreen = true,
                                 homeScreenViewModel = homeScreenVM,
                                 apodURL = apodURL.value,
                                 apodTitle = apodTitle.value,
@@ -299,7 +295,9 @@ fun APODBottomSheetContent(
     apodMediaType: String,
     onBookMarkClick: () -> Unit,
     inBookMarkScreen: Boolean? = null,
-    imageHDURL:String
+    imageHDURL:String,
+    inCustomBookmarkScreen:Boolean=false,
+    onBookMarkLongPress: () -> Unit = {}
 ) {
     val bookMarksVM: BookMarksVM = viewModel()
     bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
@@ -320,7 +318,8 @@ fun APODBottomSheetContent(
                     apodMediaType = apodMediaType,
                     inAPODBottomSheetContent = true,
                     onBookMarkButtonClick = onBookMarkClick,
-                    hdImageURLForAPOD = imageHDURL
+                    hdImageURLForAPOD = imageHDURL,
+                    onBookmarkLongPress = {onBookMarkLongPress()}
                 )
             }
         }
@@ -465,7 +464,7 @@ fun APODBottomSheetContent(
                     start = 25.dp,
                     end = 25.dp,
                     top = 15.dp,
-                    bottom = 75.dp
+                    bottom = if(!inCustomBookmarkScreen)75.dp else 25.dp
                 )
             )
         }

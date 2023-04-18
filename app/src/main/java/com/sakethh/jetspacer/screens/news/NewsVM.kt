@@ -1,13 +1,9 @@
 package com.sakethh.jetspacer.screens.news
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.screens.news.dto.Article
-import com.sakethh.jetspacer.screens.news.dto.Source
 import kotlinx.coroutines.*
 
 class NewsVM(private val newsRepo: NewsRepo = NewsRepo()) : ViewModel() {
@@ -18,9 +14,21 @@ class NewsVM(private val newsRepo: NewsRepo = NewsRepo()) : ViewModel() {
     private val coroutineExceptionalHandler =
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
 
+    companion object {
+        val newsBottomSheetContentImpl = mutableStateOf(
+            NewsBottomSheetMutableStateDTO(
+                mutableStateOf(""),
+                mutableStateOf(""),
+                mutableStateOf(""),
+                mutableStateOf(""),
+                mutableStateOf("")
+            )
+        )
+    }
+
     init {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-                loadTopHeadLinesData()
+            loadTopHeadLinesData()
         }
     }
 

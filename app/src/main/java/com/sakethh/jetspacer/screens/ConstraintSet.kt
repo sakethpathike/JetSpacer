@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.screens.home
+package com.sakethh.jetspacer.screens
 
 import androidx.constraintlayout.compose.ConstraintSet
 

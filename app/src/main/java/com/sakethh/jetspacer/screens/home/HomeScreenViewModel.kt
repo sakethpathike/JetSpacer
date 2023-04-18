@@ -12,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.jetspacer.httpClient.HTTPClient
+import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODFetching
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
@@ -42,7 +43,12 @@ open class HomeScreenViewModel(
         MutableStateFlow(ISSLocationDTO(IssPosition("", ""), "", 0))
     val issLocationFromAPIFlow = _issLocationFromAPIFlow.asStateFlow()
     val apodDataFromAPI = mutableStateOf(APOD_DTO("", "", "", "", "", "", ""))
-    val doesAPODExistsInDB = mutableStateOf(false)
+
+    val apodData = APOD_DB_DTO().copy()
+    var currentBtmSheetType = mutableStateOf(BtmSheetType.Details)
+    enum class BtmSheetType{
+        Details, BookMarkCollection
+    }
 
 
     init {

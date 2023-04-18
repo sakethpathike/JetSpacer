@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.sakethh.jetspacer.screens.home
 
 import android.annotation.SuppressLint
@@ -56,7 +58,6 @@ import androidx.navigation.NavController
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.sakethh.jetspacer.Coil_Image
@@ -66,6 +67,8 @@ import com.sakethh.jetspacer.downloads.DownloadImpl
 import com.sakethh.jetspacer.localDB.*
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.bookMarks.screens.BtmSaveComposableContent
+import com.sakethh.jetspacer.screens.constraintSet
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB
 import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.dto.IPGeoLocationDTO
@@ -242,51 +245,92 @@ fun HomeScreen(navController: NavController) {
             }
         )
     bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
+    val apodData = homeScreenViewModel.apodData
     ModalBottomSheetLayout(
         sheetContent = {
-            bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
-            APODBottomSheetContent(
-                homeScreenViewModel = homeScreenViewModel,
-                apodURL = apodURL,
-                apodTitle = apodTitle,
-                apodDate = apodDate,
-                apodDescription = apodDescription,
-                apodMediaType = apodMediaType,
-                onBookMarkClick = {
-                    triggerHapticFeedback(context = context)
-                    bookMarksVM.imgURL = apodURL
-                    coroutineScope.launch {
-                        val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                        val formattedDate = dateFormat.format(Date())
-                        didDataGetAddedInDB =
-                            bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
-                                this.title = apodTitle
-                                this.datePublished = apodDate
-                                this.description = apodDescription
-                                this.imageURL = apodURL
-                                this.mediaType = "image"
-                                this.isBookMarked = true
-                                this.category = "APOD"
-                                this.hdImageURL=homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-                                this.addedToLocalDBOn = formattedDate
-                            })
-                    }.invokeOnCompletion {
-                        if (didDataGetAddedInDB) {
-                            Toast.makeText(
-                                context,
-                                "Added to bookmarks:)",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        } else {
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                true
+            Box(modifier = Modifier.size(1.dp))
+            when (homeScreenViewModel.currentBtmSheetType.value) {
+                HomeScreenViewModel.BtmSheetType.Details -> {
+                    bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
+                    APODBottomSheetContent(
+                        homeScreenViewModel = homeScreenViewModel,
+                        apodURL = apodURL,
+                        apodTitle = apodTitle,
+                        apodDate = apodDate,
+                        apodDescription = apodDescription,
+                        apodMediaType = apodMediaType,
+                        onBookMarkClick = {
+                            triggerHapticFeedback(context = context)
+                            bookMarksVM.imgURL = apodURL
+                            coroutineScope.launch {
+                                val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                                val formattedDate = dateFormat.format(Date())
+                                didDataGetAddedInDB =
+                                    bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                        this.title = apodTitle
+                                        this.datePublished = apodDate
+                                        this.description = apodDescription
+                                        this.imageURL = apodURL
+                                        this.mediaType = "image"
+                                        this.isBookMarked = true
+                                        this.category = "APOD"
+                                        this.hdImageURL =
+                                            homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
+                                        this.addedToLocalDBOn = formattedDate
+                                    })
+                            }.invokeOnCompletion {
+                                if (didDataGetAddedInDB) {
+                                    Toast.makeText(
+                                        context,
+                                        "Added to bookmarks:)",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                        .show()
+                                } else {
+                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                        true
+                                }
+                                bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                            }
+                        },
+                        imageHDURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString(),
+                        onBookMarkLongPress = {
+                            apodData.imageURL =
+                                homeScreenViewModel.apodDataFromAPI.value.url.toString()
+                            apodData.hdImageURL =
+                                homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
+                            apodData.category =
+                                homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
+                            apodData.isBookMarked = true
+                            apodData.datePublished =
+                                homeScreenViewModel.apodDataFromAPI.value.date.toString()
+                            apodData.description =
+                                homeScreenViewModel.apodDataFromAPI.value.explanation.toString()
+                            apodData.title =
+                                homeScreenViewModel.apodDataFromAPI.value.title.toString()
+                            apodData.mediaType =
+                                homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
+                            coroutineScope.launch {
+                                bottomSheetState.hide()
+                            }.invokeOnCompletion {
+                                homeScreenViewModel.currentBtmSheetType.value =
+                                    HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                coroutineScope.launch {
+                                    bottomSheetState.show()
+                                }
+                            }
                         }
-                        bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                    }
-                },
-                imageHDURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-            )
+                    )
+                }
+
+                HomeScreenViewModel.BtmSheetType.BookMarkCollection -> {
+                    BtmSaveComposableContent(
+                        coroutineScope = coroutineScope,
+                        modalBottomSheetState = bottomSheetState,
+                        data = CustomBookMarkData(dataType = SavedDataType.APOD, data = apodData)
+                    )
+                }
+            }
         },
         sheetState = bottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
@@ -341,6 +385,8 @@ fun HomeScreen(navController: NavController) {
                         apodDescription = apodDescription,
                         apodTitle = apodTitle,
                         imageOnClick = {
+                            homeScreenViewModel.currentBtmSheetType.value =
+                                HomeScreenViewModel.BtmSheetType.Details
                             coroutineScope.launch {
                                 bottomSheetState.show()
                             }
@@ -363,7 +409,8 @@ fun HomeScreen(navController: NavController) {
                                         this.mediaType = "image"
                                         this.isBookMarked = true
                                         this.category = "APOD"
-                                        this.hdImageURL=homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
+                                        this.hdImageURL =
+                                            homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
                                         this.addedToLocalDBOn = formattedDate
                                     })
                             }.invokeOnCompletion {
@@ -379,6 +426,19 @@ fun HomeScreen(navController: NavController) {
                                         true
                                 }
                                 bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                            }
+                        },
+                        onBookmarkLongPress = {
+                            coroutineScope.launch {
+                                if (bottomSheetState.isVisible) {
+                                    bottomSheetState.hide()
+                                }
+                            }.invokeOnCompletion {
+                                homeScreenViewModel.currentBtmSheetType.value =
+                                    HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                coroutineScope.launch {
+                                    bottomSheetState.show()
+                                }
                             }
                         },
                         capturedOnSol = "",
@@ -717,6 +777,7 @@ fun HomeScreen(navController: NavController) {
             )
         }
     }
+
 }
 
 fun triggerHapticFeedback(context: Context) {
@@ -727,6 +788,7 @@ fun triggerHapticFeedback(context: Context) {
         hapticFeedback.vibrate(50)
     }
 }
+
 @Composable
 fun CardRowGrid(
     lhsCardTitle: String,
@@ -916,7 +978,7 @@ fun WebViewModified(url: String?, embedString: String? = null, modifier: Modifie
 fun APODCardComposable(
     homeScreenViewModel: HomeScreenViewModel,
     imageURL: String = "",
-    apodHDImageURL:String,
+    apodHDImageURL: String,
     apodDate: String = "",
     apodDescription: String = "",
     apodTitle: String = "",
@@ -933,6 +995,7 @@ fun APODCardComposable(
     capturedBy: String,
     roverName: String,
     onConfirmButtonClick: () -> Unit = {},
+    onBookmarkLongPress: () -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -972,7 +1035,10 @@ fun APODCardComposable(
                     onBookMarkButtonClick = {
                         onBookMarkButtonClick()
                     },
-                    hdImageURLForAPOD = apodHDImageURL
+                    hdImageURLForAPOD = apodHDImageURL,
+                    onBookmarkLongPress = {
+                        onBookmarkLongPress()
+                    }
                 )
                 Icon(
                     imageVector = Icons.Default.Image,
@@ -1266,15 +1332,17 @@ fun DropDownMenuItemModified(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun APODMediaLayout(
     homeScreenViewModel: HomeScreenViewModel,
     imageURL: String,
-    hdImageURLForAPOD:String,
+    hdImageURLForAPOD: String,
     onBookMarkButtonClick: () -> Unit,
     inAPODBottomSheetContent: Boolean,
     imageOnClick: () -> Unit = {},
     apodMediaType: String,
+    onBookmarkLongPress: () -> Unit = {},
 ) {
     val bookMarksVM: BookMarksVM = viewModel()
     val context = LocalContext.current
@@ -1383,10 +1451,21 @@ fun APODMediaLayout(
                         imageVector = bookMarksVM.bookMarkIcons.value
                     )
                     DropDownMenuItemModified(
+                        text = "Add to collections",
+                        onClick = {
+                            coroutineScope.launch {
+                                bookMarksVM.loadDefaultCustomFoldersForBookMarks()
+                            }
+                            onBookmarkLongPress()
+                            isMoreClicked.value = false
+                        },
+                        imageVector = Icons.Default.Add
+                    )
+                    DropDownMenuItemModified(
                         text = "Download",
                         onClick = {
                             isMoreClicked.value = false
-                            val randomTitle = UUID.randomUUID().toString().substring(0,6)
+                            val randomTitle = UUID.randomUUID().toString().substring(0, 6)
                             DownloadImpl(context = context).downloadNewFile(
                                 url = hdImageURLForAPOD,
                                 title = "$randomTitle.jpg"
@@ -1406,7 +1485,7 @@ fun APODMediaLayout(
                 APODSideIconButton(
                     imageVector = Icons.Outlined.FileDownload,
                     onClick = {
-                        val randomTitle = UUID.randomUUID().toString().substring(0,6)
+                        val randomTitle = UUID.randomUUID().toString().substring(0, 6)
                         DownloadImpl(context = context).downloadNewFile(
                             url = hdImageURLForAPOD,
                             title = "$randomTitle.jpg"
@@ -1434,15 +1513,8 @@ fun APODMediaLayout(
                     ),
                     iconModifier = Modifier
                 )
-                APODSideIconButton(
-                    imageVector = bookMarksVM.bookMarkIcons.value,
-                    onClick = {
-                        onBookMarkButtonClick()
-                    },
-                    iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
-                        apodIconButtonTransparencyValue
-                    ),
-                    iconBtnModifier = Modifier
+                Box(
+                    modifier = Modifier
                         .padding(end = 10.dp, bottom = 10.dp)
                         .background(
                             shape = CircleShape,
@@ -1450,14 +1522,30 @@ fun APODMediaLayout(
                                 apodIconButtonTransparencyValue
                             )
                         )
-                        .layoutId("bookMarkIcon"),
-                    iconColor = MaterialTheme.colorScheme.onSecondary.copy(
-                        apodIconTransparencyValue
-                    ),
-                    iconModifier = Modifier
-                )
+                        .combinedClickable(onClick = { onBookMarkButtonClick() }, onLongClick = {
+                            homeScreenViewModel.currentBtmSheetType.value =
+                                HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                            onBookmarkLongPress()
+                        })
+                        .layoutId("bookMarkIcon")
+                ) {
+                    APODSideIconButton(
+                        imageVector = bookMarksVM.bookMarkIcons.value,
+                        onClick = { },
+                        iconBtnColor = MaterialTheme.colorScheme.secondary.copy(
+                            apodIconButtonTransparencyValue
+                        ),
+                        iconBtnModifier = Modifier,
+                        iconColor = MaterialTheme.colorScheme.onSecondary.copy(
+                            apodIconTransparencyValue
+                        ),
+                        iconModifier = Modifier
+                    )
+                }
+
             }
         }
+
         "video" -> {
             WebViewModified(
                 url = imageURL, modifier = Modifier

@@ -28,6 +28,9 @@ interface DBService {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addCustomBookMarkTopic(bookMarkScreenGridNames: BookMarkScreenGridNames)
 
+    @Update
+    suspend fun addDataInAnExistingBookmarkTopic(bookMarkScreenGridNames: BookMarkScreenGridNames)
+
     @Query("DELETE from marsRovers_db WHERE imageURL = :imageURL")
     suspend fun deleteFromRoverDB(imageURL: String)
 

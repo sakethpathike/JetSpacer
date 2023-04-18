@@ -6,19 +6,19 @@ import kotlinx.serialization.SerialName
 @kotlinx.serialization.Serializable
 data class APOD_DTO(
     @SerialName("date")
-    val date: String?="",
+    var date: String?="",
     @SerialName("explanation")
-    val explanation: String?="",
+    var explanation: String?="",
     @SerialName("hdurl")
-    val hdurl: String?="",
+    var hdurl: String?="",
     @SerialName("media_type")
-    val media_type: String?="",
+    var media_type: String?="",
     @SerialName("service_version")
-    val service_version: String?="",
+    var service_version: String?="",
     @SerialName("title")
-    val title: String?="",
+    var title: String?="",
     @SerialName("url")
-    val url: String?="",
+    var url: String?="",
     @SerialName("copyright")
-    val copyright:String?=""
+    var copyright:String?=""
 )

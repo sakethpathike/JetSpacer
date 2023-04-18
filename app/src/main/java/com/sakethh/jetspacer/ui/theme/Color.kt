@@ -32,6 +32,10 @@ val md_theme_light_surfaceTint = Color(0xFFBA1A1F)
 val md_theme_light_outlineVariant = Color(0xFFD8C2BF)
 val md_theme_light_scrim = Color(0xFF000000)
 
+
+val newsBtmSheetGradient = Color(0xFF212121)
+
+
 val md_theme_dark_primary = Color(0xFF212121)
 val md_theme_dark_onPrimary = Color(0xFFF1F1F1)
 val md_theme_dark_primaryContainer =  Color(0xFF212121)

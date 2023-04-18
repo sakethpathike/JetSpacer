@@ -8,10 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Edit
@@ -22,13 +20,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -36,20 +32,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.R
-import com.sakethh.jetspacer.localDB.DBImplementation
-import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
-import com.sakethh.jetspacer.screens.Status
-import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.constraintSet
 import com.sakethh.jetspacer.screens.home.*
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest.ManifestForCuriosityVM
 import com.sakethh.jetspacer.ui.theme.AppTheme
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(
@@ -304,6 +295,7 @@ fun RoverBottomSheetContent(
     landingDate: String,
     onBookMarkButtonClick: () -> Unit,
     onConfirmBookMarkDeletionButtonClick: () -> Unit,
+    onBookMarkButtonLongPress: () -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val bookMarksVM: BookMarksVM = viewModel()
@@ -325,7 +317,8 @@ fun RoverBottomSheetContent(
                         onBookMarkButtonClick()
                         bookMarksVM.doesThisExistsInRoverDBIconTxt(imgURL)
                     },
-                    hdImageURLForAPOD = imgURL
+                    hdImageURLForAPOD = imgURL,
+                    onBookmarkLongPress = {onBookMarkButtonLongPress()}
                 )
             }
         }
@@ -399,7 +392,7 @@ fun RoverBottomSheetContent(
                     start = 25.dp,
                     end = 25.dp,
                     top = 15.dp,
-                    bottom = 75.dp
+                    bottom = 25.dp
                 )
             )
         }

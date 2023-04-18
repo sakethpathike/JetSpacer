@@ -3,12 +3,16 @@ package com.sakethh.jetspacer.screens.bookMarks.screens
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
@@ -19,47 +23,57 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavType
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.localDB.*
 import com.sakethh.jetspacer.navigation.NavigationRoutes
-import com.sakethh.jetspacer.screens.Status
-import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.news.NewsBottomSheetContent
+import com.sakethh.jetspacer.screens.news.NewsVM
 import com.sakethh.jetspacer.screens.news.newsUI
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RoverBottomSheetContent
 import com.sakethh.jetspacer.screens.webview.WebViewUtils.newsBottomSheetContentImpl
 import com.sakethh.jetspacer.ui.theme.AppTheme
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
 @SuppressLint("SimpleDateFormat")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    ExperimentalFoundationApi::class
+)
 @Composable
 fun SelectedBookMarkScreen(navController: NavController) {
+    val modalBottomSheetState =
+        rememberModalBottomSheetState(
+            initialValue = ModalBottomSheetValue.Hidden,
+            skipHalfExpanded = false
+        )
+    val coroutineScope = rememberCoroutineScope()
     BackHandler {
-        navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN) {
-            popUpTo(0)
+        if (modalBottomSheetState.isVisible) {
+            coroutineScope.launch {
+                modalBottomSheetState.hide()
+            }
+        } else {
+            navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN) {
+                popUpTo(0)
+            }
         }
     }
     val roversScreenVM: RoversScreenVM = viewModel()
@@ -74,50 +88,48 @@ fun SelectedBookMarkScreen(navController: NavController) {
         bookMarksVM.localDB.getBookMarkedNewsDATA().collectAsState(initial = emptyList())
     val roversData =
         bookMarksVM.localDB.getBookMarkedRoverDBDATA().collectAsState(initial = emptyList()).value
-    val modalBottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val dateFormat = SimpleDateFormat("dd-MM-yyyy")
     val currentDate = dateFormat.format(Calendar.getInstance().time)
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
-    val apodURL = homeScreenViewModel.apodDataFromAPI.value.url.toString()
-    val apodTitle = homeScreenViewModel.apodDataFromAPI.value.title.toString()
-    val apodDescription = homeScreenViewModel.apodDataFromAPI.value.explanation.toString()
-    val apodDate = homeScreenViewModel.apodDataFromAPI.value.date.toString()
-    val apodMediaType = homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
     var didDataGetAddedInDB = false
     AppTheme {
         ModalBottomSheetLayout(
             sheetContent = {
                 Spacer(modifier = Modifier.size(1.dp))
-                when (selectedData.name) {
-                    "APOD" -> {
-                        bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
+                when (selectedBookMarkScreenVM.selectedDataType.value) {
+                    SavedDataType.APOD -> {
+                        bookMarksVM.doesThisExistsInAPODIconTxt(selectedBookMarkScreenVM.apodBtmSheetData.apodURL.value.toString())
                         APODBottomSheetContent(
+                            inCustomBookmarkScreen = true,
                             homeScreenViewModel = homeScreenViewModel,
-                            apodURL = apodURL,
-                            apodTitle = apodTitle,
-                            apodDate = apodDate,
-                            apodDescription = apodDescription,
-                            apodMediaType = apodMediaType,
+                            apodURL = selectedBookMarkScreenVM.apodBtmSheetData.apodURL.value,
+                            apodTitle = selectedBookMarkScreenVM.apodBtmSheetData.apodTitle.value,
+                            apodDate = selectedBookMarkScreenVM.apodBtmSheetData.apodDate.value,
+                            apodDescription = selectedBookMarkScreenVM.apodBtmSheetData.apodDescription.value,
+                            apodMediaType = selectedBookMarkScreenVM.apodBtmSheetData.apodMediaType.value,
                             onBookMarkClick = {
                                 triggerHapticFeedback(context = context)
-                                bookMarksVM.imgURL = apodURL
+                                bookMarksVM.imgURL =
+                                    selectedBookMarkScreenVM.apodBtmSheetData.apodURL.value
                                 coroutineScope.launch {
                                     val formattedDate = dateFormat.format(Date())
                                     didDataGetAddedInDB =
                                         bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
-                                            this.title = apodTitle
-                                            this.datePublished = apodDate
-                                            this.description = apodDescription
-                                            this.imageURL = apodURL
+                                            this.title =
+                                                selectedBookMarkScreenVM.apodBtmSheetData.apodTitle.value
+                                            this.datePublished =
+                                                selectedBookMarkScreenVM.apodBtmSheetData.apodDate.value
+                                            this.description =
+                                                selectedBookMarkScreenVM.apodBtmSheetData.apodDescription.value
+                                            this.imageURL =
+                                                selectedBookMarkScreenVM.apodBtmSheetData.apodURL.value
                                             this.mediaType = "image"
                                             this.isBookMarked = true
                                             this.category = "APOD"
                                             this.hdImageURL =
-                                                homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-                                            this.addedToLocalDBOn = formattedDate
+                                                selectedBookMarkScreenVM.apodBtmSheetData.apodHDURL.value
+                                            addedToLocalDBOn = formattedDate
                                         })
                                 }.invokeOnCompletion {
                                     if (didDataGetAddedInDB) {
@@ -138,19 +150,20 @@ fun SelectedBookMarkScreen(navController: NavController) {
                         )
 
                     }
-                    "News" -> {
+
+                    SavedDataType.NEWS -> {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
                                 .background(MaterialTheme.colorScheme.primary)
                         ) {
+                            NewsBottomSheetContent(newsBottomSheetMutableStateDTO = NewsVM.newsBottomSheetContentImpl.value)
                             Spacer(modifier = Modifier.height(20.dp))
-                            NewsBottomSheetContent(newsBottomSheetContentImpl = newsBottomSheetContentImpl)
-                            Spacer(modifier = Modifier.height(70.dp))
                         }
                     }
-                    "Rovers" -> {
+
+                    SavedDataType.ROVERS -> {
                         bookMarksVM.doesThisExistsInRoverDBIconTxt(roversScreenVM.imgURL.value)
                         RoverBottomSheetContent(
                             imgURL = roversScreenVM.imgURL.value,
@@ -221,6 +234,10 @@ fun SelectedBookMarkScreen(navController: NavController) {
                             }
                         )
                     }
+
+                    else -> {
+
+                    }
                 }
             },
             sheetState = modalBottomSheetState,
@@ -242,9 +259,10 @@ fun SelectedBookMarkScreen(navController: NavController) {
             }) {
                 when (selectedData.name) {
                     "APOD" -> {
-                        LazyVerticalGrid(
+                        selectedBookMarkScreenVM.selectedDataType.value = SavedDataType.APOD
+                        LazyVerticalStaggeredGrid(
                             modifier = Modifier.padding(it),
-                            columns = GridCells.Adaptive(120.dp)
+                            columns = StaggeredGridCells.Adaptive(150.dp)
                         ) {
                             items(apodData) { element ->
                                 Coil_Image().CoilImage(
@@ -252,8 +270,19 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                     contentDescription = "",
                                     modifier = Modifier
                                         .padding(1.dp)
-                                        .height(120.dp)
                                         .clickable {
+                                            selectedBookMarkScreenVM.apodBtmSheetData.apodURL.value =
+                                                element.imageURL
+                                            selectedBookMarkScreenVM.apodBtmSheetData.apodDate.value =
+                                                element.datePublished
+                                            selectedBookMarkScreenVM.apodBtmSheetData.apodHDURL.value =
+                                                element.hdImageURL
+                                            selectedBookMarkScreenVM.apodBtmSheetData.apodDescription.value =
+                                                element.description
+                                            selectedBookMarkScreenVM.apodBtmSheetData.apodMediaType.value =
+                                                element.mediaType
+                                            selectedBookMarkScreenVM.apodBtmSheetData.apodTitle.value =
+                                                element.title
                                             coroutineScope.launch {
                                                 modalBottomSheetState.show()
                                             }
@@ -265,7 +294,9 @@ fun SelectedBookMarkScreen(navController: NavController) {
                         }
 
                     }
+
                     "News" -> {
+                        selectedBookMarkScreenVM.selectedDataType.value = SavedDataType.NEWS
                         LazyColumn(
                             contentPadding = it,
                             modifier = Modifier
@@ -276,16 +307,18 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                 bookMarkedData = newsData,
                                 bottomSheetState = modalBottomSheetState,
                                 coroutineScope = coroutineScope,
-                                newsBottomSheetContentImpl = newsBottomSheetContentImpl,
+                                newsBottomSheetContentImpl = NewsVM.newsBottomSheetContentImpl.value,
                                 navController = navController,
                                 bookMarksVM = bookMarksVM
                             )
                         }
                     }
+
                     "Rovers" -> {
-                        LazyVerticalGrid(
+                        selectedBookMarkScreenVM.selectedDataType.value = SavedDataType.ROVERS
+                        LazyVerticalStaggeredGrid(
                             modifier = Modifier.padding(it),
-                            columns = GridCells.Adaptive(120.dp)
+                            columns = StaggeredGridCells.Adaptive(150.dp)
                         ) {
                             items(roversData) { element ->
                                 Coil_Image().CoilImage(
@@ -293,7 +326,6 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                     contentDescription = "",
                                     modifier = Modifier
                                         .padding(1.dp)
-                                        .height(120.dp)
                                         .clickable {
                                             roversScreenVM.imgURL.value = element.imageURL
                                             roversScreenVM.cameraName.value = element.capturedBy
@@ -314,10 +346,11 @@ fun SelectedBookMarkScreen(navController: NavController) {
                             }
                         }
                     }
+
                     else -> {
-                        LazyVerticalGrid(
+                        LazyVerticalStaggeredGrid(
                             modifier = Modifier.padding(it),
-                            columns = GridCells.Adaptive(120.dp)
+                            columns = StaggeredGridCells.Adaptive(150.dp)
                         ) {
                             itemsIndexed(selectedData.data) { index, element ->
                                 val imgURL: String =
@@ -331,18 +364,85 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                             element.data as MarsRoversDBDTO
                                             element.data.imageURL
                                         }
+
                                         SavedDataType.NEWS -> {
                                             element.data as NewsDB
                                             element.data.imageURL
                                         }
+
                                         else -> {
                                             ""
                                         }
                                     }
                                 Coil_Image().CoilImage(
+                                    modifier = Modifier.clickable {
+                                        when (element.dataType) {
+                                            SavedDataType.APOD -> {
+                                                selectedBookMarkScreenVM.selectedDataType.value =
+                                                    SavedDataType.APOD
+                                                element.data as APOD_DB_DTO
+                                                selectedBookMarkScreenVM.apodBtmSheetData.apodURL.value =
+                                                    element.data.imageURL
+                                                selectedBookMarkScreenVM.apodBtmSheetData.apodTitle.value =
+                                                    element.data.title
+                                                selectedBookMarkScreenVM.apodBtmSheetData.apodDate.value =
+                                                    element.data.datePublished
+                                                selectedBookMarkScreenVM.apodBtmSheetData.apodDescription.value =
+                                                    element.data.description
+                                                selectedBookMarkScreenVM.apodBtmSheetData.apodHDURL.value =
+                                                    element.data.hdImageURL
+                                                coroutineScope.launch {
+                                                    modalBottomSheetState.show()
+                                                }
+                                            }
+
+                                            SavedDataType.NEWS -> {
+                                                selectedBookMarkScreenVM.selectedDataType.value =
+                                                    SavedDataType.NEWS
+                                                element.data as NewsDB
+                                                NewsVM.newsBottomSheetContentImpl.value.imageURL.value =
+                                                    element.data.imageURL
+                                                NewsVM.newsBottomSheetContentImpl.value.sourceURL.value =
+                                                    element.data.sourceURL
+                                                NewsVM.newsBottomSheetContentImpl.value.publishedTime.value =
+                                                    element.data.publishedTime
+                                                NewsVM.newsBottomSheetContentImpl.value.title.value =
+                                                    element.data.title
+                                                NewsVM.newsBottomSheetContentImpl.value.sourceName.value =
+                                                    element.data.sourceOfNews
+
+                                                coroutineScope.launch {
+                                                    modalBottomSheetState.show()
+                                                }
+                                            }
+
+                                            SavedDataType.ROVERS -> {
+                                                selectedBookMarkScreenVM.selectedDataType.value =
+                                                    SavedDataType.ROVERS
+                                                element.data as MarsRoversDBDTO
+                                                roversScreenVM.imgURL.value = element.data.imageURL
+                                                roversScreenVM.cameraName.value =
+                                                    element.data.capturedBy
+                                                roversScreenVM.sol.value = element.data.sol
+                                                roversScreenVM.earthDate.value =
+                                                    element.data.earthDate
+                                                roversScreenVM.roverName.value =
+                                                    element.data.roverName
+                                                roversScreenVM.roverStatus.value =
+                                                    element.data.roverStatus
+                                                roversScreenVM.launchingDate.value =
+                                                    element.data.launchingDate
+                                                roversScreenVM.landingDate.value =
+                                                    element.data.landingDate
+                                            }
+
+                                            else -> {
+
+                                            }
+                                        }
+                                    },
                                     imgURL = imgURL,
                                     contentDescription = "",
-                                    modifier = Modifier.height(135.dp),
                                     onError = painterResource(id = R.drawable.baseline_image_24),
                                     contentScale = ContentScale.Crop
                                 )
@@ -360,7 +460,7 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                 triggerHapticFeedback(context = context)
                                 coroutineScope.launch {
                                     didDataGetAddedInDB =
-                                        bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL)
+                                        bookMarksVM.deleteDataFromAPODDB(imageURL = selectedBookMarkScreenVM.apodBtmSheetData.apodURL.value)
                                 }.invokeOnCompletion {
                                     if (didDataGetAddedInDB) {
                                         Toast.makeText(
@@ -377,16 +477,24 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                         )
                                             .show()
                                     }
-                                    bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
+                                    bookMarksVM.doesThisExistsInAPODIconTxt(selectedBookMarkScreenVM.apodBtmSheetData.apodURL.value)
                                 }
                                 HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
                                     false
                                 HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                                     false
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }.invokeOnCompletion {
+                                    if (apodData.isEmpty()) {
+                                        navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN)
+                                    }
+                                }
                             }
                         )
                     }
                 }
+
                 "News" -> {
                     var doesExistsInDB = false
                     if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
@@ -396,10 +504,10 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                 triggerHapticFeedback(context = context)
                                 coroutineScope.launch {
                                     doesExistsInDB =
-                                        bookMarksVM.deleteDataFromNewsDB(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                                        bookMarksVM.deleteDataFromNewsDB(sourceURL = newsBottomSheetContentImpl.sourceURL.value)
                                     modalBottomSheetState.hide()
                                 }.invokeOnCompletion {
-                                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL.value)
                                     if (doesExistsInDB) {
                                         Toast.makeText(
                                             context,
@@ -408,7 +516,7 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                         )
                                             .show()
                                     } else {
-                                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                                        bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL.value)
                                         Toast.makeText(
                                             context,
                                             "Removed from bookmarks:)",
@@ -416,16 +524,20 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                         )
                                             .show()
                                     }
-                                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL)
+                                    bookMarksVM.doesThisExistsInNewsDBIconTxt(sourceURL = newsBottomSheetContentImpl.sourceURL.value)
                                 }
                                 HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
                                     false
                                 HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
                                     false
+                                if (newsData.value.isEmpty()) {
+                                    navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN)
+                                }
                             }
                         )
                     }
                 }
+
                 "Rovers" -> {
                     var doesExistsInDB = false
                     if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
@@ -452,6 +564,13 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                         ).show()
                                     }
                                     bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
+                                    coroutineScope.launch {
+                                        modalBottomSheetState.hide()
+                                    }.invokeOnCompletion {
+                                        if (roversData.isEmpty()) {
+                                            navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN)
+                                        }
+                                    }
                                 }
                                 bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
                                 HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
