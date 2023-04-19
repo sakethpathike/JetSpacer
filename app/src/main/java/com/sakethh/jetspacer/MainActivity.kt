@@ -26,22 +26,20 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.localDB.APIKeysDB
-import com.sakethh.jetspacer.localDB.BookMarkScreenGridNames
 import com.sakethh.jetspacer.localDB.DBImplementation
-import com.sakethh.jetspacer.localDB.SavedDataType
 import com.sakethh.jetspacer.navigation.BottomNavigationComposable
 import com.sakethh.jetspacer.navigation.MainNavigation
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.settings.readInAppBrowserSetting
+import com.sakethh.jetspacer.screens.settings.readThemesSetting
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.count
-import kotlinx.coroutines.flow.first
 
 
-lateinit var currentDestination:String
+lateinit var currentDestination: String
+
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(
@@ -52,9 +50,11 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val dataStore = createDataStore("settingsPreferences")
-        lifecycleScope.launchWhenCreated {
-            readInAppBrowserSetting(dataStore)
+        val dataStore = createDataStore("jetSpacerDataStore")
+        lifecycleScope.launch {
+            awaitAll(
+                async { readInAppBrowserSetting(dataStore) },
+                async { readThemesSetting(dataStore) })
         }
         GlobalScope.launch {
             HomeScreenViewModel.Network.isConnectedToInternet()
@@ -139,7 +139,8 @@ class MainActivity : ComponentActivity() {
                                 }
                             }) {
                             MainNavigation(
-                                navController = navController, dataStore = dataStore
+                                navController = navController,
+                                dataStore = dataStore
                             )
                         }
 

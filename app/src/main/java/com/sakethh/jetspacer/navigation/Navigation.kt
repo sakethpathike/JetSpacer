@@ -1,7 +1,6 @@
 package com.sakethh.jetspacer.navigation
 
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.datastore.DataStore
 import androidx.datastore.preferences.Preferences
@@ -20,7 +19,7 @@ import com.sakethh.jetspacer.screens.webview.WebViewScreen
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MainNavigation(navController: NavHostController,dataStore: DataStore<Preferences>) {
+fun MainNavigation(navController: NavHostController, dataStore: DataStore<Preferences>) {
     NavHost(navController = navController, startDestination = NavigationRoutes.HOME_SCREEN) {
         composable(route = NavigationRoutes.HOME_SCREEN) {
             HomeScreen(navController = navController)
@@ -41,7 +40,7 @@ fun MainNavigation(navController: NavHostController,dataStore: DataStore<Prefere
             NewsScreen(navController = navController)
         }
         composable(route = NavigationRoutes.SETTINGS_SCREEN){
-            SettingsScreen(navController = navController, dataStore = dataStore)
+            SettingsScreen(navController = navController,  dataStore = dataStore)
         }
         composable(route = NavigationRoutes.WEB_VIEW_SCREEN){
             WebViewScreen(navController = navController)

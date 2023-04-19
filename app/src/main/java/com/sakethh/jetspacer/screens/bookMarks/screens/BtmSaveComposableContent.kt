@@ -7,12 +7,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetState
@@ -20,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,7 +38,6 @@ import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -52,7 +46,7 @@ import kotlinx.coroutines.launch
 fun BtmSaveComposableContent(
     coroutineScope: CoroutineScope,
     modalBottomSheetState: ModalBottomSheetState,
-    data: CustomBookMarkData,
+    data: CustomBookMarkData
 ) {
     val bookMarksVM: BookMarksVM = viewModel()
     val btmScreenData = bookMarksVM.localDB.getCustomBookMarkTopicData()
@@ -180,11 +174,8 @@ fun BtmSaveComposableContent(
                                                 coroutineScope
                                                     .launch {
                                                         bookMarksVM.localDB.addDataInAnExistingBookmarkTopic(
-                                                            bookMarkScreenGridNames = BookMarkScreenGridNames(
-                                                                name = btmScreenData[BtmSaveComposableContent.indexedValue].name,
-                                                                imgUrlForGrid = imgURL,
-                                                                data = listOf(data)
-                                                            )
+                                                            tableName = element.name,
+                                                            newData = data
                                                         )
                                                     }
                                                     .invokeOnCompletion {

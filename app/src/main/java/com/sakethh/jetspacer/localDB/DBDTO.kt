@@ -74,6 +74,7 @@ data class MarsRoversDBDTO(
 @Serializable
 data class CustomBookMarkData(val dataType: SavedDataType,val data:BookMarkType)
 @Entity(tableName = "bookMarkScreen_GridNames")
+@TypeConverters(BookMarkDataConverterForListOfCustomBookMarks::class,BookMarkDataConverterForCustomBookMarks::class)
 @Serializable
 data class BookMarkScreenGridNames( // for custom bookmark topic
     @PrimaryKey
@@ -82,7 +83,7 @@ data class BookMarkScreenGridNames( // for custom bookmark topic
     @ColumnInfo(name = "imgUrlForGrid")
     var imgUrlForGrid: String,
     @ColumnInfo(name = "data")
-    @TypeConverters(BookMarkDataConverterForCustomBookMarks::class)
+    @TypeConverters(BookMarkDataConverterForListOfCustomBookMarks::class)
     var data: List<CustomBookMarkData>
 )
 @Serializable

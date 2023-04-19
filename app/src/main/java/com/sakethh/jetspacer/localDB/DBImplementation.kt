@@ -15,6 +15,7 @@ import kotlinx.serialization.json.Json
     exportSchema = true
 )
 @TypeConverters(
+    BookMarkDataConverterForListOfCustomBookMarks::class,
     BookMarkDataConverterForCustomBookMarks::class
 )
 abstract class DBImplementation : RoomDatabase() {
@@ -56,7 +57,7 @@ abstract class DBImplementation : RoomDatabase() {
     }
 }
 
-class BookMarkDataConverterForCustomBookMarks {
+class BookMarkDataConverterForListOfCustomBookMarks {
     private val json = Json { encodeDefaults = true }
 
     @TypeConverter
@@ -66,6 +67,19 @@ class BookMarkDataConverterForCustomBookMarks {
 
     @TypeConverter
     fun convertToList(value: String): List<CustomBookMarkData> {
+        return json.decodeFromString(value)
+    }
+}
+class BookMarkDataConverterForCustomBookMarks {
+    private val json = Json { encodeDefaults = true }
+
+    @TypeConverter
+    fun convertToString(value: CustomBookMarkData): String {
+        return json.encodeToString(value)
+    }
+
+    @TypeConverter
+    fun convertToList(value: String): CustomBookMarkData {
         return json.decodeFromString(value)
     }
 }

@@ -200,7 +200,29 @@ fun SolTextField(
                     keyboardType = if(!inSettingsScreen)KeyboardType.Number else KeyboardType.Ascii,
                     imeAction = if(!inSettingsScreen) ImeAction.Search else ImeAction.Done
                 ),
-                keyboardActions = KeyboardActions(onSearch = {
+                keyboardActions = KeyboardActions(onDone = {
+                    isEditedIconClicked.value = false
+                    randomCuriosityCameraVM.currentPage.value = 1
+                    if (solValue.value == "") {
+                        if (!inSettingsScreen) {
+                            Toast.makeText(
+                                context,
+                                "Value of sol cannot be empty",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "API Key cannot be empty",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } else {
+                        isEditedIconClicked.value = false
+                        randomCuriosityCameraVM.currentPage.value = 1
+                        onContinueClick()
+                    }
+                },onSearch = {
                     isEditedIconClicked.value = false
                     randomCuriosityCameraVM.currentPage.value = 1
                     if (solValue.value == "") {

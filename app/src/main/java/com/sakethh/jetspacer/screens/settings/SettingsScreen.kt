@@ -6,9 +6,11 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -22,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -46,6 +49,7 @@ import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.news.NewsBottomSheetMutableStateDTO
+import com.sakethh.jetspacer.screens.settings.Settings.selectedTheme
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.SolTextField
 import com.sakethh.jetspacer.screens.webview.WebViewUtils
 import com.sakethh.jetspacer.screens.webview.enableBtmBarInWebView
@@ -60,8 +64,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun SettingsScreen(
-    dataStore: DataStore<Preferences>,
-    navController: NavController,
+    dataStore: DataStore<Preferences>,  navController: NavController,
 ) {
     BackHandler {
         navController.navigate(NavigationRoutes.HOME_SCREEN) {
@@ -75,6 +78,9 @@ fun SettingsScreen(
     val newNewsAPIKey = rememberSaveable { mutableStateOf("") }
     val existingNasaAPIKey = rememberSaveable { mutableStateOf("") }
     val existingNewsAPIKey = rememberSaveable { mutableStateOf("") }
+
+    val themeTypeForThemeDialog = listOf("Follow system theme", "Light", "Dark")
+
     LaunchedEffect(key1 = true) {
         awaitAll(
             async { newNasaAPIKey.value = bookMarksVM.getApiKeys()[0].currentNASAAPIKey },
@@ -84,6 +90,7 @@ fun SettingsScreen(
     }
     var isApiKeyValid = false
     val isVerifyingNewApiKeyDialogActive = rememberSaveable { mutableStateOf(false) }
+    val isThemeChangeDialogEnabled = rememberSaveable { mutableStateOf(false) }
     AppTheme {
         LazyColumn(
             modifier = Modifier
@@ -168,6 +175,47 @@ fun SettingsScreen(
                     }
                 }
             }
+
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(top = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Box(
+                        modifier = Modifier.requiredHeight(45.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Theme",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(start = 15.dp, top =0.dp)
+                        )
+                    }
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier
+                        .clickable {
+                            isThemeChangeDialogEnabled.value = true
+                        }
+                        .wrapContentSize()) {
+                        Button(onClick = {
+                          isThemeChangeDialogEnabled.value=!isThemeChangeDialogEnabled.value
+                        }, modifier = Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .padding(end = 15.dp), colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+                            Text(
+                                text = "Change theme",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontSize = 15.sp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
+                }
+            }
             item {
                 DividerComposable()
             }
@@ -182,7 +230,7 @@ fun SettingsScreen(
             }
             item {
                 Text(
-                    text = "\"JetSpacer\" is fueled by a bunch of APIs, two of which are NASA's open API and NewsApi.org's API, which are necessary in order to run this app without any destruction. This project uses free tier API access to both of the APIs, which can be exhausted at any time. It is recommended to grab your own or existing API key(s) for both of the APIs in order to avoid any destruction while using this app!\n",
+                    text = "\"JetSpacer\" is fueled by a bunch of APIs, two of which are NASA's open API and NewsApi.org's API, which are necessary in order to run this app without any destruction.\n\nThis project uses free tier API access to both of the APIs, which can be exhausted at any time. It is recommended to grab your own or existing API key(s) for both of the APIs in order to avoid any destruction while using this app!\n",
                     style = MaterialTheme.typography.headlineMedium,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onPrimary,
@@ -246,47 +294,58 @@ fun SettingsScreen(
                 DividerComposable()
             }
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "API Keys",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontSize = 24.sp,
+                        text = "Your API key(s) will be stored in your device itself:)\n\nPsst: JetSpacer will verify if your entered api key is valid or not; to avoid further destruction, your welcome.",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.titlePadding()
+                        modifier = Modifier.titlePadding(),
+                        lineHeight = 20.sp
                     )
-                    Text(
-                        text = "Reset API Keys",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontSize = 17.sp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .titlePadding()
-                            .background(MaterialTheme.colorScheme.primary)
-                            .clickable {
-                                coroutineScope
-                                    .launch {
-                                        BookMarksVM.dbImplementation
-                                            .localDBData()
-                                            .addAPIKeys(apiKeysDB = APIKeysDB().apply {
-                                                this.currentNASAAPIKey = Constants.NASA_APIKEY
-                                                this.currentNewsAPIKey = Constants.NEWS_API_API_KEY
-                                                this.id = "apiKey"
-                                            })
-                                    }
-                                    .invokeOnCompletion {
-                                        Toast
-                                            .makeText(
-                                                context,
-                                                "Changed API Keys to default , this may break app purpose at any time:(",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                            .show()
-                                    }
-                            }
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "API Keys",
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontSize = 24.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.titlePadding()
+                        )
+                        Button(onClick = {
+                            coroutineScope
+                                .launch {
+                                    BookMarksVM.dbImplementation
+                                        .localDBData()
+                                        .addAPIKeys(apiKeysDB = APIKeysDB().apply {
+                                            this.currentNASAAPIKey = Constants.NASA_APIKEY
+                                            this.currentNewsAPIKey =
+                                                Constants.NEWS_API_API_KEY
+                                            this.id = "apiKey"
+                                        })
+                                }
+                                .invokeOnCompletion {
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            "Changed API Keys to default , this may break app purpose at any time:(",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                        .show()
+                                }
+                        }, modifier = Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .padding(top = 12.dp, end = 15.dp), colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+                            Text(
+                                text = "Reset API Keys",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontSize = 15.sp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
                 }
 
             }
@@ -302,7 +361,7 @@ fun SettingsScreen(
                         ),
                         onClick = {}),
                     title = "NASA API-KEY",
-                    description = "Enter the API key in the text box below; this key will be used to access NASA's API. Your key is stored on the local device itself:)\nPsst: JetSpacer will verify if your entered api key is valid or not to avoid further destruction, your welcome."
+                    description = "Enter the API key in the text box below; this key will be used to access NASA's API."
                 )
             }
             item {
@@ -382,7 +441,7 @@ fun SettingsScreen(
                         ),
                         onClick = {}),
                     title = "NEWS API-KEY",
-                    description = "Enter the API key in the text box below; this key will be used to access NewsApi.org's API. Your key is stored on the local device itself:)\nPsst: JetSpacer will verify if your entered api key is valid or not to avoid further destruction, your welcome."
+                    description = "Enter the API key in the text box below; this key will be used to access NewsApi.org's API."
                 )
             }
             item {
@@ -643,7 +702,67 @@ fun SettingsScreen(
                         )
                     }
                 })
+        }
 
+        if (isThemeChangeDialogEnabled.value) {
+            androidx.compose.material3.AlertDialog(modifier = Modifier
+                .clip(RoundedCornerShape(5.dp))
+                .border(
+                    width = 0.5.dp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    shape = RoundedCornerShape(5.dp)
+                )
+                .background(MaterialTheme.colorScheme.primary)
+                .fillMaxWidth(),
+                properties = DialogProperties(
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = true
+                ),
+                onDismissRequest = { isThemeChangeDialogEnabled.value = !isThemeChangeDialogEnabled.value }) {
+                Column {
+                Text(
+                    text = "Select theme:",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(20.dp),
+                    style = MaterialTheme.typography.headlineLarge
+                )
+                themeTypeForThemeDialog.forEach {
+                    Row(
+                        modifier = Modifier
+                            .clickable {
+                                coroutineScope.launch {
+                                    changeThemesValue(
+                                        dataStore = dataStore,
+                                        currentTheme = it
+                                    )
+                                    readThemesSetting(dataStore = dataStore)
+                                }
+                                isThemeChangeDialogEnabled.value=false
+                            }
+                            .fillMaxWidth()
+                    ) {
+                        RadioButton(
+                            selected = selectedTheme.value == it,
+                            onClick = { selectedTheme.value = it },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = MaterialTheme.colorScheme.onSurface,
+                                unselectedColor = MaterialTheme.colorScheme.onPrimary
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = it,
+                            color = if (selectedTheme.value == it) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(top=15.dp),
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                    }
+                }
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+            }
         }
     }
 }
@@ -667,7 +786,7 @@ fun DividerComposable() {
 
 suspend fun changeInAppBrowserSetting(
     settingsPreferenceKey: Preferences.Key<Boolean> = preferencesKey(
-        "settingsPreferences"
+        "inAppBrowserChoice"
     ),
     dataStore: DataStore<Preferences>, isInAppBrowsing: Boolean,
 ) {
@@ -675,11 +794,21 @@ suspend fun changeInAppBrowserSetting(
         it[settingsPreferenceKey] = isInAppBrowsing
     }
 }
+suspend fun changeThemesValue(
+    themePreferenceKey: Preferences.Key<String> = preferencesKey(
+        "themePreferenceKey"
+    ),
+    dataStore: DataStore<Preferences>, currentTheme: String,
+) {
+    dataStore.edit {
+        it[themePreferenceKey] = currentTheme
+    }
+}
 
 suspend fun readInAppBrowserSetting(
     dataStore: DataStore<Preferences>,
     settingsPreferenceKey: Preferences.Key<Boolean> = preferencesKey(
-        "settingsPreferences"
+        "inAppBrowserChoice"
     ),
 ) {
     val preference = dataStore.data.first()[settingsPreferenceKey]
@@ -687,9 +816,21 @@ suspend fun readInAppBrowserSetting(
         Settings.inAppBrowserSetting.value = preference
     }
 }
+suspend fun readThemesSetting(
+    dataStore: DataStore<Preferences>,
+    themePreferenceKey: Preferences.Key<String> = preferencesKey(
+        "themePreferenceKey"
+    ),
+) {
+    val preference = dataStore.data.first()[themePreferenceKey]
+    if (preference != null) {
+        Settings.selectedTheme.value = preference
+    }
+}
 
 object Settings {
     val inAppBrowserSetting = mutableStateOf(true)
+    val selectedTheme = mutableStateOf("Follow system theme")
 }
 
 fun Modifier.redirectToWeb(
