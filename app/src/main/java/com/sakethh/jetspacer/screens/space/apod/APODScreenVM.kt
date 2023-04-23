@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
@@ -20,6 +21,8 @@ class APODScreenVM(private val apodPaginationFetching: APODPaginationFetching = 
     val _dataForAPODPagination = mutableStateOf<List<APOD_DTO>>(emptyList())
     val dataForPagination = mutableStateOf<List<APOD_DTO>>(emptyList())
     val isDataForAPODPaginationLoaded = mutableStateOf(false)
+
+    val currentBtmSheetType= mutableStateOf(HomeScreenViewModel.BtmSheetType.Details)
 
     init {
         viewModelScope.launch(Dispatchers.IO) {

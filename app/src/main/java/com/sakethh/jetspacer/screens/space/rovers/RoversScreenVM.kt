@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.CuriosityRoverScreen
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasScreen
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasVM
@@ -46,6 +47,7 @@ class RoversScreenVM : ViewModel() {
             composable = { CuriosityCamerasScreen(cameraName = CuriosityCamerasVM.CuriosityCameras.NAVCAM) }),
     )
 
+    val currentBtmSheetType= mutableStateOf(HomeScreenViewModel.BtmSheetType.Details)
 
     val imgURL = mutableStateOf("")
     val capturedOn = mutableStateOf("")

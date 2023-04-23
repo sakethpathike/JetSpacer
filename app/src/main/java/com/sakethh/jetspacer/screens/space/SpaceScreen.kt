@@ -126,6 +126,21 @@ fun SpaceScreen(navController: NavController) {
                                     bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
                                 }
                             },
+                            onBookMarkLongPress = {
+                                coroutineScope.launch {
+                                    if (bottomSheetState.isVisible) {
+                                        bottomSheetState.hide()
+                                        spaceScreenVM.btmSheetType.value =
+                                            HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                    }
+                                }.invokeOnCompletion {
+                                    spaceScreenVM.btmSheetType.value =
+                                        HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                    coroutineScope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                }
+                            },
                             imageHDURL = apodData.value.hdurl.toString()
                         )
                     }
@@ -227,6 +242,8 @@ fun SpaceScreen(navController: NavController) {
                             apodDate = apodData.value.date.toString(),
                             apodDescription = apodData.value.explanation.toString(),
                             imageOnClick = {
+                                spaceScreenVM.btmSheetType.value =
+                                    HomeScreenViewModel.BtmSheetType.Details
                                 coroutineScope.launch {
                                     bottomSheetState.show()
                                 }.invokeOnCompletion {
@@ -334,7 +351,10 @@ fun SpaceScreen(navController: NavController) {
                             imageHeight = 125.dp
                         )
                     }
-                    item {
+
+
+                    // the following item won't be in v1.1.0, will be re-added in later version with the valid data, the information now being shown isn't same as official
+                   /* item {
                         androidx.compose.material3.Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                             modifier = Modifier
@@ -501,7 +521,7 @@ fun SpaceScreen(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.height(15.dp))
                         }
-                    }
+                    }*/
 
                     item {
                         Spacer(modifier = Modifier.height(75.dp))

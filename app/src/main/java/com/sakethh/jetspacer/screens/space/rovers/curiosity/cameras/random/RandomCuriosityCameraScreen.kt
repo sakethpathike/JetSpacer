@@ -87,6 +87,7 @@ fun ModifiedLazyVerticalGrid(
                     modifier = Modifier
                         .padding(1.dp)
                         .clickable {
+                            roversScreenVM.currentBtmSheetType.value = HomeScreenViewModel.BtmSheetType.Details
                             coroutineScope.launch {
                                 roversScreenVM.openRoverBtmSheet(
                                     imgURL = dataItem.img_src,

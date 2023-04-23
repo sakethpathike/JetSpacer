@@ -42,7 +42,7 @@ class SelectedBookMarkScreenVM : ViewModel() {
         mutableStateOf(""),
         mutableStateOf(""),
         mutableStateOf("")
-    ).copy()
+    )
 
     val selectedDataType = mutableStateOf(SavedDataType.APOD)
 
@@ -52,6 +52,24 @@ class SelectedBookMarkScreenVM : ViewModel() {
                 .collect {
                     _selectedBookMarkData.emit(it[selectedBookMarkIndex])
                 }
+        }
+    }
+
+
+    suspend fun renameCollectionName(
+        actualNameOfTheCollection: String,
+        updatedNameOfTheCollection: String,
+    ): Boolean {
+        return if (BookMarksVM.dbImplementation.localDBData()
+                .doesThisTableExistsInCustomBookMarkDB(actualNameOfTheCollection)
+        ) {
+            false
+        } else {
+            BookMarksVM.dbImplementation.localDBData().renameACollectionFromCustomBookMarksDB(
+                actualNameOfTheCollection = actualNameOfTheCollection,
+                updatedNameOfTheCollection = updatedNameOfTheCollection
+            )
+            true
         }
     }
 }

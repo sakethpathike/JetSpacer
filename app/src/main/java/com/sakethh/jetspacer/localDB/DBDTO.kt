@@ -91,19 +91,6 @@ enum class SavedDataType {
     APOD, ROVERS, NEWS, ALL, NONE
 }
 
-data class MarsRoversDB(
-    val imageURL: MutableState<String> = mutableStateOf(""),
-    val capturedBy: MutableState<String> = mutableStateOf(""),
-    val sol: MutableState<String> = mutableStateOf(""),
-    val earthDate: MutableState<String> = mutableStateOf(""),
-    val roverName: MutableState<String> = mutableStateOf(""),
-    val roverStatus: MutableState<String> = mutableStateOf(""),
-    val launchingDate: MutableState<String> = mutableStateOf(""),
-    val landingDate: MutableState<String> = mutableStateOf(""),
-    val category: MutableState<String> = mutableStateOf(""),
-    val addedToLocalDBOn: MutableState<String> = mutableStateOf(""),
-):BookMarkType()
-
 @Entity(tableName = "newsDB")
 @Serializable
 data class NewsDB(

@@ -1,5 +1,9 @@
 package com.sakethh.jetspacer.navigation
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.ExperimentalMaterialApi
@@ -74,9 +78,9 @@ fun BottomNavigationComposable(
 ) {
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
     AppTheme {
-        NavigationBar(
-            modifier = Modifier.height(52.dp),
-            containerColor = MaterialTheme.colorScheme.primary
+        Column{
+            Divider(thickness = 0.5.dp,color=MaterialTheme.colorScheme.onPrimary.copy(0.75f))
+        NavigationBar(containerColor = MaterialTheme.colorScheme.primary, modifier = Modifier.height(55.dp).fillMaxWidth()
         ) {
             bottomNavDataList.forEach {
                 val isSelected = currentDestination.toString() == it.navigationRoute
@@ -113,6 +117,6 @@ fun BottomNavigationComposable(
                     }
                 })
         }
-    }
+    }}
 }
 }

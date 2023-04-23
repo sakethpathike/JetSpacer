@@ -43,8 +43,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
@@ -245,7 +247,6 @@ fun HomeScreen(navController: NavController) {
             }
         )
     bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
-    val apodData = homeScreenViewModel.apodData
     ModalBottomSheetLayout(
         sheetContent = {
             Box(modifier = Modifier.size(1.dp))
@@ -295,21 +296,6 @@ fun HomeScreen(navController: NavController) {
                         },
                         imageHDURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString(),
                         onBookMarkLongPress = {
-                            apodData.imageURL =
-                                homeScreenViewModel.apodDataFromAPI.value.url.toString()
-                            apodData.hdImageURL =
-                                homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-                            apodData.category =
-                                homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
-                            apodData.isBookMarked = true
-                            apodData.datePublished =
-                                homeScreenViewModel.apodDataFromAPI.value.date.toString()
-                            apodData.description =
-                                homeScreenViewModel.apodDataFromAPI.value.explanation.toString()
-                            apodData.title =
-                                homeScreenViewModel.apodDataFromAPI.value.title.toString()
-                            apodData.mediaType =
-                                homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
                             coroutineScope.launch {
                                 bottomSheetState.hide()
                             }.invokeOnCompletion {
@@ -327,7 +313,23 @@ fun HomeScreen(navController: NavController) {
                     BtmSaveComposableContent(
                         coroutineScope = coroutineScope,
                         modalBottomSheetState = bottomSheetState,
-                        data = CustomBookMarkData(dataType = SavedDataType.APOD, data = apodData)
+                        data = CustomBookMarkData(dataType = SavedDataType.APOD, data = APOD_DB_DTO().apply {
+                            this.imageURL =
+                                homeScreenViewModel.apodDataFromAPI.value.url.toString()
+                            this.hdImageURL =
+                                homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
+                            this.category =
+                                homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
+                            this.isBookMarked = true
+                            this.datePublished =
+                                homeScreenViewModel.apodDataFromAPI.value.date.toString()
+                            this.description =
+                                homeScreenViewModel.apodDataFromAPI.value.explanation.toString()
+                            this.title =
+                                homeScreenViewModel.apodDataFromAPI.value.title.toString()
+                            this.mediaType =
+                                homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
+                        })
                     )
                 }
             }
@@ -897,6 +899,8 @@ fun CardForRowGridRaw(
         } else {
             Modifier.padding(top = 4.dp)
         }
+    val height= remember {  mutableStateOf(0.dp) }
+    val density= LocalDensity.current
     AppTheme {
         Card(
             modifier = cardModifier,
@@ -904,8 +908,15 @@ fun CardForRowGridRaw(
         ) {
             Row {
                 Column(
-                    modifier = lhsTextColumnModifier
+                    modifier = Modifier.onGloballyPositioned { 
+                        height.value= with(density){
+                            it.size.height.toDp()
+                        }
+                    }
                 ) {
+                    Column(
+                        modifier = lhsTextColumnModifier
+                    ) {
                     Text(
                         text = title,
                         color = MaterialTheme.colorScheme.onSecondary,
@@ -925,29 +936,17 @@ fun CardForRowGridRaw(
                         textAlign = TextAlign.Start, modifier = textModifier
                     )
                 }
+                }
                 if (inSpaceScreen) {
-                    Box(
-                        Modifier.background(
-                            brush = Brush.horizontalGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.secondary.copy(
-                                        0.3f
-                                    ),
-                                    MaterialTheme.colorScheme.secondary.copy(1f)
-                                )
-                            )
-                        )
-                    ) {
                         Coil_Image().CoilImage(
                             imgURL = imgURL,
                             contentDescription = "",
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(imageHeight),
+                                .height(height.value),
                             onError = painterResource(id = R.drawable.satellite_filled),
                             contentScale = ContentScale.Crop
                         )
-                    }
                 }
             }
         }

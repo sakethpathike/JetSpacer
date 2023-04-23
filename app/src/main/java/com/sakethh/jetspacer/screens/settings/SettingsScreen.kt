@@ -597,17 +597,19 @@ fun SettingsScreen(
             item {
                 Row(
                     modifier = Modifier
-                        .padding(20.dp)
+                        .clickable {
+                            Modifier.redirectToWeb(
+                                navController = navController,
+                                newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+                                    sourceURL = mutableStateOf(
+                                        "https://www.flaticon.com/authors/iconfield"
+                                    )
+                                ),
+                                inSettingsScreen = true,
+                                onClick = {})
+                        }.padding(20.dp)
                         .fillMaxWidth()
-                        .redirectToWeb(
-                            navController = navController,
-                            newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
-                                sourceURL = mutableStateOf(
-                                    "https://www.flaticon.com/authors/iconfield"
-                                )
-                            ),
-                            inSettingsScreen = true,
-                            onClick = {})
+
                 ) {
                     Image(
                         modifier = Modifier.size(150.dp),

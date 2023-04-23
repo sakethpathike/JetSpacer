@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,10 +28,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.localDB.CustomBookMarkData
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.localDB.MarsRoversDBDTO
+import com.sakethh.jetspacer.localDB.SavedDataType
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.bookMarks.screens.BtmSaveComposableContent
 import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.triggerHapticFeedback
@@ -74,6 +78,7 @@ fun RoversScreen(navController: NavController) {
         }
     }
     if (roversScreenVM.shouldBtmSheetVisible.value) {
+        bookMarksVM.doesThisExistsInRoverDBIconTxt(roversScreenVM.imgURL.value)
         coroutineScope.launch {
             bottomSheetState.show()
         }
@@ -81,8 +86,8 @@ fun RoversScreen(navController: NavController) {
     if (!bottomSheetState.isVisible) {
         roversScreenVM.shouldBtmSheetVisible.value = false
     }
-    val currentScreenIteration = remember { mutableStateOf(0) }
-    val currentScreenName = remember { mutableStateOf("") }
+    val currentScreenIteration = rememberSaveable{ mutableStateOf(0) }
+    val currentScreenName = rememberSaveable { mutableStateOf("") }
 
     AppTheme {
         CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Rtl) {
@@ -92,84 +97,85 @@ fun RoversScreen(navController: NavController) {
                     CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
                         AppTheme {
                             Column(
-                            Modifier
-                                .fillMaxWidth(0.75f)
-                                .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.surface),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.Start
-                        ) {
-                            Text(
-                                text = "Select\none of the\nRovers",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                style = MaterialTheme.typography.headlineLarge,
-                                fontSize = 40.sp,
-                                modifier = Modifier.padding(start = 15.dp),
-                                maxLines = 3,
-                                lineHeight = 41.sp,
-                                textAlign = TextAlign.Start
-                            )
-                            Divider(
-                                thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(
-                                    start = 25.dp,
-                                    end = 25.dp,
-                                    top = 30.dp,
-                                    bottom = 50.dp
+                                Modifier
+                                    .fillMaxWidth(0.75f)
+                                    .fillMaxHeight()
+                                    .background(MaterialTheme.colorScheme.surface),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.Start
+                            ) {
+                                Text(
+                                    text = "Select\none of the\nRovers",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    fontSize = 40.sp,
+                                    modifier = Modifier.padding(start = 15.dp),
+                                    maxLines = 3,
+                                    lineHeight = 41.sp,
+                                    textAlign = TextAlign.Start
                                 )
-                            )
-                            roversScreenVM.listForDrawerContent.forEachIndexed { index, roversScreen ->
-                                Row(
-                                    modifier = Modifier
-                                        .height(75.dp)
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            coroutineScope.launch {
-                                                navigationDrawerState.close()
+                                Divider(
+                                    thickness = 0.dp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(
+                                        start = 25.dp,
+                                        end = 25.dp,
+                                        top = 30.dp,
+                                        bottom = 50.dp
+                                    )
+                                )
+                                roversScreenVM.listForDrawerContent.forEachIndexed { index, roversScreen ->
+                                    Row(
+                                        modifier = Modifier
+                                            .height(75.dp)
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                coroutineScope.launch {
+                                                    navigationDrawerState.close()
+                                                }
+                                                currentScreenIteration.value = index
                                             }
-                                            currentScreenIteration.value = index
+                                            .wrapContentHeight()
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.CenterStart,
+                                            modifier = Modifier
+                                                .padding(start = 15.dp)
+                                                .height(45.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Camera,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier.padding(end = 10.dp)
+                                            )
                                         }
-                                        .wrapContentHeight()
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.CenterStart,
-                                        modifier = Modifier
-                                            .padding(start = 15.dp)
-                                            .height(45.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Camera,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onSurface,
-                                            modifier = Modifier.padding(end = 10.dp)
-                                        )
-                                    }
-                                    Box(
-                                        contentAlignment = Alignment.CenterStart,
-                                        modifier = Modifier
-                                            .height(45.dp)
-                                    ) {
-                                        Text(
-                                            text = roversScreen.screenName,
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            style = MaterialTheme.typography.headlineLarge,
-                                            fontSize = 26.sp
-                                        )
+                                        Box(
+                                            contentAlignment = Alignment.CenterStart,
+                                            modifier = Modifier
+                                                .height(45.dp)
+                                        ) {
+                                            Text(
+                                                text = roversScreen.screenName,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                style = MaterialTheme.typography.headlineLarge,
+                                                fontSize = 26.sp
+                                            )
+                                        }
                                     }
                                 }
-                            }
-                            Divider(
-                                thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(
-                                    start = 25.dp,
-                                    end = 25.dp,
-                                    top = 50.dp,
-                                    bottom = 15.dp
+                                Divider(
+                                    thickness = 0.dp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(
+                                        start = 25.dp,
+                                        end = 25.dp,
+                                        top = 50.dp,
+                                        bottom = 15.dp
+                                    )
                                 )
-                            )
-                        }}
+                            }
+                        }
                     }
                 },
                 drawerState = navigationDrawerState
@@ -177,74 +183,121 @@ fun RoversScreen(navController: NavController) {
                 CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
                     ModalBottomSheetLayout(
                         sheetContent = {
-                            bookMarksVM.doesThisExistsInRoverDBIconTxt(roversScreenVM.imgURL.value)
-                            RoverBottomSheetContent(
-                                imgURL = roversScreenVM.imgURL.value,
-                                cameraName = roversScreenVM.cameraName.value,
-                                sol = roversScreenVM.sol.value,
-                                earthDate = roversScreenVM.earthDate.value,
-                                roverName = roversScreenVM.roverName.value,
-                                roverStatus = roversScreenVM.roverStatus.value,
-                                launchingDate = roversScreenVM.launchingDate.value,
-                                landingDate = roversScreenVM.landingDate.value,
-                                onBookMarkButtonClick = {
-                                    triggerHapticFeedback(context = context)
-                                    bookMarksVM.imgURL = roversScreenVM.imgURL.value
-                                    val marsRoverData = MarsRoversDBDTO().apply {
-                                        this.imageURL = roversScreenVM.imgURL.value
-                                        this.capturedBy = roversScreenVM.cameraName.value
-                                        this.sol = roversScreenVM.sol.value
-                                        this.earthDate = roversScreenVM.earthDate.value
-                                        this.roverName = roversScreenVM.roverName.value
-                                        this.roverStatus = roversScreenVM.roverStatus.value
-                                        this.launchingDate = roversScreenVM.launchingDate.value
-                                        this.landingDate = roversScreenVM.landingDate.value
-                                        this.isBookMarked = true
-                                        this.category = "Rover"
-                                        this.addedToLocalDBOn = currentDate
-                                    }
-                                    coroutineScope.launch {
-                                        didDataGetAddedInDB =
-                                            bookMarksVM.addDataToMarsDB(marsRoversDBDTO = marsRoverData)
-                                    }.invokeOnCompletion {
-                                        if (didDataGetAddedInDB) {
-                                            Toast.makeText(
-                                                context,
-                                                "Added to bookmarks:)",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                                .show()
-                                        } else {
-                                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
+                            when (roversScreenVM.currentBtmSheetType.value) {
+                                HomeScreenViewModel.BtmSheetType.Details -> {
+                                    RoverBottomSheetContent(
+                                        imgURL = roversScreenVM.imgURL.value,
+                                        cameraName = roversScreenVM.cameraName.value,
+                                        sol = roversScreenVM.sol.value,
+                                        earthDate = roversScreenVM.earthDate.value,
+                                        roverName = roversScreenVM.roverName.value,
+                                        roverStatus = roversScreenVM.roverStatus.value,
+                                        launchingDate = roversScreenVM.launchingDate.value,
+                                        landingDate = roversScreenVM.landingDate.value,
+                                        onBookMarkButtonLongPress = {
+                                            coroutineScope.launch {
+                                                if (bottomSheetState.isVisible) {
+                                                    bottomSheetState.hide()
+                                                }
+                                            }.invokeOnCompletion {
+                                                roversScreenVM.currentBtmSheetType.value =
+                                                    HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                                coroutineScope.launch {
+                                                    bottomSheetState.show()
+                                                }
+                                            }
+                                        },
+                                        onBookMarkButtonClick = {
+                                            triggerHapticFeedback(context = context)
+                                            bookMarksVM.imgURL = roversScreenVM.imgURL.value
+                                            val marsRoverData = MarsRoversDBDTO().apply {
+                                                this.imageURL = roversScreenVM.imgURL.value
+                                                this.capturedBy = roversScreenVM.cameraName.value
+                                                this.sol = roversScreenVM.sol.value
+                                                this.earthDate = roversScreenVM.earthDate.value
+                                                this.roverName = roversScreenVM.roverName.value
+                                                this.roverStatus = roversScreenVM.roverStatus.value
+                                                this.launchingDate =
+                                                    roversScreenVM.launchingDate.value
+                                                this.landingDate = roversScreenVM.landingDate.value
+                                                this.isBookMarked = true
+                                                this.category = "Rover"
+                                                this.addedToLocalDBOn = currentDate
+                                            }
+                                            coroutineScope.launch {
+                                                didDataGetAddedInDB =
+                                                    bookMarksVM.addDataToMarsDB(marsRoversDBDTO = marsRoverData)
+                                            }.invokeOnCompletion {
+                                                if (didDataGetAddedInDB) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Added to bookmarks:)",
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                        .show()
+                                                } else {
+                                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                                        true
+                                                }
+                                                bookMarksVM.doesThisExistsInRoverDBIconTxt(
+                                                    bookMarksVM.imgURL
+                                                )
+                                            }
+                                            bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
+                                        },
+                                        onConfirmBookMarkDeletionButtonClick = {
+                                            coroutineScope.launch {
+                                                didDataGetAddedInDB =
+                                                    bookMarksVM.deleteDataFromMARSDB(bookMarksVM.imgURL)
+                                            }.invokeOnCompletion {
+                                                if (didDataGetAddedInDB) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Bookmark didn't got removed as expected, report it:(",
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                        .show()
+                                                } else {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Removed from bookmarks:)",
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                        .show()
+                                                }
+                                                bookMarksVM.doesThisExistsInRoverDBIconTxt(
+                                                    bookMarksVM.imgURL
+                                                )
+                                            }
                                         }
-                                        bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
-                                    }
-                                    bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
-                                },
-                                onConfirmBookMarkDeletionButtonClick = {
-                                    coroutineScope.launch {
-                                        didDataGetAddedInDB= bookMarksVM.deleteDataFromMARSDB(bookMarksVM.imgURL)
-                                    }.invokeOnCompletion {
-                                        if (didDataGetAddedInDB) {
-                                            Toast.makeText(
-                                                context,
-                                                "Bookmark didn't got removed as expected, report it:(",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                                .show()
-                                        } else {
-                                            Toast.makeText(
-                                                context,
-                                                "Removed from bookmarks:)",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                                .show()
-                                        }
-                                        bookMarksVM.doesThisExistsInRoverDBIconTxt(bookMarksVM.imgURL)
-                                    }
+
+                                    )
                                 }
 
-                            )
+                                HomeScreenViewModel.BtmSheetType.BookMarkCollection -> {
+                                    BtmSaveComposableContent(
+                                        coroutineScope = coroutineScope,
+                                        modalBottomSheetState = bottomSheetState,
+                                        data = CustomBookMarkData(
+                                            dataType = SavedDataType.ROVERS,
+                                            data = MarsRoversDBDTO().apply {
+                                                this.imageURL = roversScreenVM.imgURL.value
+                                                this.capturedBy = roversScreenVM.cameraName.value
+                                                this.sol = roversScreenVM.sol.value
+                                                this.earthDate = roversScreenVM.earthDate.value
+                                                this.roverName = roversScreenVM.roverName.value
+                                                this.roverStatus = roversScreenVM.roverStatus.value
+                                                this.launchingDate =
+                                                    roversScreenVM.launchingDate.value
+                                                this.landingDate = roversScreenVM.landingDate.value
+                                                this.isBookMarked = true
+                                                this.category = "Rover"
+                                                this.addedToLocalDBOn = currentDate
+                                            }
+                                        )
+                                    )
+                                }
+                            }
                         },
                         sheetState = bottomSheetState,
                         sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),

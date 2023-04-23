@@ -83,15 +83,19 @@ fun BookMarksScreen(navController: NavController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     AppTheme {
         Scaffold(modifier = Modifier.background(MaterialTheme.colorScheme.surface), topBar = {
-            TopAppBar(scrollBehavior = scrollBehavior, title = {
-                Text(
-                    text = "Bookmarks",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 22.sp,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
-                )
-            })
+            Column {
+                TopAppBar(scrollBehavior = scrollBehavior, title = {
+                    Text(
+                        text = "Bookmarks",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 22.sp,
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
+                    )
+                })
+                Divider(thickness = 0.25.dp,color=MaterialTheme.colorScheme.onPrimary.copy(0.5f))
+            }
+
         }) {
             if (bookMarkGridData.isNotEmpty()) {
                 LazyVerticalGrid(
@@ -113,7 +117,7 @@ fun BookMarksScreen(navController: NavController) {
                                     RoundedCornerShape(5.dp)
                                 )
                                 .clickable {
-                                    SelectedBookMarkScreenVM.selectedBookMarkIndex=index.also {
+                                    SelectedBookMarkScreenVM.selectedBookMarkIndex = index.also {
                                         navController.navigate(NavigationRoutes.SELECTED_BOOKMARKS_SCREEN)
                                     }
                                 }
@@ -145,14 +149,20 @@ fun BookMarksScreen(navController: NavController) {
                             )
                         }
                     }
+                    item{
+                        Spacer(modifier = Modifier.height(60.dp))
+                    }
                 }
             } else {
-                Spacer(modifier = Modifier.height(70.dp))
-                StatusScreen(
-                    title = "Nothing here!",
-                    description = "Bookmark the thing you like; you can visit them later from here!",
-                    status = Status.BOOKMARKS_EMPTY
-                )
+                Column {
+                    Spacer(modifier = Modifier.height(170.dp))
+                    StatusScreen(
+                        title = "Nothing here!",
+                        description = "Bookmark the media you like; you can visit them later from here!",
+                        status = Status.BOOKMARKS_EMPTY
+                    )
+                }
+
             }
         }
     }

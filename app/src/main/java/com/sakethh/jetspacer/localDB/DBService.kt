@@ -81,4 +81,18 @@ interface DBService {
 
     @Query("SELECT EXISTS(SELECT * FROM apiKeys WHERE currentNewsAPIKey = :apiKey)")
     suspend fun didThisNewsApiKeyGotUpdated(apiKey: String): Boolean
+
+    @Query("SELECT EXISTS(SELECT 1 FROM bookMarkScreen_GridNames WHERE name = :name)")
+    suspend fun doesThisTableExistsInCustomBookMarkDB(name: String): Boolean
+
+    @Query("DELETE from bookMarkScreen_GridNames WHERE name = :nameOfTheCollection")
+    suspend fun deleteACollectionFromCustomBookMarksDB(nameOfTheCollection:String)
+    @Query("UPDATE bookMarkScreen_GridNames SET name = :updatedNameOfTheCollection WHERE name = :actualNameOfTheCollection")
+    suspend fun renameACollectionFromCustomBookMarksDB(actualNameOfTheCollection:String,updatedNameOfTheCollection:String)
+
+   /* @Query("SELECT COUNT(*) FROM bookMarkScreen_GridNames " +
+            "WHERE name = :name " +
+            "AND json_extract(data, '$[*].data[?(@.dataType == :dataClassName && @.data.imageURL == :imageURL)]') IS NOT NULL")
+    suspend fun doesThisImageExistsInThisRow(name: String, imageURL: String, dataClassName: String): Int*/
+
 }

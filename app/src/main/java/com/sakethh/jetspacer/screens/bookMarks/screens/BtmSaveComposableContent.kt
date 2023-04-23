@@ -52,6 +52,7 @@ fun BtmSaveComposableContent(
     val btmScreenData = bookMarksVM.localDB.getCustomBookMarkTopicData()
         .collectAsState(initial = emptyList()).value
     val isNewCollectionDialogEnabled = remember { mutableStateOf(false) }
+    val btmSaveComposableVM:BtmSaveComposableVM= viewModel()
     val context = LocalContext.current
     var doesElementExistsInDB = false
     val imgURL: String =
@@ -128,74 +129,21 @@ fun BtmSaveComposableContent(
                                 )
                                 .clickable {
                                     BtmSaveComposableContent.indexedValue = index
-                                    coroutineScope
-                                        .launch {
-                                            doesElementExistsInDB = bookMarksVM.localDB
-                                                .getCustomBookMarkTopicData()
-                                                .map { list ->
-                                                    list[BtmSaveComposableContent.indexedValue].data.any { element ->
-                                                        when (data.dataType) {
-                                                            SavedDataType.APOD -> {
-                                                                element.data as APOD_DB_DTO
-                                                                data.data as APOD_DB_DTO
-                                                                element.data.imageURL == data.data.imageURL
-                                                            }
-
-                                                            SavedDataType.ROVERS -> {
-                                                                element.data as MarsRoversDBDTO
-                                                                data.data as MarsRoversDBDTO
-                                                                element.data.imageURL == data.data.imageURL
-                                                            }
-
-                                                            SavedDataType.NEWS -> {
-                                                                element.data as NewsDB
-                                                                data.data as NewsDB
-                                                                element.data.imageURL == data.data.imageURL
-                                                            }
-
-                                                            else -> {
-                                                                false
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                .equals(true)
+                                    coroutineScope.launch {
+                                        doesElementExistsInDB = btmSaveComposableVM.addNewDataInTheExistingTable(nameOfTheTable = element.name, newData =data)
+                                    }.invokeOnCompletion {
+                                        if(doesElementExistsInDB){
+                                            Toast.makeText(context,"Added successfully in the \"${element.name}\" folder",Toast.LENGTH_SHORT).show()
+                                        }else{
+                                            Toast.makeText(context,"This media already exists in the \"${element.name}\" folder",Toast.LENGTH_SHORT).show()
                                         }
-                                        .invokeOnCompletion {
-                                            if (doesElementExistsInDB) {
-                                                Toast
-                                                    .makeText(
-                                                        context,
-                                                        "This already exists in the \"${btmScreenData[BtmSaveComposableContent.indexedValue].name}\" collection:)",
-                                                        Toast.LENGTH_SHORT
-                                                    )
-                                                    .show()
-                                            } else {
-                                                coroutineScope
-                                                    .launch {
-                                                        bookMarksVM.localDB.addDataInAnExistingBookmarkTopic(
-                                                            tableName = element.name,
-                                                            newData = data
-                                                        )
-                                                    }
-                                                    .invokeOnCompletion {
-                                                        Toast
-                                                            .makeText(
-                                                                context,
-                                                                "Added in the \"${btmScreenData[BtmSaveComposableContent.indexedValue].name}\" collection:)",
-                                                                Toast.LENGTH_SHORT
-                                                            )
-                                                            .show()
-                                                    }
-                                            }
-                                        }
+                                    }
                                 }
                                 .border(
                                     BorderStroke(0.dp, MaterialTheme.colorScheme.onSurface),
                                     RoundedCornerShape(5.dp)
                                 )
                                 .background(MaterialTheme.colorScheme.primary)) {
-
                             Coil_Image().CoilImage(
                                 imgURL = element.imgUrlForGrid,
                                 contentDescription = "",
@@ -214,8 +162,9 @@ fun BtmSaveComposableContent(
                                     fontSize = 18.sp,
                                     style = MaterialTheme.typography.headlineMedium,
                                     modifier = Modifier
-                                        .align(Alignment.CenterStart)
-                                        .padding(end = 20.dp),
+                                        .height(75.dp)
+                                        .padding(end=15.dp)
+                                        .align(Alignment.CenterStart),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -309,17 +258,13 @@ fun BtmSaveComposableContent(
                             onClick = {
                                 isNewCollectionDialogEnabled.value = false
                                 coroutineScope.launch {
-                                    bookMarksVM.localDB.getCustomBookMarkTopicData().map { list ->
-                                        doesNameExistsInDb = list.any { element ->
-                                            element.name == collectionName.value
-                                        }
-                                    }
+                                    doesNameExistsInDb = btmSaveComposableVM.doesThisTableExists(collectionName.value.trimStart().trimEnd())
                                 }.invokeOnCompletion {
-                                    if (!doesNameExistsInDb) {
+                                    if (!doesNameExistsInDb && collectionName.value.isNotEmpty()) {
                                         coroutineScope.launch {
                                             bookMarksVM.localDB.addCustomBookMarkTopic(
                                                 BookMarkScreenGridNames(
-                                                    name = collectionName.value,
+                                                    name = collectionName.value.trimStart().trimEnd(),
                                                     imgUrlForGrid = imageURLForGrid,
                                                     data = listOf(data)
                                                 )
@@ -331,10 +276,16 @@ fun BtmSaveComposableContent(
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
-                                    } else {
+                                    } else if (collectionName.value.isEmpty()){
                                         Toast.makeText(
                                             context,
-                                            "Collection with the name \"${collectionName.value}\" already exists, use a different name",
+                                            "Collection name can't be empty:(",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }else {
+                                        Toast.makeText(
+                                            context,
+                                            "Collection with the name \"${collectionName.value.trimStart().trimEnd()}\" already exists, use a different name.",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
@@ -395,3 +346,68 @@ fun BtmSaveComposableContent(
 object BtmSaveComposableContent {
     var indexedValue = 0
 }
+
+
+/*
+* coroutineScope
+                                        .launch {
+                                            doesElementExistsInDB = bookMarksVM.localDB
+                                                .getCustomBookMarkTopicData()
+                                                .map { list ->
+                                                    list[BtmSaveComposableContent.indexedValue].data.any { element ->
+                                                        when (data.dataType) {
+                                                            SavedDataType.APOD -> {
+                                                                element.data as APOD_DB_DTO
+                                                                data.data as APOD_DB_DTO
+                                                                element.data.imageURL == data.data.imageURL
+                                                            }
+
+                                                            SavedDataType.ROVERS -> {
+                                                                element.data as MarsRoversDBDTO
+                                                                data.data as MarsRoversDBDTO
+                                                                element.data.imageURL == data.data.imageURL
+                                                            }
+
+                                                            SavedDataType.NEWS -> {
+                                                                element.data as NewsDB
+                                                                data.data as NewsDB
+                                                                element.data.imageURL == data.data.imageURL
+                                                            }
+
+                                                            else -> {
+                                                                false
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                .equals(true)
+                                        }
+                                        .invokeOnCompletion {
+                                            if (doesElementExistsInDB) {
+                                                Toast
+                                                    .makeText(
+                                                        context,
+                                                        "This already exists in the \"${btmScreenData[BtmSaveComposableContent.indexedValue].name}\" collection:)",
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                    .show()
+                                            } else {
+                                                coroutineScope
+                                                    .launch {
+                                                        bookMarksVM.localDB.addDataInAnExistingBookmarkTopic(
+                                                            tableName = element.name,
+                                                            newData = data
+                                                        )
+                                                    }
+                                                    .invokeOnCompletion {
+                                                        Toast
+                                                            .makeText(
+                                                                context,
+                                                                "Added in the \"${btmScreenData[BtmSaveComposableContent.indexedValue].name}\" collection:)",
+                                                                Toast.LENGTH_SHORT
+                                                            )
+                                                            .show()
+                                                    }
+                                            }
+                                        }
+* */

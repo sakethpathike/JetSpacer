@@ -44,7 +44,6 @@ open class HomeScreenViewModel(
     val issLocationFromAPIFlow = _issLocationFromAPIFlow.asStateFlow()
     val apodDataFromAPI = mutableStateOf(APOD_DTO("", "", "", "", "", "", ""))
 
-    val apodData = APOD_DB_DTO().copy()
     var currentBtmSheetType = mutableStateOf(BtmSheetType.Details)
     enum class BtmSheetType{
         Details, BookMarkCollection

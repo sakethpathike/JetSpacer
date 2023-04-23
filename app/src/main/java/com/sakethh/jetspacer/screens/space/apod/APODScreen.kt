@@ -45,9 +45,12 @@ import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.downloads.DownloadImpl
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
+import com.sakethh.jetspacer.localDB.CustomBookMarkData
+import com.sakethh.jetspacer.localDB.SavedDataType
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
+import com.sakethh.jetspacer.screens.bookMarks.screens.BtmSaveComposableContent
 import com.sakethh.jetspacer.screens.constraintSet
 import com.sakethh.jetspacer.screens.home.*
 import kotlinx.coroutines.*
@@ -59,7 +62,9 @@ import java.util.*
     "SimpleDateFormat"
 )
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalMaterialApi::class
+    ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class,
+    ExperimentalMaterialApi::class
 )
 @Composable
 fun APODScreen(navController: NavController) {
@@ -116,68 +121,108 @@ fun APODScreen(navController: NavController) {
 
         Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
             Scaffold(topBar = {
-                MediumTopAppBar(
-                    scrollBehavior = scrollBehavior,
-                    title = {
-                        Text(
-                            text = "APOD Archive",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 22.sp,
-                            style = MaterialTheme.typography.headlineLarge
+                Column {
+                    MediumTopAppBar(
+                        scrollBehavior = scrollBehavior,
+                        title = {
+                            Text(
+                                text = "APOD Archive",
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 22.sp,
+                                style = MaterialTheme.typography.headlineLarge
+                            )
+                        },
+                        colors = TopAppBarDefaults.mediumTopAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            scrolledContainerColor = MaterialTheme.colorScheme.surface
                         )
-                    },
-                    colors = TopAppBarDefaults.mediumTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surface
                     )
-                )
+                    Divider(thickness = 0.25.dp,color=MaterialTheme.colorScheme.onPrimary.copy(0.5f))
+                }
+
             }) {
                 var didDataGetAddedInDB = false
                 if (apodScreenVM.isDataForAPODPaginationLoaded.value && apodScreenVM.dataForPagination.value.isNotEmpty()) {
                     ModalBottomSheetLayout(
                         sheetContent = {
-                            APODBottomSheetContent(
-                                inCustomBookmarkScreen = true,
-                                homeScreenViewModel = homeScreenVM,
-                                apodURL = apodURL.value,
-                                apodTitle = apodTitle.value,
-                                apodDate = apodDate.value,
-                                apodDescription = apodDescription.value,
-                                apodMediaType = apodMediaType.value,
-                                onBookMarkClick = {
-                                    triggerHapticFeedback(context = context)
-                                    bookMarksVM.imgURL = apodURL.value
-                                    coroutineScope.launch {
-                                        val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                                        val formattedDate = dateFormat.format(Date())
-                                        didDataGetAddedInDB =
-                                            bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                            when (apodScreenVM.currentBtmSheetType.value) {
+                                HomeScreenViewModel.BtmSheetType.Details -> {
+                                    APODBottomSheetContent(
+                                        inCustomBookmarkScreen = true,
+                                        homeScreenViewModel = homeScreenVM,
+                                        apodURL = apodURL.value,
+                                        apodTitle = apodTitle.value,
+                                        apodDate = apodDate.value,
+                                        apodDescription = apodDescription.value,
+                                        apodMediaType = apodMediaType.value,
+                                        onBookMarkClick = {
+                                            triggerHapticFeedback(context = context)
+                                            bookMarksVM.imgURL = apodURL.value
+                                            coroutineScope.launch {
+                                                val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                                                val formattedDate = dateFormat.format(Date())
+                                                didDataGetAddedInDB =
+                                                    bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                                        this.title = apodTitle.value
+                                                        this.datePublished = apodDate.value
+                                                        this.description = apodDescription.value
+                                                        this.imageURL = apodURL.value
+                                                        this.mediaType = "image"
+                                                        this.isBookMarked = true
+                                                        this.category = "APOD"
+                                                        this.addedToLocalDBOn = formattedDate
+                                                        this.hdImageURL = apodHDURL.value
+                                                    })
+                                            }.invokeOnCompletion {
+                                                if (didDataGetAddedInDB) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Added to bookmarks:)",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                } else {
+                                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                                        true
+                                                }
+                                                bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                                            }
+                                        },
+                                        onBookMarkLongPress = {
+                                            coroutineScope.launch {
+                                                if (bottomSheetState.isVisible) {
+                                                    bottomSheetState.hide()
+                                                }
+                                            }.invokeOnCompletion {
+                                                apodScreenVM.currentBtmSheetType.value =
+                                                    HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                                coroutineScope.launch {
+                                                    bottomSheetState.show()
+                                                }
+                                            }
+                                        },
+                                        imageHDURL = apodHDURL.value
+                                    )
+                                }
+
+                                HomeScreenViewModel.BtmSheetType.BookMarkCollection -> {
+                                    BtmSaveComposableContent(
+                                        coroutineScope = coroutineScope,
+                                        modalBottomSheetState = bottomSheetState,
+                                        data = CustomBookMarkData(
+                                            dataType = SavedDataType.APOD,
+                                            data = APOD_DB_DTO().apply {
                                                 this.title = apodTitle.value
-                                                this.datePublished = apodDate.value
-                                                this.description = apodDescription.value
+                                                this.category = "image"
+                                                this.isBookMarked = true
                                                 this.imageURL = apodURL.value
                                                 this.mediaType = "image"
-                                                this.isBookMarked = true
-                                                this.category = "APOD"
-                                                this.addedToLocalDBOn = formattedDate
+                                                this.datePublished = apodDate.value
+                                                this.description = apodDescription.value
                                                 this.hdImageURL = apodHDURL.value
                                             })
-                                    }.invokeOnCompletion {
-                                        if (didDataGetAddedInDB) {
-                                            Toast.makeText(
-                                                context,
-                                                "Added to bookmarks:)",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        } else {
-                                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                                true
-                                        }
-                                        bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                                    }
-                                },
-                                imageHDURL = apodHDURL.value
-                            )
+                                    )
+                                }
+                            }
                         },
                         sheetState = bottomSheetState,
                         sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
@@ -202,6 +247,8 @@ fun APODScreen(navController: NavController) {
                                     modifier = Modifier
                                         .padding(1.dp)
                                         .clickable {
+                                            apodScreenVM.currentBtmSheetType.value =
+                                                HomeScreenViewModel.BtmSheetType.Details
                                             coroutineScope.launch {
                                                 apodDate.value = apodItem.date.toString()
                                                 apodURL.value = apodItem.url.toString()
@@ -209,7 +256,7 @@ fun APODScreen(navController: NavController) {
                                                     apodItem.explanation.toString()
                                                 apodTitle.value = apodItem.title.toString()
                                                 apodMediaType.value = apodItem.media_type.toString()
-                                                apodHDURL.value=apodItem.hdurl.toString()
+                                                apodHDURL.value = apodItem.hdurl.toString()
                                                 bottomSheetState.show()
                                             }
                                         },
@@ -295,9 +342,9 @@ fun APODBottomSheetContent(
     apodMediaType: String,
     onBookMarkClick: () -> Unit,
     inBookMarkScreen: Boolean? = null,
-    imageHDURL:String,
-    inCustomBookmarkScreen:Boolean=false,
-    onBookMarkLongPress: () -> Unit = {}
+    imageHDURL: String,
+    inCustomBookmarkScreen: Boolean = false,
+    onBookMarkLongPress: () -> Unit = {},
 ) {
     val bookMarksVM: BookMarksVM = viewModel()
     bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
@@ -319,7 +366,7 @@ fun APODBottomSheetContent(
                     inAPODBottomSheetContent = true,
                     onBookMarkButtonClick = onBookMarkClick,
                     hdImageURLForAPOD = imageHDURL,
-                    onBookmarkLongPress = {onBookMarkLongPress()}
+                    onBookmarkLongPress = { onBookMarkLongPress() }
                 )
             }
         }
@@ -364,7 +411,7 @@ fun APODBottomSheetContent(
                                             this.isBookMarked = true
                                             this.category = "APOD"
                                             this.addedToLocalDBOn = formattedDate
-                                            this.hdImageURL=imageHDURL
+                                            this.hdImageURL = imageHDURL
                                         })
                                 }.invokeOnCompletion {
                                     if (didDataGetAddedInDB) {
@@ -388,7 +435,7 @@ fun APODBottomSheetContent(
                     )
                     APODBottomSheetChip(
                         onClick = {
-                            val randomTitle = UUID.randomUUID().toString().substring(0,6)
+                            val randomTitle = UUID.randomUUID().toString().substring(0, 6)
                             DownloadImpl(context = context).downloadNewFile(
                                 url = imageHDURL,
                                 title = "$randomTitle.jpg"
@@ -398,7 +445,7 @@ fun APODBottomSheetContent(
                                 "Downloading started, check notifications for more information",
                                 Toast.LENGTH_SHORT
                             ).show()
-                                  },
+                        },
                         imageVector = Icons.Outlined.FileDownload,
                         iconColor = MaterialTheme.colorScheme.onPrimary,
                         text = "Download",
@@ -443,18 +490,18 @@ fun APODBottomSheetContent(
                 textAlign = TextAlign.Start
             )
         }
-/*item {
-    Text(
-        text = "© $apodCopyright",
-        color = MaterialTheme.colorScheme.onPrimary,
-        fontSize = 18.sp,
-        style = MaterialTheme.typography.headlineLarge,
-        modifier = Modifier
-            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-        lineHeight = 20.sp,
-        textAlign = TextAlign.Start
-    )
-}*/
+        /*item {
+            Text(
+                text = "© $apodCopyright",
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 18.sp,
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier
+                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                lineHeight = 20.sp,
+                textAlign = TextAlign.Start
+            )
+        }*/
 
         item {
             Divider(
@@ -464,7 +511,7 @@ fun APODBottomSheetContent(
                     start = 25.dp,
                     end = 25.dp,
                     top = 15.dp,
-                    bottom = if(!inCustomBookmarkScreen)75.dp else 25.dp
+                    bottom = if (!inCustomBookmarkScreen) 75.dp else 25.dp
                 )
             )
         }
@@ -509,7 +556,7 @@ fun APODBottomSheetChip(
     onClick: () -> Unit, imageVector: ImageVector,
     iconColor: androidx.compose.ui.graphics.Color,
     text: String,
-    textColor: Color
+    textColor: Color,
 ) {
     AssistChip(
         onClick = { onClick() },

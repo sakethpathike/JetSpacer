@@ -1,10 +1,13 @@
 package com.sakethh.jetspacer.screens.bookMarks.screens
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,18 +17,35 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.DriveFileRenameOutline
+import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.FolderDelete
+import androidx.compose.material.icons.outlined.OpenInBrowser
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.SemanticsProperties.ImeAction
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,10 +54,12 @@ import androidx.navigation.NavController
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
 import com.sakethh.jetspacer.R
+import com.sakethh.jetspacer.downloads.DownloadImpl
 import com.sakethh.jetspacer.localDB.*
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.AlertDialogForDeletingFromDB
+import com.sakethh.jetspacer.screens.home.DropDownMenuItemModified
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.triggerHapticFeedback
 import com.sakethh.jetspacer.screens.news.NewsBottomSheetContent
@@ -46,6 +68,7 @@ import com.sakethh.jetspacer.screens.news.newsUI
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RoverBottomSheetContent
+import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.SolTextField
 import com.sakethh.jetspacer.screens.webview.WebViewUtils.newsBottomSheetContentImpl
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.launch
@@ -93,6 +116,10 @@ fun SelectedBookMarkScreen(navController: NavController) {
     val currentDate = dateFormat.format(Calendar.getInstance().time)
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
     var didDataGetAddedInDB = false
+    val isMoreClicked = rememberSaveable { mutableStateOf(false) }
+    val isRenameClicked = rememberSaveable { mutableStateOf(false) }
+    val isDeleteClicked = rememberSaveable { mutableStateOf(false) }
+    val shouldAlertDialogActivate = rememberSaveable { mutableStateOf(false) }
     AppTheme {
         ModalBottomSheetLayout(
             sheetContent = {
@@ -245,17 +272,57 @@ fun SelectedBookMarkScreen(navController: NavController) {
             sheetBackgroundColor = MaterialTheme.colorScheme.primary
         ) {
             Scaffold(modifier = Modifier.background(MaterialTheme.colorScheme.surface), topBar = {
-                TopAppBar(scrollBehavior = scrollBehavior, title = {
-                    Text(
-                        text = selectedData.name,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 22.sp,
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, end = 15.dp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                })
+                Column {
+                TopAppBar( scrollBehavior = scrollBehavior, title = {
+                        Text(
+                            text = selectedData.name,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 22.sp,
+                            style = MaterialTheme.typography.headlineLarge,
+                            modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, end = 15.dp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }, actions = {
+                        IconButton(onClick = { isMoreClicked.value = !isMoreClicked.value }) {
+                            Icon(imageVector = Icons.Default.MoreVert, contentDescription = null,tint=MaterialTheme.colorScheme.onPrimary)
+                            if(isMoreClicked.value){
+                                DropdownMenu(
+                                    expanded = isMoreClicked.value,
+                                    onDismissRequest = {
+                                        isMoreClicked.value = !isMoreClicked.value
+                                    },
+                                    modifier = Modifier
+                                        .background(MaterialTheme.colorScheme.secondary)
+                                        .layoutId("moreOptionsDropDown")
+                                ) {
+                                    if (selectedData.name != "APOD" && selectedData.name != "Rovers" && selectedData.name != "News") {
+                                        DropDownMenuItemModified(
+                                            text = "Rename",
+                                            onClick = {
+                                                shouldAlertDialogActivate.value =
+                                                    !shouldAlertDialogActivate.value
+                                                isMoreClicked.value = !isMoreClicked.value
+                                            },
+                                            imageVector = Icons.Outlined.DriveFileRenameOutline
+                                        )
+                                    }
+                                    DropDownMenuItemModified(
+                                        text = "Delete this collection",
+                                        onClick = {
+                                            shouldAlertDialogActivate.value = !shouldAlertDialogActivate.value
+                                            isDeleteClicked.value = !isDeleteClicked.value
+                                        },
+                                        imageVector = Icons.Outlined.FolderDelete
+                                    )
+                                }
+                            }
+
+                        }
+                    })
+                    Divider(thickness = 0.25.dp,color=MaterialTheme.colorScheme.onPrimary.copy(0.5f))
+                }
+
             }) {
                 when (selectedData.name) {
                     "APOD" -> {
@@ -434,6 +501,10 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                                     element.data.launchingDate
                                                 roversScreenVM.landingDate.value =
                                                     element.data.landingDate
+
+                                                coroutineScope.launch {
+                                                    modalBottomSheetState.show()
+                                                }
                                             }
 
                                             else -> {
@@ -581,6 +652,147 @@ fun SelectedBookMarkScreen(navController: NavController) {
                         )
                     }
                 }
+            }
+            val renamedValue = rememberSaveable { mutableStateOf("") }
+            var didRenamedSuccess = false
+            if (shouldAlertDialogActivate.value) {
+                AlertDialog(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    onDismissRequest = {
+                        shouldAlertDialogActivate.value = false
+                    },
+                    title = {
+                        Text(
+                            text = if (isDeleteClicked.value) "Wait a minute!" else "Change the name of the collection:",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 18.sp
+                        )
+                    }, text = {
+                        if (isDeleteClicked.value) {
+                            Text(
+                                text = "Are you sure want to remove \"${selectedData.name}\" collection? This can't be undone.",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                lineHeight = 18.sp
+                            )
+                        } else {
+                            TextField(value = renamedValue.value, onValueChange = {
+                                renamedValue.value = it
+                            }, singleLine = true, supportingText = {
+                                Text(
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    text = "New collection name that you're going replace with \"${selectedData.name}\" should be unique and shouldn't conflict with existing collection names.",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontSize = 15.sp,
+                                    lineHeight = 17.sp,
+                                    textAlign = TextAlign.Start
+                                )
+                            }, keyboardOptions = KeyboardOptions(
+                                imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                            ),
+                                keyboardActions = KeyboardActions(onDone = {
+                                    if (renamedValue.value == "") {
+                                        Toast.makeText(
+                                            context,
+                                            "name cannot be empty",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        coroutineScope.launch {
+                                            didRenamedSuccess =  selectedBookMarkScreenVM.renameCollectionName(actualNameOfTheCollection = selectedData.name, updatedNameOfTheCollection = renamedValue.value)
+                                        }.invokeOnCompletion {
+                                            if(!didRenamedSuccess){
+                                                Toast.makeText(
+                                                    context,
+                                                    "name can't be same, rename it another name that does not exist as a collection name.",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }else{
+                                                Toast.makeText(
+                                                    context,
+                                                    "Renamed successfully.",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                    }
+                                })
+                            )
+                        }
+                    }, confirmButton = {
+                        Button(
+                            onClick = {
+                                shouldAlertDialogActivate.value = false
+                                if (isDeleteClicked.value) {
+                                    navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN) {
+                                        popUpTo(0)
+                                    }
+                                    coroutineScope.launch {
+                                        bookMarksVM.localDB.deleteACollectionFromCustomBookMarksDB(
+                                            nameOfTheCollection = selectedData.name
+                                        )
+                                    }.invokeOnCompletion {
+                                        Toast.makeText(
+                                            context,
+                                            "Removed \"${selectedData.name}\" collection permanently.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                } else {
+                                    if (renamedValue.value == "") {
+                                        Toast.makeText(
+                                            context,
+                                            "name cannot be empty",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        coroutineScope.launch {
+                                            didRenamedSuccess =  selectedBookMarkScreenVM.renameCollectionName(actualNameOfTheCollection = selectedData.name, updatedNameOfTheCollection = renamedValue.value)
+                                        }.invokeOnCompletion {
+                                            if(!didRenamedSuccess){
+                                                Toast.makeText(
+                                                    context,
+                                                    "name can't be same, rename it another name that does not exist as a collection name.",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }else{
+                                                Toast.makeText(
+                                                    context,
+                                                    "Renamed successfully.",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                    }
+
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onPrimary)
+                        ) {
+                            Text(
+                                text = if (isDeleteClicked.value) "Remove \"${selectedData.name}\" collection ASAP!" else "Rename it RIGHT NOW!!",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }, dismissButton = {
+                        OutlinedButton(
+                            onClick = {
+                                shouldAlertDialogActivate.value = false
+                            },
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.onPrimary
+                            )
+                        ) {
+                            Text(
+                                text = "Um-mm, Never mind",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    })
             }
         }
     }

@@ -100,7 +100,6 @@ fun NewsScreen(navController: NavController) {
         rememberPullRefreshState(refreshing = isRefreshing.value,
             onRefresh = {
                 isRefreshing.value = true
-                shouldLoadMoreData.value = true
                 coroutineScope.launch {
                     awaitAll(
                         async {
@@ -324,9 +323,6 @@ fun LazyListScope.newsUI(
         items(topHeadLinesData.value) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 15.dp, start = 8.dp, end = 8.dp)
-                    .wrapContentHeight()
                     .redirectToWeb(
                         navController = navController,
                         newsBottomSheetContentImpl = newsBottomSheetContentImpl,
@@ -337,7 +333,10 @@ fun LazyListScope.newsUI(
                             newsBottomSheetContentImpl.sourceURL.value = it.url
                             newsBottomSheetContentImpl.title.value = it.title
                         }
-                    )
+                    ).fillMaxWidth()
+                    .padding(top = 7.5.dp, bottom=7.5.dp, start = 8.dp, end = 8.dp)
+                    .wrapContentHeight()
+
             ) {
                 Column(
                     modifier = Modifier
@@ -439,9 +438,6 @@ fun LazyListScope.newsUI(
         items(bookMarkedData.value) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 15.dp, start = 8.dp, end = 8.dp)
-                    .wrapContentHeight()
                     .redirectToWeb(
                         navController = navController,
                         newsBottomSheetContentImpl = newsBottomSheetContentImpl,
@@ -452,7 +448,10 @@ fun LazyListScope.newsUI(
                             newsBottomSheetContentImpl.sourceURL.value = it.sourceURL
                             newsBottomSheetContentImpl.title.value = it.title
                         }
-                    )
+                    ).fillMaxWidth()
+                    .padding(top = 15.dp, start = 8.dp, end = 8.dp)
+                    .wrapContentHeight()
+
             ) {
                 Column(
                     modifier = Modifier
@@ -637,9 +636,24 @@ fun NewsBottomSheetContent(newsBottomSheetMutableStateDTO: NewsBottomSheetMutabl
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.primary)
     ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .padding(top = 15.dp, bottom = 15.dp)
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
+            Spacer(
+                modifier = Modifier
+                    .height(5.dp)
+                    .width(30.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.onPrimary.copy(0.75f))
+            )
+        }
         androidx.compose.material3.Card(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onPrimary), modifier = Modifier
-                .padding(15.dp)
+                .padding(start=15.dp,end=15.dp,bottom=15.dp)
                 .fillMaxWidth()
                 .height(200.dp), shape = RoundedCornerShape(10.dp)
         ) {
@@ -688,10 +702,10 @@ fun NewsBottomSheetContent(newsBottomSheetMutableStateDTO: NewsBottomSheetMutabl
         bottomList.forEach {
             Row(
                 modifier = Modifier
-                    .padding(top = 10.dp, bottom = 10.dp)
+                    .clickable { it.onClick() }.padding(top = 10.dp, bottom = 10.dp)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary)
-                    .clickable { it.onClick() }
+
             ) {
                 Spacer(modifier = Modifier.width(15.dp))
                 androidx.compose.material.Icon(
