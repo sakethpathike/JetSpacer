@@ -87,7 +87,8 @@ fun ModifiedLazyVerticalGrid(
                     modifier = Modifier
                         .padding(1.dp)
                         .clickable {
-                            roversScreenVM.currentBtmSheetType.value = HomeScreenViewModel.BtmSheetType.Details
+                            roversScreenVM.currentBtmSheetType.value =
+                                HomeScreenViewModel.BtmSheetType.Details
                             coroutineScope.launch {
                                 roversScreenVM.openRoverBtmSheet(
                                     imgURL = dataItem.img_src,
@@ -155,13 +156,18 @@ fun SolTextField(
     onContinueClick: () -> Unit,
     solValue: MutableState<String>,
     inSettingsScreen: Boolean = false,
+    forRateLimit: Boolean = false,
 ) {
     val context = LocalContext.current
     val randomCuriosityCameraVM: RandomCuriosityCameraVM = viewModel()
     val manifestForCuriosityVM: ManifestForCuriosityVM = viewModel()
     val isEditedIconClicked = rememberSaveable { mutableStateOf(false) }
     val supportingText =
-        if (inSettingsScreen) rememberSaveable { mutableStateOf("Enter API Key without missing a single character") } else
+        if (inSettingsScreen) rememberSaveable { mutableStateOf("Enter API Key without missing a single character") } else if (forRateLimit) rememberSaveable {
+            mutableStateOf(
+                ""
+            )
+        } else
             rememberSaveable(manifestForCuriosityVM.maxCuriositySol.value) { mutableStateOf("value of Sol should be >= 0 and <= ${manifestForCuriosityVM.maxCuriositySol.value}") }
     AppTheme {
         Row(
@@ -198,8 +204,8 @@ fun SolTextField(
                     )
                 },
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = if(!inSettingsScreen)KeyboardType.Number else KeyboardType.Ascii,
-                    imeAction = if(!inSettingsScreen) ImeAction.Search else ImeAction.Done
+                    keyboardType = if (!inSettingsScreen || forRateLimit) KeyboardType.Number else KeyboardType.Ascii,
+                    imeAction = if (!inSettingsScreen) ImeAction.Search else ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(onDone = {
                     isEditedIconClicked.value = false
@@ -209,6 +215,12 @@ fun SolTextField(
                             Toast.makeText(
                                 context,
                                 "Value of sol cannot be empty",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else if (forRateLimit) {
+                            Toast.makeText(
+                                context,
+                                "Duration cannot be empty",
                                 Toast.LENGTH_SHORT
                             ).show()
                         } else {
@@ -231,6 +243,12 @@ fun SolTextField(
                             Toast.makeText(
                                 context,
                                 "Value of sol cannot be empty",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else if (forRateLimit) {
+                            Toast.makeText(
+                                context,
+                                "Duration cannot be empty",
                                 Toast.LENGTH_SHORT
                             ).show()
                         } else {

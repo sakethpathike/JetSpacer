@@ -39,20 +39,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
-import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
-import com.sakethh.jetspacer.navigation.NavigationRoutes
-import com.sakethh.jetspacer.ui.theme.AppTheme
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.downloads.DownloadImpl
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.localDB.CustomBookMarkData
 import com.sakethh.jetspacer.localDB.SavedDataType
+import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.bookMarks.screens.BtmSaveComposableContent
 import com.sakethh.jetspacer.screens.constraintSet
 import com.sakethh.jetspacer.screens.home.*
+import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
+import com.sakethh.jetspacer.ui.theme.AppTheme
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -275,6 +275,7 @@ fun APODScreen(navController: NavController) {
                     }
                 } else {
                     Column {
+                        Spacer(modifier = Modifier.height(75.dp))
                         StatusScreen(
                             title = "Wait a moment!",
                             description = "fetching the APOD Data from Space!\n" +

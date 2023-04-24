@@ -1,11 +1,9 @@
 package com.sakethh.jetspacer.localDB
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.room.*
+import com.sakethh.jetspacer.Constants
 import kotlinx.serialization.Serializable
 import java.util.*
-import kotlin.collections.List
 
 @Serializable
 sealed class BookMarkType
@@ -39,6 +37,8 @@ data class APOD_DB_DTO(
 data class APIKeysDB(
     var currentNASAAPIKey: String = "",
     var currentNewsAPIKey: String = "",
+    @ColumnInfo(defaultValue = Constants.IP_GEOLOCATION_APIKEY)
+    var currentIPGeoLocationAPIKey: String = "",
     @PrimaryKey
     var id: String = "apiKey",
 ):BookMarkType()

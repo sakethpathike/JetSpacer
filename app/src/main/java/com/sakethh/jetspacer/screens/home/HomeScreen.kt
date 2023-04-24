@@ -38,7 +38,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -1004,16 +1003,6 @@ fun APODCardComposable(
     val coroutineScope = rememberCoroutineScope()
     val bookMarksVM: BookMarksVM = viewModel()
 
-    if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
-        bookMarksVM.doesThisExistsInRoverDBIconTxt(
-            imageURL
-        )
-    } else {
-        bookMarksVM.doesThisExistsInAPODIconTxt(
-            imageURL
-        )
-    }
-
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         modifier = Modifier
@@ -1201,6 +1190,17 @@ fun APODCardComposable(
                     colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.secondary)
                 )
             }
+        }
+    }
+    coroutineScope.launch {
+        if (bookMarkedCategory == Constants.SAVED_IN_ROVERS_DB) {
+            bookMarksVM.doesThisExistsInRoverDBIconTxt(
+                imageURL
+            )
+        } else {
+            bookMarksVM.doesThisExistsInAPODIconTxt(
+                imageURL
+            )
         }
     }
 }

@@ -1,8 +1,9 @@
 package com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation
 
-import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.dto.IPGeoLocationDTO
 import com.sakethh.jetspacer.httpClient.HTTPClient
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
+import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.dto.IPGeoLocationDTO
+import com.sakethh.jetspacer.screens.settings.Settings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -26,7 +27,9 @@ class IPGeolocationFetching(
             flow {
                 while (true) {
                     emit(ipgGeoLocationImplementation.getGeoLocationData())
-                    kotlinx.coroutines.delay(1500L)
+                    kotlinx.coroutines.delay(
+                        Settings.astronomicalTimeInterval.value.toInt().toLong()
+                    )
                 }
             }
         }catch (_:Exception){

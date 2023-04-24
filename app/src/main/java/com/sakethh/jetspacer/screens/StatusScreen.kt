@@ -1,19 +1,19 @@
 package com.sakethh.jetspacer.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.ui.theme.AppTheme
 
 @Composable
@@ -32,11 +32,10 @@ fun StatusScreen(title: String, description: String, status: Status) {
             description
         }
     AppTheme {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart){
         Column(
             modifier = Modifier
                 .background(androidx.compose.material3.MaterialTheme.colorScheme.surface)
-                .wrapContentSize()
+                .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
             Text(
@@ -68,7 +67,7 @@ fun StatusScreen(title: String, description: String, status: Status) {
                     strokeWidth = 4.dp
                 )
             }
-        }}
+        }
 
     }
 }

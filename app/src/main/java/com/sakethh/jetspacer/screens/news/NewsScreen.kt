@@ -177,6 +177,7 @@ fun NewsScreen(navController: NavController) {
                             } else {
                                 Status.NO_INTERNET
                             }
+                            Spacer(modifier = Modifier.height(35.dp))
                             StatusScreen(
                                 title = "Wait a moment!",
                                 description = "Fetching the latest space-related top headlines from around the globe\n" +

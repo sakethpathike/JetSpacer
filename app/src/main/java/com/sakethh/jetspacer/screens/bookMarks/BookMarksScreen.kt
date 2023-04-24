@@ -1,31 +1,23 @@
 package com.sakethh.jetspacer.screens.bookMarks
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +26,6 @@ import androidx.navigation.NavController
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.localDB.BookMarkScreenGridNames
-import com.sakethh.jetspacer.localDB.SavedDataType
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
@@ -154,11 +145,14 @@ fun BookMarksScreen(navController: NavController) {
                     }
                 }
             } else {
-                StatusScreen(
-                    title = "Nothing here!",
-                    description = "Bookmark the media you like; you can visit them later from here!",
-                    status = Status.BOOKMARKS_EMPTY
-                )
+                Column {
+                    Spacer(modifier = Modifier.height(50.dp))
+                    StatusScreen(
+                        title = "Nothing here!",
+                        description = "Bookmark the media you like; you can visit them later from here!",
+                        status = Status.BOOKMARKS_EMPTY
+                    )
+                }
             }
         }
     }

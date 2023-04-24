@@ -64,7 +64,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun SettingsScreen(
-    dataStore: DataStore<Preferences>,  navController: NavController,
+    dataStore: DataStore<Preferences>, navController: NavController,
 ) {
     BackHandler {
         navController.navigate(NavigationRoutes.HOME_SCREEN) {
@@ -79,6 +79,11 @@ fun SettingsScreen(
     val existingNasaAPIKey = rememberSaveable { mutableStateOf("") }
     val existingNewsAPIKey = rememberSaveable { mutableStateOf("") }
 
+    val existingIPGeolocationAPIKey = rememberSaveable { mutableStateOf("") }
+    val newIPGeolocationAPIKey = rememberSaveable { mutableStateOf("") }
+
+    val astronomicalDataFetchingRateLimitValue =
+        rememberSaveable(Settings.astronomicalTimeInterval.value) { mutableStateOf(Settings.astronomicalTimeInterval.value) }
     val themeTypeForThemeDialog = listOf("Follow system theme", "Light", "Dark")
 
     LaunchedEffect(key1 = true) {
@@ -86,7 +91,16 @@ fun SettingsScreen(
             async { newNasaAPIKey.value = bookMarksVM.getApiKeys()[0].currentNASAAPIKey },
             async { newNewsAPIKey.value = bookMarksVM.getApiKeys()[0].currentNewsAPIKey },
             async { existingNasaAPIKey.value = bookMarksVM.getApiKeys()[0].currentNASAAPIKey },
-            async { existingNewsAPIKey.value = bookMarksVM.getApiKeys()[0].currentNewsAPIKey })
+            async { existingNewsAPIKey.value = bookMarksVM.getApiKeys()[0].currentNewsAPIKey },
+            async {
+                existingIPGeolocationAPIKey.value =
+                    bookMarksVM.getApiKeys()[0].currentIPGeoLocationAPIKey
+            },
+            async {
+                newIPGeolocationAPIKey.value =
+                    bookMarksVM.getApiKeys()[0].currentIPGeoLocationAPIKey
+            }
+        )
     }
     var isApiKeyValid = false
     val isVerifyingNewApiKeyDialogActive = rememberSaveable { mutableStateOf(false) }
@@ -193,7 +207,7 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.headlineMedium,
                             fontSize = 18.sp,
                             color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(start = 15.dp, top =0.dp)
+                            modifier = Modifier.padding(start = 15.dp, top = 0.dp)
                         )
                     }
                     Box(contentAlignment = Alignment.Center, modifier = Modifier
@@ -201,11 +215,15 @@ fun SettingsScreen(
                             isThemeChangeDialogEnabled.value = true
                         }
                         .wrapContentSize()) {
-                        Button(onClick = {
-                          isThemeChangeDialogEnabled.value=!isThemeChangeDialogEnabled.value
-                        }, modifier = Modifier
-                            .clip(RoundedCornerShape(5.dp))
-                            .padding(end = 15.dp), colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+                        Button(
+                            onClick = {
+                                isThemeChangeDialogEnabled.value = !isThemeChangeDialogEnabled.value
+                            },
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(5.dp))
+                                .padding(end = 15.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
                             Text(
                                 text = "Change theme",
                                 style = MaterialTheme.typography.headlineMedium,
@@ -257,6 +275,14 @@ fun SettingsScreen(
             item {
                 IndividualSettingItemComposable(
                     modifier = Modifier
+                        .fillMaxWidth(),
+                    title = "Current IPGeolocation-API Key",
+                    description = existingIPGeolocationAPIKey.value
+                )
+            }
+            item {
+                IndividualSettingItemComposable(
+                    modifier = Modifier
                         .redirectToWeb(
                             navController = navController,
                             inSettingsScreen = true,
@@ -291,6 +317,24 @@ fun SettingsScreen(
                 )
             }
             item {
+                IndividualSettingItemComposable(
+                    modifier = Modifier
+                        .redirectToWeb(
+                            navController = navController,
+                            inSettingsScreen = true,
+                            newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+                                sourceURL = mutableStateOf(
+                                    "https://2fpvxo3g.bearblog.dev/news-apis-api-keys/"
+                                )
+                            ),
+                            onClick = {})
+                        .padding(bottom = 10.dp)
+                        .fillMaxWidth(),
+                    title = "Grab IPGeolocation API Keys",
+                    description = "Click \uD83C\uDF1A"
+                )
+            }
+            item {
                 DividerComposable()
             }
             item {
@@ -314,30 +358,36 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.titlePadding()
                         )
-                        Button(onClick = {
-                            coroutineScope
-                                .launch {
-                                    BookMarksVM.dbImplementation
-                                        .localDBData()
-                                        .addAPIKeys(apiKeysDB = APIKeysDB().apply {
-                                            this.currentNASAAPIKey = Constants.NASA_APIKEY
-                                            this.currentNewsAPIKey =
-                                                Constants.NEWS_API_API_KEY
-                                            this.id = "apiKey"
-                                        })
-                                }
-                                .invokeOnCompletion {
-                                    Toast
-                                        .makeText(
-                                            context,
-                                            "Changed API Keys to default , this may break app purpose at any time:(",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                        .show()
-                                }
-                        }, modifier = Modifier
-                            .clip(RoundedCornerShape(5.dp))
-                            .padding(top = 12.dp, end = 15.dp), colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+                        Button(
+                            onClick = {
+                                coroutineScope
+                                    .launch {
+                                        BookMarksVM.dbImplementation
+                                            .localDBData()
+                                            .addAPIKeys(apiKeysDB = APIKeysDB().apply {
+                                                this.currentNASAAPIKey = Constants.NASA_APIKEY
+                                                this.currentNewsAPIKey =
+                                                    Constants.NEWS_API_API_KEY
+                                                this.currentIPGeoLocationAPIKey =
+                                                    Constants.IP_GEOLOCATION_APIKEY
+                                                this.id = "apiKey"
+                                            })
+                                    }
+                                    .invokeOnCompletion {
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                "Changed API Keys to default , this may break app purpose at any time:(",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                    }
+                            },
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(5.dp))
+                                .padding(top = 12.dp, end = 15.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
                             Text(
                                 text = "Reset API Keys",
                                 style = MaterialTheme.typography.headlineMedium,
@@ -382,14 +432,15 @@ fun SettingsScreen(
                                     .addAPIKeys(apiKeysDB = APIKeysDB().apply {
                                         this.currentNASAAPIKey = newNasaAPIKey.value
                                         this.currentNewsAPIKey = existingNewsAPIKey.value
+                                        this.currentIPGeoLocationAPIKey =
+                                            existingIPGeolocationAPIKey.value
                                         this.id = "apiKey"
                                     })
                             }.invokeOnCompletion {
                                 coroutineScope.launch {
                                     newNasaAPIKey.value =
                                         bookMarksVM.getApiKeys()[0].currentNASAAPIKey
-                                    newNewsAPIKey.value =
-                                        bookMarksVM.getApiKeys()[0].currentNewsAPIKey
+                                    existingNasaAPIKey.value = newNasaAPIKey.value
                                 }.invokeOnCompletion {
                                     isVerifyingNewApiKeyDialogActive.value = false
                                     Toast.makeText(
@@ -402,23 +453,9 @@ fun SettingsScreen(
                         } else {
                             isVerifyingNewApiKeyDialogActive.value = false
                             coroutineScope.launch {
-                                awaitAll(
-                                    async {
-                                        newNasaAPIKey.value =
-                                            bookMarksVM.getApiKeys()[0].currentNASAAPIKey
-                                    },
-                                    async {
-                                        newNewsAPIKey.value =
-                                            bookMarksVM.getApiKeys()[0].currentNewsAPIKey
-                                    },
-                                    async {
-                                        existingNasaAPIKey.value =
-                                            bookMarksVM.getApiKeys()[0].currentNASAAPIKey
-                                    },
-                                    async {
-                                        existingNewsAPIKey.value =
-                                            bookMarksVM.getApiKeys()[0].currentNewsAPIKey
-                                    })
+                                newNasaAPIKey.value =
+                                    bookMarksVM.getApiKeys()[0].currentNASAAPIKey
+                                existingNasaAPIKey.value = newNasaAPIKey.value
                             }
                             Toast.makeText(
                                 context,
@@ -462,14 +499,21 @@ fun SettingsScreen(
                                     .addAPIKeys(apiKeysDB = APIKeysDB().apply {
                                         this.currentNewsAPIKey = newNewsAPIKey.value
                                         this.currentNASAAPIKey = existingNasaAPIKey.value
+                                        this.currentIPGeoLocationAPIKey =
+                                            existingIPGeolocationAPIKey.value
                                         this.id = "apiKey"
                                     })
                             }.invokeOnCompletion {
                                 coroutineScope.launch {
-                                    newNasaAPIKey.value =
-                                        bookMarksVM.getApiKeys()[0].currentNASAAPIKey
-                                    newNewsAPIKey.value =
-                                        bookMarksVM.getApiKeys()[0].currentNewsAPIKey
+                                    awaitAll(
+                                        async {
+                                            newNewsAPIKey.value =
+                                                bookMarksVM.getApiKeys()[0].currentNewsAPIKey
+                                        },
+                                        async {
+                                            existingNewsAPIKey.value =
+                                                bookMarksVM.getApiKeys()[0].currentNewsAPIKey
+                                        })
                                 }.invokeOnCompletion {
                                     isVerifyingNewApiKeyDialogActive.value = false
                                     Toast.makeText(
@@ -484,16 +528,8 @@ fun SettingsScreen(
                             coroutineScope.launch {
                                 awaitAll(
                                     async {
-                                        newNasaAPIKey.value =
-                                            bookMarksVM.getApiKeys()[0].currentNASAAPIKey
-                                    },
-                                    async {
                                         newNewsAPIKey.value =
                                             bookMarksVM.getApiKeys()[0].currentNewsAPIKey
-                                    },
-                                    async {
-                                        existingNasaAPIKey.value =
-                                            bookMarksVM.getApiKeys()[0].currentNASAAPIKey
                                     },
                                     async {
                                         existingNewsAPIKey.value =
@@ -508,6 +544,112 @@ fun SettingsScreen(
                         }
                     }
                 }, solValue = newNewsAPIKey, inSettingsScreen = true)
+            }
+            item {
+                IndividualSettingItemComposable(
+                    modifier = Modifier.redirectToWeb(
+                        navController = navController,
+                        inSettingsScreen = true,
+                        newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+                            sourceURL = mutableStateOf(
+                                "https://2fpvxo3g.bearblog.dev/news-apis-api-keys/"
+                            )
+                        ),
+                        onClick = {}),
+                    title = "IPGeolocation API-KEY",
+                    description = "Enter the API key in the text box below; this key will be used to access IPGeolocation API."
+                )
+            }
+            item {
+                SolTextField(onContinueClick = {
+                    isVerifyingNewApiKeyDialogActive.value = true
+                    coroutineScope.launch {
+                        isApiKeyValid = try {
+                            HomeScreenViewModel.Network.isConnectionSucceed.value = true
+                            HTTPClient.ktorClientWithoutCache.get("https://api.ipgeolocation.io/astronomy?apiKey=${newIPGeolocationAPIKey.value}").status.value == 200
+                        } catch (_: Exception) {
+                            HomeScreenViewModel.Network.isConnectionSucceed.value = false
+                            false
+                        }
+                    }.invokeOnCompletion {
+                        if (isApiKeyValid) {
+                            coroutineScope.launch {
+                                BookMarksVM.dbImplementation.localDBData()
+                                    .addAPIKeys(apiKeysDB = APIKeysDB().apply {
+                                        this.currentNewsAPIKey = existingNewsAPIKey.value
+                                        this.currentNASAAPIKey = existingNasaAPIKey.value
+                                        this.currentIPGeoLocationAPIKey =
+                                            newIPGeolocationAPIKey.value
+                                        this.id = "apiKey"
+                                    })
+                            }.invokeOnCompletion {
+                                coroutineScope.launch {
+                                    awaitAll(
+                                        async {
+                                            newIPGeolocationAPIKey.value =
+                                                bookMarksVM.getApiKeys()[0].currentIPGeoLocationAPIKey
+                                        },
+                                        async {
+                                            existingIPGeolocationAPIKey.value =
+                                                bookMarksVM.getApiKeys()[0].currentIPGeoLocationAPIKey
+                                        })
+                                }.invokeOnCompletion {
+                                    isVerifyingNewApiKeyDialogActive.value = false
+                                    Toast.makeText(
+                                        context,
+                                        "Updated IPGeolocation API Key without any failure",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        } else {
+                            isVerifyingNewApiKeyDialogActive.value = false
+                            coroutineScope.launch {
+                                awaitAll(
+                                    async {
+                                        newIPGeolocationAPIKey.value =
+                                            bookMarksVM.getApiKeys()[0].currentIPGeoLocationAPIKey
+                                    },
+                                    async {
+                                        existingIPGeolocationAPIKey.value =
+                                            bookMarksVM.getApiKeys()[0].currentIPGeoLocationAPIKey
+                                    })
+                            }
+                            Toast.makeText(
+                                context,
+                                "Oh-uh, Entered IPGeolocation API Key is invalid:(",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }, solValue = newIPGeolocationAPIKey, inSettingsScreen = true)
+            }
+            item {
+                DividerComposable()
+            }
+            item {
+                IndividualSettingItemComposable(
+                    modifier = Modifier,
+                    title = "Rate Limit",
+                    description = "Enter the time interval (in seconds) for updating \"Astronomical Data\" in Home Screen.\ncurrent time interval is : ${Settings.astronomicalTimeInterval.value} seconds."
+                )
+            }
+            item {
+                SolTextField(forRateLimit = true, onContinueClick = {
+                    coroutineScope.launch {
+                        changeAstronomicalTimeIntervalValue(
+                            dataStore = dataStore,
+                            currentDuration = astronomicalDataFetchingRateLimitValue.value
+                        )
+                        readAstronomicalDataTimeIntervalValue(dataStore)
+                    }.invokeOnCompletion {
+                        Toast.makeText(
+                            context,
+                            "Astronomical Data will be updated at every ${astronomicalDataFetchingRateLimitValue.value} seconds.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }, solValue = astronomicalDataFetchingRateLimitValue, inSettingsScreen = true)
             }
             item {
                 DividerComposable()
@@ -607,7 +749,8 @@ fun SettingsScreen(
                                 ),
                                 inSettingsScreen = true,
                                 onClick = {})
-                        }.padding(20.dp)
+                        }
+                        .padding(20.dp)
                         .fillMaxWidth()
 
                 ) {
@@ -669,11 +812,13 @@ fun SettingsScreen(
             )
         }
         if (isVerifyingNewApiKeyDialogActive.value) {
-            androidx.compose.material3.AlertDialog(modifier = Modifier
-                .padding(20.dp)
-                .background(MaterialTheme.colorScheme.primary)
-                .fillMaxWidth()
-                .height(100.dp),
+            androidx.compose.material3.AlertDialog(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(5.dp)),
                 properties = DialogProperties(
                     dismissOnBackPress = false,
                     dismissOnClickOutside = false
@@ -720,48 +865,50 @@ fun SettingsScreen(
                     dismissOnBackPress = true,
                     dismissOnClickOutside = true
                 ),
-                onDismissRequest = { isThemeChangeDialogEnabled.value = !isThemeChangeDialogEnabled.value }) {
+                onDismissRequest = {
+                    isThemeChangeDialogEnabled.value = !isThemeChangeDialogEnabled.value
+                }) {
                 Column {
-                Text(
-                    text = "Select theme:",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(20.dp),
-                    style = MaterialTheme.typography.headlineLarge
-                )
-                themeTypeForThemeDialog.forEach {
-                    Row(
-                        modifier = Modifier
-                            .clickable {
-                                coroutineScope.launch {
-                                    changeThemesValue(
-                                        dataStore = dataStore,
-                                        currentTheme = it
-                                    )
-                                    readThemesSetting(dataStore = dataStore)
+                    Text(
+                        text = "Select theme:",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(20.dp),
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                    themeTypeForThemeDialog.forEach {
+                        Row(
+                            modifier = Modifier
+                                .clickable {
+                                    coroutineScope.launch {
+                                        changeThemesValue(
+                                            dataStore = dataStore,
+                                            currentTheme = it
+                                        )
+                                        readThemesSetting(dataStore = dataStore)
+                                    }
+                                    isThemeChangeDialogEnabled.value = false
                                 }
-                                isThemeChangeDialogEnabled.value=false
-                            }
-                            .fillMaxWidth()
-                    ) {
-                        RadioButton(
-                            selected = selectedTheme.value == it,
-                            onClick = { selectedTheme.value = it },
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = MaterialTheme.colorScheme.onSurface,
-                                unselectedColor = MaterialTheme.colorScheme.onPrimary
+                                .fillMaxWidth()
+                        ) {
+                            RadioButton(
+                                selected = selectedTheme.value == it,
+                                onClick = { selectedTheme.value = it },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = MaterialTheme.colorScheme.onSurface,
+                                    unselectedColor = MaterialTheme.colorScheme.onPrimary
+                                )
                             )
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = it,
-                            color = if (selectedTheme.value == it) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(top=15.dp),
-                            style = MaterialTheme.typography.headlineMedium
-                        )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = it,
+                                color = if (selectedTheme.value == it) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(top = 15.dp),
+                                style = MaterialTheme.typography.headlineMedium
+                            )
+                        }
                     }
-                }
                     Spacer(modifier = Modifier.height(20.dp))
                 }
             }
@@ -796,6 +943,7 @@ suspend fun changeInAppBrowserSetting(
         it[settingsPreferenceKey] = isInAppBrowsing
     }
 }
+
 suspend fun changeThemesValue(
     themePreferenceKey: Preferences.Key<String> = preferencesKey(
         "themePreferenceKey"
@@ -804,6 +952,17 @@ suspend fun changeThemesValue(
 ) {
     dataStore.edit {
         it[themePreferenceKey] = currentTheme
+    }
+}
+
+suspend fun changeAstronomicalTimeIntervalValue(
+    astronomicalTimeInterval: Preferences.Key<String> = preferencesKey(
+        "astronomicalTimeInterval"
+    ),
+    dataStore: DataStore<Preferences>, currentDuration: String,
+) {
+    dataStore.edit {
+        it[astronomicalTimeInterval] = currentDuration
     }
 }
 
@@ -818,6 +977,7 @@ suspend fun readInAppBrowserSetting(
         Settings.inAppBrowserSetting.value = preference
     }
 }
+
 suspend fun readThemesSetting(
     dataStore: DataStore<Preferences>,
     themePreferenceKey: Preferences.Key<String> = preferencesKey(
@@ -830,9 +990,22 @@ suspend fun readThemesSetting(
     }
 }
 
+suspend fun readAstronomicalDataTimeIntervalValue(
+    dataStore: DataStore<Preferences>,
+    astronomicalTimeInterval: Preferences.Key<String> = preferencesKey(
+        "astronomicalTimeInterval"
+    ),
+) {
+    val preference = dataStore.data.first()[astronomicalTimeInterval]
+    if (preference != null) {
+        Settings.astronomicalTimeInterval.value = preference
+    }
+}
+
 object Settings {
     val inAppBrowserSetting = mutableStateOf(true)
     val selectedTheme = mutableStateOf("Follow system theme")
+    val astronomicalTimeInterval = mutableStateOf("2")
 }
 
 fun Modifier.redirectToWeb(

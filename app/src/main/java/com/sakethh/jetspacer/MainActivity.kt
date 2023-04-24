@@ -32,6 +32,7 @@ import com.sakethh.jetspacer.navigation.MainNavigation
 import com.sakethh.jetspacer.navigation.NavigationRoutes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
+import com.sakethh.jetspacer.screens.settings.readAstronomicalDataTimeIntervalValue
 import com.sakethh.jetspacer.screens.settings.readInAppBrowserSetting
 import com.sakethh.jetspacer.screens.settings.readThemesSetting
 import com.sakethh.jetspacer.ui.theme.AppTheme
@@ -54,7 +55,8 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             awaitAll(
                 async { readInAppBrowserSetting(dataStore) },
-                async { readThemesSetting(dataStore) })
+                async { readThemesSetting(dataStore) },
+                async { readAstronomicalDataTimeIntervalValue(dataStore) })
         }
         GlobalScope.launch {
             HomeScreenViewModel.Network.isConnectedToInternet()
@@ -156,6 +158,7 @@ class MainActivity : ComponentActivity() {
                         this.id = "apiKey"
                         this.currentNewsAPIKey = Constants.NEWS_API_API_KEY
                         this.currentNASAAPIKey = Constants.NASA_APIKEY
+                        this.currentIPGeoLocationAPIKey = Constants.IP_GEOLOCATION_APIKEY
                     })
             }
         }
