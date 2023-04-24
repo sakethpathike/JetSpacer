@@ -9,9 +9,11 @@ import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
+import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.material.icons.rounded.Bookmarks
@@ -66,8 +68,8 @@ val bottomNavDataList: List<BottomNavigationItem> = listOf(
     BottomNavigationItem(
         name = "Bookmarks",
         navigationRoute = NavigationRoutes.BOOKMARKS_SCREEN,
-        selectedIcon = Icons.Filled.Bookmarks,
-        nonSelectedIcon = Icons.Outlined.Bookmarks
+        selectedIcon = Icons.Filled.CollectionsBookmark,
+        nonSelectedIcon = Icons.Outlined.CollectionsBookmark
     ),
 )
 

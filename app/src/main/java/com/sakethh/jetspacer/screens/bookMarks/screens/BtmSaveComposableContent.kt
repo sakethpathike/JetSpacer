@@ -46,13 +46,13 @@ import kotlinx.coroutines.launch
 fun BtmSaveComposableContent(
     coroutineScope: CoroutineScope,
     modalBottomSheetState: ModalBottomSheetState,
-    data: CustomBookMarkData
+    data: CustomBookMarkData,
 ) {
     val bookMarksVM: BookMarksVM = viewModel()
     val btmScreenData = bookMarksVM.localDB.getCustomBookMarkTopicData()
         .collectAsState(initial = emptyList()).value
     val isNewCollectionDialogEnabled = remember { mutableStateOf(false) }
-    val btmSaveComposableVM:BtmSaveComposableVM= viewModel()
+    val btmSaveComposableVM: BtmSaveComposableVM = viewModel()
     val context = LocalContext.current
     var doesElementExistsInDB = false
     val imgURL: String =
@@ -112,91 +112,105 @@ fun BtmSaveComposableContent(
                 thickness = 0.dp
             )
             if (btmScreenData.any { it.name !in nonAllowedData }) {
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                itemsIndexed(btmScreenData) { index, element ->
-                    if (element.name != "APOD" && element.name != "News" && element.name != "Rovers") {
-                        Row(
-                            modifier = Modifier
-                                .padding(
-                                    top = 15.dp,
-                                    start = 15.dp,
-                                    end = 15.dp,
-                                    bottom = 15.dp
-                                )
-                                .fillMaxWidth()
-                                .clip(
-                                    RoundedCornerShape(5.dp)
-                                )
-                                .clickable {
-                                    BtmSaveComposableContent.indexedValue = index
-                                    coroutineScope.launch {
-                                        doesElementExistsInDB = btmSaveComposableVM.addNewDataInTheExistingTable(nameOfTheTable = element.name, newData =data)
-                                    }.invokeOnCompletion {
-                                        if(doesElementExistsInDB){
-                                            Toast.makeText(context,"Added successfully in the \"${element.name}\" folder",Toast.LENGTH_SHORT).show()
-                                        }else{
-                                            Toast.makeText(context,"This media already exists in the \"${element.name}\" folder",Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                                }
-                                .border(
-                                    BorderStroke(0.dp, MaterialTheme.colorScheme.onSurface),
-                                    RoundedCornerShape(5.dp)
-                                )
-                                .background(MaterialTheme.colorScheme.primary)) {
-                            Coil_Image().CoilImage(
-                                imgURL = element.imgUrlForGrid,
-                                contentDescription = "",
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    itemsIndexed(btmScreenData) { index, element ->
+                        if (element.name != "APOD" && element.name != "News" && element.name != "Rovers") {
+                            Row(
                                 modifier = Modifier
-                                    .size(75.dp)
-                                    .padding(10.dp)
-                                    .clip(RoundedCornerShape(5.dp)),
-                                onError = painterResource(id = R.drawable.baseline_image_24),
-                                contentScale = ContentScale.Crop
-                            )
-
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                Text(
-                                    text = element.name,
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = 18.sp,
-                                    style = MaterialTheme.typography.headlineMedium,
+                                    .padding(
+                                        top = 15.dp,
+                                        start = 15.dp,
+                                        end = 15.dp,
+                                        bottom = 15.dp
+                                    )
+                                    .fillMaxWidth()
+                                    .clip(
+                                        RoundedCornerShape(5.dp)
+                                    )
+                                    .clickable {
+                                        BtmSaveComposableContent.indexedValue = index
+                                        coroutineScope
+                                            .launch {
+                                                doesElementExistsInDB =
+                                                    btmSaveComposableVM.addNewDataInTheExistingTable(
+                                                        nameOfTheTable = element.name,
+                                                        newData = data
+                                                    )
+                                            }
+                                            .invokeOnCompletion {
+                                                if (doesElementExistsInDB) {
+                                                    Toast
+                                                        .makeText(
+                                                            context,
+                                                            "Added successfully in the \"${element.name}\" folder",
+                                                            Toast.LENGTH_SHORT
+                                                        )
+                                                        .show()
+                                                } else {
+                                                    Toast
+                                                        .makeText(
+                                                            context,
+                                                            "This media already exists in the \"${element.name}\" folder",
+                                                            Toast.LENGTH_SHORT
+                                                        )
+                                                        .show()
+                                                }
+                                            }
+                                    }
+                                    .border(
+                                        BorderStroke(0.dp, MaterialTheme.colorScheme.onSurface),
+                                        RoundedCornerShape(5.dp)
+                                    )
+                                    .background(MaterialTheme.colorScheme.primary)) {
+                                Coil_Image().CoilImage(
+                                    imgURL = element.imgUrlForGrid,
+                                    contentDescription = "",
                                     modifier = Modifier
-                                        .height(75.dp)
-                                        .padding(end=15.dp)
-                                        .align(Alignment.CenterStart),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                        .size(75.dp)
+                                        .padding(10.dp)
+                                        .clip(RoundedCornerShape(5.dp)),
+                                    onError = painterResource(id = R.drawable.baseline_image_24),
+                                    contentScale = ContentScale.Crop
                                 )
+                                    Text(
+                                        text = element.name,
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontSize = 18.sp,
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        modifier = Modifier
+                                            .padding(top=27.5.dp,end = 15.dp),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+
                             }
                         }
                     }
-                }
-                item {
-                    if (currentDestination == NavigationRoutes.NEWS_SCREEN || currentDestination == NavigationRoutes.HOME_SCREEN || currentDestination == NavigationRoutes.SPACE_SCREEN || currentDestination == NavigationRoutes.BOOKMARKS_SCREEN) {
-                        Spacer(modifier = Modifier.height(100.dp))
+                    item {
+                        if (currentDestination == NavigationRoutes.NEWS_SCREEN || currentDestination == NavigationRoutes.HOME_SCREEN || currentDestination == NavigationRoutes.SPACE_SCREEN || currentDestination == NavigationRoutes.BOOKMARKS_SCREEN) {
+                            Spacer(modifier = Modifier.height(100.dp))
+                        }
                     }
                 }
-            }
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(25.dp)
-            ) {
-                Text(
-                    text = "Nothing here, create a new collection to get started",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = 18.sp,
-                    style = MaterialTheme.typography.headlineMedium,
+            } else {
+                Box(
                     modifier = Modifier
-                        .padding(10.dp)
-                        .align(Alignment.Center),
-                    lineHeight = 20.sp,
-                    textAlign = TextAlign.Start
-                )
+                        .fillMaxWidth()
+                        .padding(25.dp)
+                ) {
+                    Text(
+                        text = "Nothing here, create a new collection to get started",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 18.sp,
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .align(Alignment.Center),
+                        lineHeight = 20.sp,
+                        textAlign = TextAlign.Start
+                    )
+                }
             }
-        }
 
             Box(
                 modifier = Modifier
@@ -258,13 +272,16 @@ fun BtmSaveComposableContent(
                             onClick = {
                                 isNewCollectionDialogEnabled.value = false
                                 coroutineScope.launch {
-                                    doesNameExistsInDb = btmSaveComposableVM.doesThisTableExists(collectionName.value.trimStart().trimEnd())
+                                    doesNameExistsInDb = btmSaveComposableVM.doesThisTableExists(
+                                        collectionName.value.trimStart().trimEnd()
+                                    )
                                 }.invokeOnCompletion {
                                     if (!doesNameExistsInDb && collectionName.value.isNotEmpty()) {
                                         coroutineScope.launch {
                                             bookMarksVM.localDB.addCustomBookMarkTopic(
                                                 BookMarkScreenGridNames(
-                                                    name = collectionName.value.trimStart().trimEnd(),
+                                                    name = collectionName.value.trimStart()
+                                                        .trimEnd(),
                                                     imgUrlForGrid = imageURLForGrid,
                                                     data = listOf(data)
                                                 )
@@ -276,16 +293,24 @@ fun BtmSaveComposableContent(
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
-                                    } else if (collectionName.value.isEmpty()){
+                                    } else if (collectionName.value.isEmpty()) {
                                         Toast.makeText(
                                             context,
                                             "Collection name can't be empty:(",
                                             Toast.LENGTH_SHORT
                                         ).show()
-                                    }else {
+                                    } else if (!doesNameExistsInDb && collectionName.value == "APOD" || !doesNameExistsInDb && collectionName.value == "Rovers" || !doesNameExistsInDb && collectionName.value == "News") {
                                         Toast.makeText(
                                             context,
-                                            "Collection with the name \"${collectionName.value.trimStart().trimEnd()}\" already exists, use a different name.",
+                                            "use a different name, \"${collectionName.value}\" and few other names for collections are pre-defined:)",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Collection with the name \"${
+                                                collectionName.value.trimStart().trimEnd()
+                                            }\" already exists, use a different name.",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }

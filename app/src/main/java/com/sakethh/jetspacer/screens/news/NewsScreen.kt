@@ -151,6 +151,7 @@ fun NewsScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(70.dp))
                 }
             }) {
+
             Scaffold(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 topBar = {
@@ -168,25 +169,25 @@ fun NewsScreen(navController: NavController) {
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
                     )
                 }) {
-                if (topHeadLinesData.value.isEmpty()) {
-                    Column {
-                        Spacer(modifier = Modifier.height(70.dp))
-                        val status = if (isConnectedToInternet.value) {
-                            Status.LOADING
-                        } else {
-                            Status.NO_INTERNET
+                Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
+                    if (topHeadLinesData.value.isEmpty()) {
+                        Column {
+                            val status = if (isConnectedToInternet.value) {
+                                Status.LOADING
+                            } else {
+                                Status.NO_INTERNET
+                            }
+                            StatusScreen(
+                                title = "Wait a moment!",
+                                description = "Fetching the latest space-related top headlines from around the globe\n" +
+                                        "\n" +
+                                        "if this take toooooo long,\n" +
+                                        "try changing API Keys from Settings(ಥ _ ಥ)",
+                                status = status
+                            )
                         }
-                        StatusScreen(
-                            title = "Wait a moment!",
-                            description = "Fetching the latest space-related top headlines from around the globe\n" +
-                                    "\n" +
-                                    "if this take toooooo long,\n" +
-                                    "try changing API Keys from Settings(ಥ _ ಥ)",
-                            status = status
-                        )
-                    }
-                } else {
-                    Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
+                    } else {
+
                         LazyColumn(
                             contentPadding = it,
                             modifier = Modifier
@@ -259,13 +260,13 @@ fun NewsScreen(navController: NavController) {
                                 Spacer(modifier = Modifier.height(60.dp))
                             }
                         }
-                        PullRefreshIndicator(
-                            refreshing = isRefreshing.value,
-                            state = pullRefreshState,
-                            Modifier.align(Alignment.TopCenter),
-                            scale = true
-                        )
                     }
+                    PullRefreshIndicator(
+                        refreshing = isRefreshing.value,
+                        state = pullRefreshState,
+                        Modifier.align(Alignment.TopCenter),
+                        scale = true
+                    )
                 }
             }
         }
@@ -333,8 +334,9 @@ fun LazyListScope.newsUI(
                             newsBottomSheetContentImpl.sourceURL.value = it.url
                             newsBottomSheetContentImpl.title.value = it.title
                         }
-                    ).fillMaxWidth()
-                    .padding(top = 7.5.dp, bottom=7.5.dp, start = 8.dp, end = 8.dp)
+                    )
+                    .fillMaxWidth()
+                    .padding(top = 7.5.dp, bottom = 7.5.dp, start = 8.dp, end = 8.dp)
                     .wrapContentHeight()
 
             ) {
@@ -448,7 +450,8 @@ fun LazyListScope.newsUI(
                             newsBottomSheetContentImpl.sourceURL.value = it.sourceURL
                             newsBottomSheetContentImpl.title.value = it.title
                         }
-                    ).fillMaxWidth()
+                    )
+                    .fillMaxWidth()
                     .padding(top = 15.dp, start = 8.dp, end = 8.dp)
                     .wrapContentHeight()
 
@@ -639,7 +642,7 @@ fun NewsBottomSheetContent(newsBottomSheetMutableStateDTO: NewsBottomSheetMutabl
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .padding(top = 15.dp, bottom = 15.dp)
+                .padding(top = 10.dp, bottom = 20.dp)
                 .fillMaxWidth()
                 .wrapContentHeight()
         ) {
@@ -648,12 +651,12 @@ fun NewsBottomSheetContent(newsBottomSheetMutableStateDTO: NewsBottomSheetMutabl
                     .height(5.dp)
                     .width(30.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.onPrimary.copy(0.75f))
+                    .background(MaterialTheme.colorScheme.onPrimary.copy(0.50f))
             )
         }
         androidx.compose.material3.Card(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onPrimary), modifier = Modifier
-                .padding(start=15.dp,end=15.dp,bottom=15.dp)
+                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
                 .fillMaxWidth()
                 .height(200.dp), shape = RoundedCornerShape(10.dp)
         ) {
@@ -702,7 +705,8 @@ fun NewsBottomSheetContent(newsBottomSheetMutableStateDTO: NewsBottomSheetMutabl
         bottomList.forEach {
             Row(
                 modifier = Modifier
-                    .clickable { it.onClick() }.padding(top = 10.dp, bottom = 10.dp)
+                    .clickable { it.onClick() }
+                    .padding(top = 10.dp, bottom = 10.dp)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary)
 

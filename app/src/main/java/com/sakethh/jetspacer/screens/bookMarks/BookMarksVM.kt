@@ -19,24 +19,6 @@ class BookMarksVM() : ViewModel() {
     private val coroutineExceptionalHandler =
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
 
-   /*
-   viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            dbImplementation.localDBData().getBookMarkedAPODDBDATA().collect {
-                _bookMarksFromAPODDB.emit(it)
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            dbImplementation.localDBData().getBookMarkedRoverDBDATA().collect {
-                _bookMarksFromRoversDB.emit(it)
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            dbImplementation.localDBData().getBookMarkedNewsDATA().collect {
-                _bookMarksFromNewsDB.emit(it)
-            }
-        }
-   * */
-
     var imgURL = ""
     private val _bookMarksFromAPODDB = MutableStateFlow<List<APOD_DB_DTO>>(emptyList())
     val bookMarksFromAPODDB = _bookMarksFromAPODDB.asStateFlow()
@@ -228,46 +210,6 @@ class BookMarksVM() : ViewModel() {
                         }
                 })
         }
-       /* if (BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
-                .count() == 0 && BookMarksVM.dbImplementation.localDBData()
-                .getBookMarkedAPODDBDATA().first()
-                .isNotEmpty() || BookMarksVM.dbImplementation.localDBData()
-                .getCustomBookMarkTopicData()
-                .count() == 0 && BookMarksVM.dbImplementation.localDBData()
-                .getBookMarkedNewsDATA().first()
-                .isNotEmpty() || BookMarksVM.dbImplementation.localDBData()
-                .getCustomBookMarkTopicData()
-                .count() == 0 && BookMarksVM.dbImplementation.localDBData()
-                .getBookMarkedRoverDBDATA().first()
-                .isNotEmpty()
-        ) {
-            val imgURL: String =
-                if (BookMarksVM.dbImplementation.localDBData().getBookMarkedAPODDBDATA()
-                        .first()
-                        .isNotEmpty()
-                ) {
-                    BookMarksVM.dbImplementation.localDBData().getBookMarkedAPODDBDATA()
-                        .first()[0].imageURL
-                } else if (BookMarksVM.dbImplementation.localDBData()
-                        .getBookMarkedNewsDATA()
-                        .first().isNotEmpty()
-                ) {
-                    BookMarksVM.dbImplementation.localDBData().getBookMarkedNewsDATA()
-                        .first()[0].imageURL
-                } else {
-                    BookMarksVM.dbImplementation.localDBData().getBookMarkedRoverDBDATA()
-                        .first()[0].imageURL
-                }
-            BookMarksVM.dbImplementation.localDBData()
-                .addCustomBookMarkTopic(
-                    bookMarkScreenGridNames = BookMarkScreenGridNames(
-                        name = "Saved",
-                        imgUrlForGrid = imgURL,
-                        data = emptyList(),
-                        savedDataType = SavedDataType.ALL
-                    )
-                )
-        }*/
     }
 }
 

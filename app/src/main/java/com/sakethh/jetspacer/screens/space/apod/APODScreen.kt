@@ -275,7 +275,6 @@ fun APODScreen(navController: NavController) {
                     }
                 } else {
                     Column {
-                        Spacer(modifier = Modifier.height(95.dp))
                         StatusScreen(
                             title = "Wait a moment!",
                             description = "fetching the APOD Data from Space!\n" +

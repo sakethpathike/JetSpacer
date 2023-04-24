@@ -32,10 +32,11 @@ fun StatusScreen(title: String, description: String, status: Status) {
             description
         }
     AppTheme {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart){
         Column(
             modifier = Modifier
                 .background(androidx.compose.material3.MaterialTheme.colorScheme.surface)
-                .fillMaxSize()
+                .wrapContentSize()
                 .verticalScroll(scrollState)
         ) {
             Text(
@@ -67,7 +68,7 @@ fun StatusScreen(title: String, description: String, status: Status) {
                     strokeWidth = 4.dp
                 )
             }
-        }
+        }}
 
     }
 }

@@ -120,6 +120,7 @@ fun SelectedBookMarkScreen(navController: NavController) {
     val isRenameClicked = rememberSaveable { mutableStateOf(false) }
     val isDeleteClicked = rememberSaveable { mutableStateOf(false) }
     val shouldAlertDialogActivate = rememberSaveable { mutableStateOf(false) }
+
     AppTheme {
         ModalBottomSheetLayout(
             sheetContent = {
@@ -311,6 +312,7 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                         text = "Delete this collection",
                                         onClick = {
                                             shouldAlertDialogActivate.value = !shouldAlertDialogActivate.value
+                                            isMoreClicked.value = !isMoreClicked.value
                                             isDeleteClicked.value = !isDeleteClicked.value
                                         },
                                         imageVector = Icons.Outlined.FolderDelete
@@ -709,11 +711,15 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                             }else{
+                                                shouldAlertDialogActivate.value = false
                                                 Toast.makeText(
                                                     context,
-                                                    "Renamed successfully.",
+                                                    "Renamed \"${selectedData.name}\" to \"${renamedValue.value}\" successfully.",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
+                                                navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN) {
+                                                    popUpTo(0)
+                                                }
                                             }
                                         }
                                     }
@@ -725,20 +731,70 @@ fun SelectedBookMarkScreen(navController: NavController) {
                             onClick = {
                                 shouldAlertDialogActivate.value = false
                                 if (isDeleteClicked.value) {
-                                    navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN) {
-                                        popUpTo(0)
-                                    }
-                                    coroutineScope.launch {
-                                        bookMarksVM.localDB.deleteACollectionFromCustomBookMarksDB(
-                                            nameOfTheCollection = selectedData.name
-                                        )
-                                    }.invokeOnCompletion {
-                                        Toast.makeText(
-                                            context,
-                                            "Removed \"${selectedData.name}\" collection permanently.",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                                        when(selectedData.name){
+                                            "APOD" -> {
+                                                coroutineScope.launch {
+                                                    bookMarksVM.localDB.deleteAllDataFromAPODDB()
+                                                }.invokeOnCompletion {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Removed \"${selectedData.name}\" collection permanently.",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN) {
+                                                        popUpTo(0)
+                                                    }
+                                                }
+                                            }
+
+                                            "News" -> {
+                                                coroutineScope.launch {
+                                                    bookMarksVM.localDB.deleteAllDataFromNewsDB()
+                                                }.invokeOnCompletion {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Removed \"${selectedData.name}\" collection permanently.",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN) {
+                                                        popUpTo(0)
+                                                    }
+                                                }
+                                            }
+
+                                            "Rovers" -> {
+                                                coroutineScope.launch {
+                                                    bookMarksVM.localDB.deleteAllDataFromMarsDB()
+                                                }.invokeOnCompletion {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Removed \"${selectedData.name}\" collection permanently.",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN) {
+                                                        popUpTo(0)
+                                                    }
+                                                }
+                                            }
+                                            else -> {
+                                                coroutineScope.launch {
+                                                    bookMarksVM.localDB.deleteACollectionFromCustomBookMarksDB(
+                                                        nameOfTheCollection = selectedData.name
+                                                    )
+                                                }.invokeOnCompletion {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Removed \"${selectedData.name}\" collection permanently.",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                                navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN) {
+                                                    popUpTo(0)
+                                                }
+                                            }
+                                        }
+
+
                                 } else {
                                     if (renamedValue.value == "") {
                                         Toast.makeText(
@@ -757,9 +813,13 @@ fun SelectedBookMarkScreen(navController: NavController) {
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                             }else{
+                                                shouldAlertDialogActivate.value = false
+                                                navController.navigate(NavigationRoutes.BOOKMARKS_SCREEN) {
+                                                    popUpTo(0)
+                                                }
                                                 Toast.makeText(
                                                     context,
-                                                    "Renamed successfully.",
+                                                    "Renamed \"${selectedData.name}\" to \"${renamedValue.value}\" successfully.",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                             }

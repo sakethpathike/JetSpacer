@@ -47,11 +47,16 @@ class SelectedBookMarkScreenVM : ViewModel() {
     val selectedDataType = mutableStateOf(SavedDataType.APOD)
 
     init {
+
         viewModelScope.launch {
-            BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
-                .collect {
-                    _selectedBookMarkData.emit(it[selectedBookMarkIndex])
-                }
+            try {
+                BookMarksVM.dbImplementation.localDBData().getCustomBookMarkTopicData()
+                    .collect {
+                        _selectedBookMarkData.emit(it[selectedBookMarkIndex])
+                    }
+            } catch (e: IndexOutOfBoundsException) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -61,7 +66,7 @@ class SelectedBookMarkScreenVM : ViewModel() {
         updatedNameOfTheCollection: String,
     ): Boolean {
         return if (BookMarksVM.dbImplementation.localDBData()
-                .doesThisTableExistsInCustomBookMarkDB(actualNameOfTheCollection)
+                .doesThisTableExistsInCustomBookMarkDB(updatedNameOfTheCollection)
         ) {
             false
         } else {

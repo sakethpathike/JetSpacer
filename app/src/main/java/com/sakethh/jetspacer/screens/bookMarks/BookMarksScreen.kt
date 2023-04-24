@@ -72,13 +72,13 @@ fun BookMarksScreen(navController: NavController) {
         }
     }
     val bookMarkGridData = bookMarksVM.localDB.getCustomBookMarkTopicData().collectAsState(
-            initial = listOf(
-                BookMarkScreenGridNames(
-                    "", "",
-                    emptyList()
-                )
+        initial = listOf(
+            BookMarkScreenGridNames(
+                "", "",
+                emptyList()
             )
-        ).value
+        )
+    ).value
     val selectedChipIndex = rememberSaveable { mutableStateOf(0) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     AppTheme {
@@ -86,14 +86,14 @@ fun BookMarksScreen(navController: NavController) {
             Column {
                 TopAppBar(scrollBehavior = scrollBehavior, title = {
                     Text(
-                        text = "Bookmarks",
+                        text = "Collections",
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 22.sp,
                         style = MaterialTheme.typography.headlineLarge,
                         modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
                     )
                 })
-                Divider(thickness = 0.25.dp,color=MaterialTheme.colorScheme.onPrimary.copy(0.5f))
+                Divider(thickness = 0.25.dp, color = MaterialTheme.colorScheme.onPrimary.copy(0.5f))
             }
 
         }) {
@@ -149,20 +149,16 @@ fun BookMarksScreen(navController: NavController) {
                             )
                         }
                     }
-                    item{
-                        Spacer(modifier = Modifier.height(60.dp))
+                    item {
+                        Spacer(modifier = Modifier.height(if (bookMarkGridData.count() % 2 == 0) 65.dp else 255.dp))
                     }
                 }
             } else {
-                Column {
-                    Spacer(modifier = Modifier.height(170.dp))
-                    StatusScreen(
-                        title = "Nothing here!",
-                        description = "Bookmark the media you like; you can visit them later from here!",
-                        status = Status.BOOKMARKS_EMPTY
-                    )
-                }
-
+                StatusScreen(
+                    title = "Nothing here!",
+                    description = "Bookmark the media you like; you can visit them later from here!",
+                    status = Status.BOOKMARKS_EMPTY
+                )
             }
         }
     }
