@@ -28,7 +28,7 @@ class IPGeolocationFetching(
                 while (true) {
                     emit(ipgGeoLocationImplementation.getGeoLocationData())
                     kotlinx.coroutines.delay(
-                        Settings.astronomicalTimeInterval.value.toInt().toLong()
+                        "${Settings.astronomicalTimeInterval.value}000".toInt().toLong()
                     )
                 }
             }

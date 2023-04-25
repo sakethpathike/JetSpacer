@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -105,6 +106,7 @@ fun SettingsScreen(
     var isApiKeyValid = false
     val isVerifyingNewApiKeyDialogActive = rememberSaveable { mutableStateOf(false) }
     val isThemeChangeDialogEnabled = rememberSaveable { mutableStateOf(false) }
+    val localURIHandler = LocalUriHandler.current
     AppTheme {
         LazyColumn(
             modifier = Modifier
@@ -248,7 +250,7 @@ fun SettingsScreen(
             }
             item {
                 Text(
-                    text = "\"JetSpacer\" is fueled by a bunch of APIs, two of which are NASA's open API and NewsApi.org's API, which are necessary in order to run this app without any destruction.\n\nThis project uses free tier API access to both of the APIs, which can be exhausted at any time. It is recommended to grab your own or existing API key(s) for both of the APIs in order to avoid any destruction while using this app!\n",
+                    text = "\"JetSpacer\" is fueled by a bunch of APIs, which are necessary in order to run this app without any destruction.\n\nThis project uses free tier API access to most of the APIs, which can be exhausted at any time. It is recommended to grab your own or existing API key(s) for the APIs in order to avoid any destruction while using this app!",
                     style = MaterialTheme.typography.headlineMedium,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onPrimary,
@@ -324,7 +326,7 @@ fun SettingsScreen(
                             inSettingsScreen = true,
                             newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
                                 sourceURL = mutableStateOf(
-                                    "https://2fpvxo3g.bearblog.dev/news-apis-api-keys/"
+                                    "https://2fpvxo3g.bearblog.dev/ipgeolocation-apis-api-keys/"
                                 )
                             ),
                             onClick = {})
@@ -409,7 +411,7 @@ fun SettingsScreen(
                             sourceURL = mutableStateOf("https://2fpvxo3g.bearblog.dev/nasa-api-keys/")
 
                         ),
-                        onClick = {}),
+                        onClick = {}).fillMaxWidth(),
                     title = "NASA API-KEY",
                     description = "Enter the API key in the text box below; this key will be used to access NASA's API."
                 )
@@ -476,7 +478,7 @@ fun SettingsScreen(
                                 "https://2fpvxo3g.bearblog.dev/news-apis-api-keys/"
                             )
                         ),
-                        onClick = {}),
+                        onClick = {}).fillMaxWidth(),
                     title = "NEWS API-KEY",
                     description = "Enter the API key in the text box below; this key will be used to access NewsApi.org's API."
                 )
@@ -552,10 +554,10 @@ fun SettingsScreen(
                         inSettingsScreen = true,
                         newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
                             sourceURL = mutableStateOf(
-                                "https://2fpvxo3g.bearblog.dev/news-apis-api-keys/"
+                                "https://2fpvxo3g.bearblog.dev/ipgeolocation-apis-api-keys/"
                             )
                         ),
-                        onClick = {}),
+                        onClick = {}).fillMaxWidth(),
                     title = "IPGeolocation API-KEY",
                     description = "Enter the API key in the text box below; this key will be used to access IPGeolocation API."
                 )
@@ -639,17 +641,21 @@ fun SettingsScreen(
                     coroutineScope.launch {
                         changeAstronomicalTimeIntervalValue(
                             dataStore = dataStore,
-                            currentDuration = astronomicalDataFetchingRateLimitValue.value
+                            currentDuration = astronomicalDataFetchingRateLimitValue.value.filter {
+                                it.isDigit()
+                            }.trim()
                         )
                         readAstronomicalDataTimeIntervalValue(dataStore)
                     }.invokeOnCompletion {
                         Toast.makeText(
                             context,
-                            "Astronomical Data will be updated at every ${astronomicalDataFetchingRateLimitValue.value} seconds.",
+                            "Astronomical Data will be updated at every ${astronomicalDataFetchingRateLimitValue.value.filter {
+                                it.isDigit()
+                            }.trim()} seconds.",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-                }, solValue = astronomicalDataFetchingRateLimitValue, inSettingsScreen = true)
+                }, solValue = astronomicalDataFetchingRateLimitValue, inSettingsScreen = false)
             }
             item {
                 DividerComposable()
@@ -667,7 +673,7 @@ fun SettingsScreen(
                 IndividualSettingItemComposable(
                     modifier = Modifier.clickable {
                         HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value = true
-                    },
+                    }.fillMaxWidth(),
                     title = "Clear Bookmarks",
                     description = "Remove all bookmarks from local database including custom folders. Cache won't be removed."
                 )
@@ -701,7 +707,7 @@ fun SettingsScreen(
                             )
                         ),
                         {}, inSettingsScreen = true
-                    ),
+                    ).fillMaxWidth(),
                     title = "Source code",
                     description = "The code-base for this android client is public and open-source, checkout repository for further information on how this app works and what tech have been used to make this app alive *_*"
                 )
@@ -711,7 +717,7 @@ fun SettingsScreen(
             }
             item {
                 Text(
-                    text = "Social",
+                    text = "Social(s)",
                     style = MaterialTheme.typography.headlineLarge,
                     fontSize = 24.sp,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -728,31 +734,70 @@ fun SettingsScreen(
                             )
                         ),
                         {}, inSettingsScreen = true
-                    ),
+                    ).fillMaxWidth(),
                     title = "Twitter",
-                    description = "Checkout \"Jet Spacer\" on Twitter for latest updates or anything related to this project"
+                    description = "Checkout \"Jet Spacer\" on Twitter for latest updates or anything related to this project."
                 )
             }
             item {
-                Spacer(modifier = Modifier.height(30.dp))
+                DividerComposable()
+            }
+
+            item {
+                Text(
+                    text = "\uD83D\uDDFF folks",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.titlePadding()
+                )
+            }
+
+            item {
+                Text(
+                    text = "Besides code stuff, these are the helping hands that is used by \"Jetspacer\":",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.descriptionPadding(),
+                    lineHeight = 16.sp,
+                    textAlign= TextAlign.Start
+                )
+            }
+            item {
+                IndividualSettingItemComposable(
+                    modifier = Modifier.redirectToWeb(
+                        navController = navController,
+                        newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
+                            sourceURL = mutableStateOf(
+                                "https://bearblog.dev/"
+                            )
+                        ),
+                        {}, inSettingsScreen = true
+                    ).fillMaxWidth(),
+                    title = "ʕ•ᴥ•ʔ Bear",
+                    description = "Blogging platform without gimmicks."
+                )
             }
             item {
                 Row(
                     modifier = Modifier
                         .clickable {
-                            Modifier.redirectToWeb(
-                                navController = navController,
-                                newsBottomSheetContentImpl = NewsBottomSheetMutableStateDTO(
-                                    sourceURL = mutableStateOf(
-                                        "https://www.flaticon.com/authors/iconfield"
+                            enableBtmBarInWebView = false
+                            if (Settings.inAppBrowserSetting.value) {
+                                WebViewUtils.newsBottomSheetContentImpl =
+                                    NewsBottomSheetMutableStateDTO(
+                                        sourceURL = mutableStateOf(
+                                            "https://www.flaticon.com/authors/iconfield"
+                                        )
                                     )
-                                ),
-                                inSettingsScreen = true,
-                                onClick = {})
+                                navController.navigate(NavigationRoutes.WEB_VIEW_SCREEN)
+                            } else {
+                                localURIHandler.openUri("https://www.flaticon.com/authors/iconfield")
+                            }
                         }
                         .padding(20.dp)
                         .fillMaxWidth()
-
                 ) {
                     Image(
                         modifier = Modifier.size(150.dp),
@@ -760,25 +805,27 @@ fun SettingsScreen(
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Column(
-                    ) {
-                        Text(
-                            text = "App Icon by Iconfield",
-                            style = MaterialTheme.typography.headlineLarge,
-                            fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.titlePadding(),
-                            lineHeight = 20.sp
-                        )
-                        Text(
-                            text = "App icon originally created by Iconfield on Flaticon",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.descriptionPadding(),
-                            lineHeight = 16.sp
-                        )
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart){
+                        Column(modifier = Modifier.wrapContentSize()) {
+                            Text(
+                                text = "App Icon by Iconfield",
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontSize = 18.sp,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.titlePadding(),
+                                lineHeight = 20.sp
+                            )
+                            Text(
+                                text = "App icon originally created by Iconfield on Flaticon.",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.descriptionPadding(),
+                                lineHeight = 16.sp
+                            )
+                        }
                     }
+
                 }
             }
             item {
@@ -1005,7 +1052,7 @@ suspend fun readAstronomicalDataTimeIntervalValue(
 object Settings {
     val inAppBrowserSetting = mutableStateOf(true)
     val selectedTheme = mutableStateOf("Follow system theme")
-    val astronomicalTimeInterval = mutableStateOf("2")
+    val astronomicalTimeInterval = mutableStateOf("10")
 }
 
 fun Modifier.redirectToWeb(

@@ -172,7 +172,7 @@ fun SolTextField(
     AppTheme {
         Row(
             modifier = Modifier
-                .background(if (inSettingsScreen) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary)
+                .background(if (inSettingsScreen || forRateLimit) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary)
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .animateContentSize(), horizontalArrangement = Arrangement.SpaceAround
@@ -205,19 +205,19 @@ fun SolTextField(
                 },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = if (!inSettingsScreen || forRateLimit) KeyboardType.Number else KeyboardType.Ascii,
-                    imeAction = if (!inSettingsScreen) ImeAction.Search else ImeAction.Done
+                    imeAction = if (!inSettingsScreen || !forRateLimit) ImeAction.Search else ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(onDone = {
                     isEditedIconClicked.value = false
                     randomCuriosityCameraVM.currentPage.value = 1
                     if (solValue.value == "") {
-                        if (!inSettingsScreen) {
+                        if (!inSettingsScreen && !forRateLimit) {
                             Toast.makeText(
                                 context,
                                 "Value of sol cannot be empty",
                                 Toast.LENGTH_SHORT
                             ).show()
-                        } else if (forRateLimit) {
+                        } else if (!inSettingsScreen && forRateLimit) {
                             Toast.makeText(
                                 context,
                                 "Duration cannot be empty",
@@ -239,13 +239,13 @@ fun SolTextField(
                     isEditedIconClicked.value = false
                     randomCuriosityCameraVM.currentPage.value = 1
                     if (solValue.value == "") {
-                        if (!inSettingsScreen) {
+                        if (!inSettingsScreen&& !forRateLimit) {
                             Toast.makeText(
                                 context,
                                 "Value of sol cannot be empty",
                                 Toast.LENGTH_SHORT
                             ).show()
-                        } else if (forRateLimit) {
+                        } else if (!inSettingsScreen && forRateLimit) {
                             Toast.makeText(
                                 context,
                                 "Duration cannot be empty",

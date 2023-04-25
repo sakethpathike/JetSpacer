@@ -117,7 +117,7 @@ open class HomeScreenViewModel(
                 } catch (_: Exception) {
                     isConnectionSucceed.value = false
                 }
-                delay(5000L)
+                delay(2000L)
             }
 
         }

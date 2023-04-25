@@ -75,6 +75,7 @@ import com.sakethh.jetspacer.screens.home.HomeScreenViewModel.BookMarkUtils.isAl
 import com.sakethh.jetspacer.screens.home.data.remote.ipGeoLocation.dto.IPGeoLocationDTO
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.ISSLocationDTO
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.IssPosition
+import com.sakethh.jetspacer.screens.settings.Settings
 import com.sakethh.jetspacer.screens.space.apod.APODBottomSheetContent
 import com.sakethh.jetspacer.ui.theme.AppTheme
 import io.ktor.util.reflect.*
@@ -598,13 +599,15 @@ fun HomeScreen(navController: NavController) {
                                         .layoutId("cardTitle")
                                 )
                                 Text(
-                                    text = "Based on your I.P address",
+                                    text = "Data is based on your IP address which gets updated after every ${Settings.astronomicalTimeInterval.value} second(s).",
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 14.sp,
                                     style = MaterialTheme.typography.headlineMedium,
                                     modifier = Modifier
-                                        .padding(start = 10.dp, top = 2.dp)
-                                        .layoutId("cardDescription")
+                                        .padding(start = 10.dp, top = 2.dp,end=50.dp)
+                                        .layoutId("cardDescription"),
+                                    lineHeight = 16.sp,
+                                    textAlign = TextAlign.Start
                                 )
                             }
                             androidx.compose.material3.Divider(
