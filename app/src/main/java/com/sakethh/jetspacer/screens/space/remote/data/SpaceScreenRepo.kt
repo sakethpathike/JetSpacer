@@ -1,6 +1,7 @@
 package com.sakethh.jetspacer.screens.space.remote.data
 
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.httpClient.HTTPClient.ktorClientWithCache
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
@@ -19,7 +20,9 @@ class SpaceScreenImplementation : SpaceScreenService {
     override suspend fun getAPODSpecificDateData(apodDateForURL: String): APOD_DTO {
         return try {
             HomeScreenViewModel.Network.isConnectionSucceed.value = true
-            ktorClientWithCache.get("https://api.nasa.gov/planetary/apod?api_key=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNASAAPIKey}&date=$apodDateForURL").body()
+            val httpResponse = ktorClientWithCache.get("https://api.nasa.gov/planetary/apod?api_key=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNASAAPIKey}&date=$apodDateForURL")
+            CurrentHTTPCodes.apodParticularDateDataHTTPCode.value = httpResponse.status.value
+            httpResponse.body()
         }catch (_:Exception){
             HomeScreenViewModel.Network.isConnectionSucceed.value = false
             APOD_DTO()

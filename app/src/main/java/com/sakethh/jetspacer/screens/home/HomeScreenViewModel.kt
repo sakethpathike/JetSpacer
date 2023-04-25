@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.httpClient.HTTPClient
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODFetching
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
@@ -44,7 +45,6 @@ open class HomeScreenViewModel(
 
 
     init {
-
         when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
             in 0..3 -> {
                 currentPhaseOfDay = "Didn't slept?"
@@ -66,6 +66,8 @@ open class HomeScreenViewModel(
             }
         }
         this.viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
+            CurrentHTTPCodes.ipGeoLocationCurrentHttpCode.value=200
+            CurrentHTTPCodes.apodCurrentHTTPCode.value=200
             loadData()
         }
     }
@@ -85,7 +87,7 @@ open class HomeScreenViewModel(
                         }
                 },
                 async {
-                    getAPODData()
+                        getAPODData()
                 },
                 async {
                     ipGeolocationFetching.getAstronomicalData().collect { ipGeolocationData ->
@@ -98,7 +100,7 @@ open class HomeScreenViewModel(
         }
     }
 
-    suspend fun getAPODData() {
+    private suspend fun getAPODData() {
         apodDataFromAPI.value = apodFetching.getAPOD()
     }
 

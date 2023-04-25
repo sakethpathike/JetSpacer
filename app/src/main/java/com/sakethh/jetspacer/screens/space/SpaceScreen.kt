@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -22,7 +23,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -30,6 +33,7 @@ import androidx.constraintlayout.compose.layoutId
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
 import com.sakethh.jetspacer.localDB.CustomBookMarkData
 import com.sakethh.jetspacer.localDB.SavedDataType
@@ -231,111 +235,155 @@ fun SpaceScreen(navController: NavController) {
                             imgURL = currentDayAPODURL,
                             imageHeight = 110.dp
                         )
-
                     }
                     item {
-                        bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
-                        APODCardComposable(
-                            homeScreenViewModel = homeScreenViewModel,
-                            imageURL = apodData.value.url.toString(),
-                            apodTitle = apodData.value.title.toString(),
-                            apodDate = apodData.value.date.toString(),
-                            apodDescription = apodData.value.explanation.toString(),
-                            imageOnClick = {
-                                spaceScreenVM.btmSheetType.value =
-                                    HomeScreenViewModel.BtmSheetType.Details
-                                coroutineScope.launch {
-                                    bottomSheetState.show()
-                                }.invokeOnCompletion {
-                                    bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
+                        if(CurrentHTTPCodes.apodParticularDateDataHTTPCode.value!=200 || CurrentHTTPCodes.apodCurrentHTTPCode.value!=200){
+                            androidx.compose.material3.Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                                modifier = Modifier
+                                    .padding(15.dp)
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                            ) {
+                                ConstraintLayout(constraintSet = constraintSet) {
+                                    androidx.compose.material3.Icon(
+                                        imageVector = Icons.Default.Error,
+                                        contentDescription = "Icon Of \"Error\"",
+                                        modifier = Modifier
+                                            .padding(top = 15.dp, start = 15.dp)
+                                            .size(25.dp)
+                                            .layoutId("cardIcon"),
+                                        tint = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    androidx.compose.material3.Text(
+                                        text = "NASA API Usage Limit Exhausted!",
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontSize = 18.sp,
+                                        style = MaterialTheme.typography.headlineLarge,
+                                        modifier = Modifier
+                                            .padding(start = 10.dp, top = 10.dp, end = 50.dp)
+                                            .layoutId("cardTitle"),
+                                        lineHeight = 20.sp,
+                                        textAlign = TextAlign.Start
+                                    )
+                                    androidx.compose.material3.Text(
+                                        text = "Change API Key of NASA API from Settings for further data fetching!",
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontSize = 14.sp,
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        modifier = Modifier
+                                            .padding(start = 10.dp, top = 2.dp, end = 50.dp)
+                                            .layoutId("cardDescription"),
+                                        lineHeight = 16.sp,
+                                        textAlign = TextAlign.Start
+                                    )
                                 }
-                            },
-                            cardTopPaddingValue = 0.dp,
-                            inSpaceScreen = true,
-                            changeDateChipOnClick = {
-                                datePickerState.show()
-                            },
-                            apodMediaType = apodData.value.media_type.toString(),
-                            inAPODBottomSheetContent = false,
-                            onBookMarkButtonClick = {
-                                bookMarksVM.imgURL = apodData.value.url.toString()
-                                coroutineScope.launch {
-                                    val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                                    val formattedDate = dateFormat.format(Date())
-                                    didDataGetAddedInDB =
-                                        bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
-                                            this.title = apodData.value.title.toString()
-                                            this.datePublished = apodData.value.date.toString()
-                                            this.description = apodData.value.explanation.toString()
-                                            this.imageURL = apodData.value.url.toString()
-                                            this.mediaType = "image"
-                                            this.isBookMarked = true
-                                            this.category = "APOD"
-                                            this.addedToLocalDBOn = formattedDate
-                                            this.hdImageURL = apodData.value.hdurl.toString()
-                                        })
-                                }.invokeOnCompletion {
-                                    if (didDataGetAddedInDB) {
-                                        Toast.makeText(
-                                            context,
-                                            "Added to bookmarks:)",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } else {
-                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                            true
-                                    }
-                                    bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
-                                }
-                            },
-                            onBookmarkLongPress = {
-                                coroutineScope.launch {
-                                    if (bottomSheetState.isVisible) {
-                                        bottomSheetState.hide()
-                                        spaceScreenVM.btmSheetType.value =
-                                            HomeScreenViewModel.BtmSheetType.BookMarkCollection
-                                    }
-                                }.invokeOnCompletion {
+                                Spacer(modifier = Modifier.height(15.dp))
+                            }
+                        }else{
+                            bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
+                            APODCardComposable(
+                                homeScreenViewModel = homeScreenViewModel,
+                                imageURL = apodData.value.url.toString(),
+                                apodTitle = apodData.value.title.toString(),
+                                apodDate = apodData.value.date.toString(),
+                                apodDescription = apodData.value.explanation.toString(),
+                                imageOnClick = {
                                     spaceScreenVM.btmSheetType.value =
-                                        HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                        HomeScreenViewModel.BtmSheetType.Details
                                     coroutineScope.launch {
                                         bottomSheetState.show()
+                                    }.invokeOnCompletion {
+                                        bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
                                     }
-                                }
-                            },
-                            capturedOnSol = "",
-                            capturedBy = "",
-                            roverName = "",
-                            onConfirmButtonClick = {
-                                triggerHapticFeedback(context = context)
-                                coroutineScope.launch {
-                                    didDataGetAddedInDB =
-                                        bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
-                                }.invokeOnCompletion {
-                                    if (didDataGetAddedInDB) {
-                                        Toast.makeText(
-                                            context,
-                                            "Bookmark didn't got removed as expected, report it:(",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Removed from bookmarks:)",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
+                                },
+                                cardTopPaddingValue = 0.dp,
+                                inSpaceScreen = true,
+                                changeDateChipOnClick = {
+                                    datePickerState.show()
+                                },
+                                apodMediaType = apodData.value.media_type.toString(),
+                                inAPODBottomSheetContent = false,
+                                onBookMarkButtonClick = {
+                                    bookMarksVM.imgURL = apodData.value.url.toString()
+                                    coroutineScope.launch {
+                                        val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                                        val formattedDate = dateFormat.format(Date())
+                                        didDataGetAddedInDB =
+                                            bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                                this.title = apodData.value.title.toString()
+                                                this.datePublished = apodData.value.date.toString()
+                                                this.description = apodData.value.explanation.toString()
+                                                this.imageURL = apodData.value.url.toString()
+                                                this.mediaType = "image"
+                                                this.isBookMarked = true
+                                                this.category = "APOD"
+                                                this.addedToLocalDBOn = formattedDate
+                                                this.hdImageURL = apodData.value.hdurl.toString()
+                                            })
+                                    }.invokeOnCompletion {
+                                        if (didDataGetAddedInDB) {
+                                            Toast.makeText(
+                                                context,
+                                                "Added to bookmarks:)",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                                true
+                                        }
+                                        bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
                                     }
-                                    bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                                }
-                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                    false
-                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                                    false
-                            },
-                            apodHDImageURL = apodData.value.hdurl.toString()
-                        )
+                                },
+                                onBookmarkLongPress = {
+                                    coroutineScope.launch {
+                                        if (bottomSheetState.isVisible) {
+                                            bottomSheetState.hide()
+                                            spaceScreenVM.btmSheetType.value =
+                                                HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                        }
+                                    }.invokeOnCompletion {
+                                        spaceScreenVM.btmSheetType.value =
+                                            HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                        coroutineScope.launch {
+                                            bottomSheetState.show()
+                                        }
+                                    }
+                                },
+                                capturedOnSol = "",
+                                capturedBy = "",
+                                roverName = "",
+                                onConfirmButtonClick = {
+                                    triggerHapticFeedback(context = context)
+                                    coroutineScope.launch {
+                                        didDataGetAddedInDB =
+                                            bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                                    }.invokeOnCompletion {
+                                        if (didDataGetAddedInDB) {
+                                            Toast.makeText(
+                                                context,
+                                                "Bookmark didn't got removed as expected, report it:(",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                                .show()
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Removed from bookmarks:)",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                                .show()
+                                        }
+                                        bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                                    }
+                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                        false
+                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                                        false
+                                },
+                                apodHDImageURL = apodData.value.hdurl.toString()
+                            )
+                        }
                     }
                     item {
                         CardForRowGridRaw(

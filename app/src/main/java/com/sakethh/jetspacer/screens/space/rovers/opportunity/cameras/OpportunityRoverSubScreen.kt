@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
@@ -288,10 +289,16 @@ fun OpportunityRoverSubScreen(cameraName: OpportunityCamerasVM.OpportunityCamera
                     status = Status.LOADING
                 )
 
-            } else if (solImagesData.isEmpty()) {
+            } else if (solImagesData.isEmpty() && CurrentHTTPCodes.marsRoversDataHTTPCode.value==200) {
                 StatusScreen(
                     title = "4ooooFour",
                     description = statusDescriptionFor404Screen,
+                    status = Status.FOURO4InMarsScreen
+                )
+            } else if (solImagesData.isEmpty() && CurrentHTTPCodes.marsRoversDataHTTPCode.value!=200) {
+                StatusScreen(
+                    title = "NASA API Usage Limit Exhausted!",
+                    description = "Change API Key of NASA API from Settings for further data fetching!",
                     status = Status.FOURO4InMarsScreen
                 )
             } else {

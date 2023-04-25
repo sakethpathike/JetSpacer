@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.RandomCameraCuriosityFetching
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 
@@ -17,6 +18,10 @@ class RandomCuriosityCameraVM(private val randomCameraCuriosityFetching: RandomC
             randomCameraCuriosityFetching.getRandomCuriosityData(sol, page)
         randomCuriosityCameraData.value += _randomCuriosityCameraData.value
         isRandomCamerasDataLoaded.value = true
+    }
+
+    init {
+        CurrentHTTPCodes.marsRoversDataHTTPCode.value=200
     }
 
     fun clearRandomCuriosityCameraData() {

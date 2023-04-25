@@ -1,6 +1,7 @@
 package com.sakethh.jetspacer.screens.space.rovers.curiosity.manifest
 
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.httpClient.HTTPClient
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
@@ -25,8 +26,9 @@ class ManifestForCuriosityImplementation : ManifestService {
 suspend inline fun <reified T : Any> manifestForCuriosityDataRequest(roverName: String): T {
     return try {
         HomeScreenViewModel.Network.isConnectionSucceed.value = true
-        HTTPClient.ktorClientWithCache.get("https://api.nasa.gov/mars-photos/api/v1/manifests/$roverName?api_key=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNASAAPIKey}")
-            .body()
+        val httpResponse = HTTPClient.ktorClientWithCache.get("https://api.nasa.gov/mars-photos/api/v1/manifests/$roverName?api_key=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNASAAPIKey}")
+        CurrentHTTPCodes.marsRoversDataHTTPCode.value = httpResponse.status.value
+        httpResponse.body()
     }catch (_:Exception){
         HomeScreenViewModel.Network.isConnectionSucceed.value = false
         RoverManifestDTO as T

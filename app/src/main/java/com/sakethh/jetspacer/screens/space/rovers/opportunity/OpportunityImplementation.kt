@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.screens.space.rovers.opportunity
 
 import androidx.compose.runtime.mutableStateListOf
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.httpClient.HTTPClient
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
@@ -19,8 +20,13 @@ class OpportunityCamerasImplementation : OpportunityCamerasService {
     override suspend fun getRandomCamerasData(sol: Int, page: Int): RandomCameraDTO {
         return try {
             HomeScreenViewModel.Network.isConnectionSucceed.value = true
-            HTTPClient.ktorClientWithCache.get("https://api.nasa.gov/mars-photos/api/v1/rovers/opportunity/photos?sol=$sol&page=$page&api_key=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNASAAPIKey}")
-                .body()
+            val httpResponse = HTTPClient.ktorClientWithCache.get(
+                "https://api.nasa.gov/mars-photos/api/v1/rovers/opportunity/photos?sol=$sol&page=$page&api_key=${
+                    BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNASAAPIKey
+                }"
+            )
+            CurrentHTTPCodes.marsRoversDataHTTPCode.value = httpResponse.status.value
+            httpResponse.body()
         } catch (_: Exception) {
             HomeScreenViewModel.Network.isConnectionSucceed.value = false
             RandomCameraDTO(emptyList())
@@ -79,15 +85,20 @@ suspend fun specificRoverHTTPRequest(
     roverName: String,
     cameraName: String,
     sol: Int,
-    page: Int
+    page: Int,
 ): List<List<Photo>> {
     val dataList = mutableStateListOf<Deferred<List<Photo>>>()
     coroutineScope {
         val _dataList = async {
             try {
                 HomeScreenViewModel.Network.isConnectionSucceed.value = true
-                HTTPClient.ktorClientWithCache.get("https://api.nasa.gov/mars-photos/api/v1/rovers/$roverName/photos?sol=$sol&camera=$cameraName&page=$page&api_key=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNASAAPIKey}")
-                    .body<RandomCameraDTO>().photos
+                val httpResponse = HTTPClient.ktorClientWithCache.get(
+                    "https://api.nasa.gov/mars-photos/api/v1/rovers/$roverName/photos?sol=$sol&camera=$cameraName&page=$page&api_key=${
+                        BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNASAAPIKey
+                    }"
+                )
+                CurrentHTTPCodes.marsRoversDataHTTPCode.value = httpResponse.status.value
+                httpResponse.body<RandomCameraDTO>().photos
             } catch (_: Exception) {
                 HomeScreenViewModel.Network.isConnectionSucceed.value = false
                 emptyList()

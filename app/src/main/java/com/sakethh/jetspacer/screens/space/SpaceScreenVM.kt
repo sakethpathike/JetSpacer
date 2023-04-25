@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.data.remote.apod.APODFetching
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
@@ -25,6 +26,8 @@ class SpaceScreenVM(
 
     init {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
+            CurrentHTTPCodes.apodCurrentHTTPCode.value=200
+            CurrentHTTPCodes.apodParticularDateDataHTTPCode.value=200
             loadData()
         }
     }
@@ -35,6 +38,7 @@ class SpaceScreenVM(
     }
 
     suspend fun getAPODDateData(apodDateForURL: String) {
+        CurrentHTTPCodes.apodParticularDateDataHTTPCode.value=200
         apodDateData.value =
             spaceScreenImplementation.getAPODSpecificDateData(apodDateForURL = apodDateForURL)
     }

@@ -11,9 +11,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -24,11 +27,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +44,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.downloads.DownloadImpl
 import com.sakethh.jetspacer.localDB.APOD_DB_DTO
@@ -95,6 +101,7 @@ fun APODScreen(navController: NavController) {
         }
     }
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
     AppTheme {
         val isRefreshing = remember { mutableStateOf(false) }
         val pullRefreshState =
@@ -137,153 +144,195 @@ fun APODScreen(navController: NavController) {
                             scrolledContainerColor = MaterialTheme.colorScheme.surface
                         )
                     )
-                    Divider(thickness = 0.25.dp,color=MaterialTheme.colorScheme.onPrimary.copy(0.5f))
+                    Divider(
+                        thickness = 0.25.dp,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(0.5f)
+                    )
                 }
 
             }) {
-                var didDataGetAddedInDB = false
-                if (apodScreenVM.isDataForAPODPaginationLoaded.value && apodScreenVM.dataForPagination.value.isNotEmpty()) {
-                    ModalBottomSheetLayout(
-                        sheetContent = {
-                            when (apodScreenVM.currentBtmSheetType.value) {
-                                HomeScreenViewModel.BtmSheetType.Details -> {
-                                    APODBottomSheetContent(
-                                        inCustomBookmarkScreen = true,
-                                        homeScreenViewModel = homeScreenVM,
-                                        apodURL = apodURL.value,
-                                        apodTitle = apodTitle.value,
-                                        apodDate = apodDate.value,
-                                        apodDescription = apodDescription.value,
-                                        apodMediaType = apodMediaType.value,
-                                        onBookMarkClick = {
-                                            triggerHapticFeedback(context = context)
-                                            bookMarksVM.imgURL = apodURL.value
-                                            coroutineScope.launch {
-                                                val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                                                val formattedDate = dateFormat.format(Date())
-                                                didDataGetAddedInDB =
-                                                    bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
-                                                        this.title = apodTitle.value
-                                                        this.datePublished = apodDate.value
-                                                        this.description = apodDescription.value
-                                                        this.imageURL = apodURL.value
-                                                        this.mediaType = "image"
-                                                        this.isBookMarked = true
-                                                        this.category = "APOD"
-                                                        this.addedToLocalDBOn = formattedDate
-                                                        this.hdImageURL = apodHDURL.value
-                                                    })
-                                            }.invokeOnCompletion {
-                                                if (didDataGetAddedInDB) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Added to bookmarks:)",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                } else {
-                                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                                        true
-                                                }
-                                                bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                                            }
-                                        },
-                                        onBookMarkLongPress = {
-                                            coroutineScope.launch {
-                                                if (bottomSheetState.isVisible) {
-                                                    bottomSheetState.hide()
-                                                }
-                                            }.invokeOnCompletion {
-                                                apodScreenVM.currentBtmSheetType.value =
-                                                    HomeScreenViewModel.BtmSheetType.BookMarkCollection
-                                                coroutineScope.launch {
-                                                    bottomSheetState.show()
-                                                }
-                                            }
-                                        },
-                                        imageHDURL = apodHDURL.value
-                                    )
-                                }
-
-                                HomeScreenViewModel.BtmSheetType.BookMarkCollection -> {
-                                    BtmSaveComposableContent(
-                                        coroutineScope = coroutineScope,
-                                        modalBottomSheetState = bottomSheetState,
-                                        data = CustomBookMarkData(
-                                            dataType = SavedDataType.APOD,
-                                            data = APOD_DB_DTO().apply {
-                                                this.title = apodTitle.value
-                                                this.category = "image"
-                                                this.isBookMarked = true
-                                                this.imageURL = apodURL.value
-                                                this.mediaType = "image"
-                                                this.datePublished = apodDate.value
-                                                this.description = apodDescription.value
-                                                this.hdImageURL = apodHDURL.value
-                                            })
-                                    )
-                                }
-                            }
-                        },
-                        sheetState = bottomSheetState,
-                        sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
-                        sheetBackgroundColor = MaterialTheme.colorScheme.primary
+                if (CurrentHTTPCodes.apodPaginationHTTPCode.value != 200) {
+                    Column(
+                        modifier = Modifier
+                            .background(androidx.compose.material3.MaterialTheme.colorScheme.surface)
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
                     ) {
-                        LazyVerticalStaggeredGrid(
-                            columns = StaggeredGridCells.Adaptive(150.dp),
+                        Spacer(modifier = Modifier.height(35.dp))
+                        Text(
+                            text = "NASA API Usage Limit Exhausted!",
+                            fontSize = 45.sp,
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Start,
+                            lineHeight = 47.sp,
+                            softWrap = true,
+                            modifier = Modifier.padding(top = 75.dp, start = 25.dp, end = 50.dp)
+                        )
+                        Text(
+                            text = "Change API Key of NASA API from Settings for further data fetching!",
+                            fontSize = 25.sp,
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Start,
+                            lineHeight = 30.sp,
+                            softWrap = true,
+                            modifier = Modifier.padding(top = 15.dp, start = 25.dp, end = 20.dp)
+                        )
+                        androidx.compose.material3.Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = "Icon Of \"Error\"",
                             modifier = Modifier
-                                .background(MaterialTheme.colorScheme.surface)
-                                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                                .padding(it)
-                        ) {
-                            itemsIndexed(apodScreenVM.dataForPagination.value) { currentAPODItemIndex: Int, apodItem: APOD_DTO ->
-                                if (currentAPODItemIndex == apodScreenVM.dataForPagination.value.lastIndex - 6) {
-                                    coroutineScope.launch {
-                                        apodScreenVM.fetchAPODData()
-                                    }
-                                }
-                                Coil_Image().CoilImage(
-                                    imgURL = apodItem.url.toString(),
-                                    contentDescription = apodItem.title.toString(),
-                                    modifier = Modifier
-                                        .padding(1.dp)
-                                        .clickable {
-                                            apodScreenVM.currentBtmSheetType.value =
-                                                HomeScreenViewModel.BtmSheetType.Details
-                                            coroutineScope.launch {
-                                                apodDate.value = apodItem.date.toString()
-                                                apodURL.value = apodItem.url.toString()
-                                                apodDescription.value =
-                                                    apodItem.explanation.toString()
-                                                apodTitle.value = apodItem.title.toString()
-                                                apodMediaType.value = apodItem.media_type.toString()
-                                                apodHDURL.value = apodItem.hdurl.toString()
-                                                bottomSheetState.show()
-                                            }
-                                        },
-                                    onError = painterResource(id = R.drawable.satellite_filled)
-                                )
-                            }
-                            item {
-                                androidx.compose.material3.CircularProgressIndicator(
-                                    modifier = Modifier.padding(50.dp),
-                                    strokeWidth = 4.dp,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier = Modifier.height(75.dp))
-                            }
-                        }
+                                .padding(start = 25.dp, top = 22.dp)
+                                .size(40.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 } else {
-                    Column {
-                        Spacer(modifier = Modifier.height(75.dp))
-                        StatusScreen(
-                            title = "Wait a moment!",
-                            description = "fetching the APOD Data from Space!\n" +
-                                    "\n" +
-                                    "if this take toooooo long,\n" +
-                                    "try changing API Keys from Settings(ಥ _ ಥ)",
-                            status = Status.LOADING
-                        )
+                    var didDataGetAddedInDB = false
+                    if (apodScreenVM.isDataForAPODPaginationLoaded.value && apodScreenVM.dataForPagination.value.isNotEmpty()) {
+                        ModalBottomSheetLayout(
+                            sheetContent = {
+                                when (apodScreenVM.currentBtmSheetType.value) {
+                                    HomeScreenViewModel.BtmSheetType.Details -> {
+                                        APODBottomSheetContent(
+                                            inCustomBookmarkScreen = true,
+                                            homeScreenViewModel = homeScreenVM,
+                                            apodURL = apodURL.value,
+                                            apodTitle = apodTitle.value,
+                                            apodDate = apodDate.value,
+                                            apodDescription = apodDescription.value,
+                                            apodMediaType = apodMediaType.value,
+                                            onBookMarkClick = {
+                                                triggerHapticFeedback(context = context)
+                                                bookMarksVM.imgURL = apodURL.value
+                                                coroutineScope.launch {
+                                                    val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                                                    val formattedDate = dateFormat.format(Date())
+                                                    didDataGetAddedInDB =
+                                                        bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                                            this.title = apodTitle.value
+                                                            this.datePublished = apodDate.value
+                                                            this.description = apodDescription.value
+                                                            this.imageURL = apodURL.value
+                                                            this.mediaType = "image"
+                                                            this.isBookMarked = true
+                                                            this.category = "APOD"
+                                                            this.addedToLocalDBOn = formattedDate
+                                                            this.hdImageURL = apodHDURL.value
+                                                        })
+                                                }.invokeOnCompletion {
+                                                    if (didDataGetAddedInDB) {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Added to bookmarks:)",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    } else {
+                                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                                            true
+                                                    }
+                                                    bookMarksVM.doesThisExistsInAPODIconTxt(
+                                                        bookMarksVM.imgURL
+                                                    )
+                                                }
+                                            },
+                                            onBookMarkLongPress = {
+                                                coroutineScope.launch {
+                                                    if (bottomSheetState.isVisible) {
+                                                        bottomSheetState.hide()
+                                                    }
+                                                }.invokeOnCompletion {
+                                                    apodScreenVM.currentBtmSheetType.value =
+                                                        HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                                    coroutineScope.launch {
+                                                        bottomSheetState.show()
+                                                    }
+                                                }
+                                            },
+                                            imageHDURL = apodHDURL.value
+                                        )
+                                    }
+
+                                    HomeScreenViewModel.BtmSheetType.BookMarkCollection -> {
+                                        BtmSaveComposableContent(
+                                            coroutineScope = coroutineScope,
+                                            modalBottomSheetState = bottomSheetState,
+                                            data = CustomBookMarkData(
+                                                dataType = SavedDataType.APOD,
+                                                data = APOD_DB_DTO().apply {
+                                                    this.title = apodTitle.value
+                                                    this.category = "image"
+                                                    this.isBookMarked = true
+                                                    this.imageURL = apodURL.value
+                                                    this.mediaType = "image"
+                                                    this.datePublished = apodDate.value
+                                                    this.description = apodDescription.value
+                                                    this.hdImageURL = apodHDURL.value
+                                                })
+                                        )
+                                    }
+                                }
+                            },
+                            sheetState = bottomSheetState,
+                            sheetShape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
+                            sheetBackgroundColor = MaterialTheme.colorScheme.primary
+                        ) {
+                            LazyVerticalStaggeredGrid(
+                                columns = StaggeredGridCells.Adaptive(150.dp),
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                                    .padding(it)
+                            ) {
+                                itemsIndexed(apodScreenVM.dataForPagination.value) { currentAPODItemIndex: Int, apodItem: APOD_DTO ->
+                                    if (currentAPODItemIndex == apodScreenVM.dataForPagination.value.lastIndex - 6) {
+                                        coroutineScope.launch {
+                                            apodScreenVM.fetchAPODData()
+                                        }
+                                    }
+                                    Coil_Image().CoilImage(
+                                        imgURL = apodItem.url.toString(),
+                                        contentDescription = apodItem.title.toString(),
+                                        modifier = Modifier
+                                            .padding(1.dp)
+                                            .clickable {
+                                                apodScreenVM.currentBtmSheetType.value =
+                                                    HomeScreenViewModel.BtmSheetType.Details
+                                                coroutineScope.launch {
+                                                    apodDate.value = apodItem.date.toString()
+                                                    apodURL.value = apodItem.url.toString()
+                                                    apodDescription.value =
+                                                        apodItem.explanation.toString()
+                                                    apodTitle.value = apodItem.title.toString()
+                                                    apodMediaType.value =
+                                                        apodItem.media_type.toString()
+                                                    apodHDURL.value = apodItem.hdurl.toString()
+                                                    bottomSheetState.show()
+                                                }
+                                            },
+                                        onError = painterResource(id = R.drawable.satellite_filled)
+                                    )
+                                }
+                                item {
+                                    androidx.compose.material3.CircularProgressIndicator(
+                                        modifier = Modifier.padding(50.dp),
+                                        strokeWidth = 4.dp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.height(75.dp))
+                                }
+                            }
+                        }
+                    } else {
+                        Column {
+                            Spacer(modifier = Modifier.height(75.dp))
+                            StatusScreen(
+                                title = "Wait a moment!",
+                                description = "fetching the APOD Data from Space!",
+                                status = Status.LOADING
+                            )
+                        }
                     }
                 }
             }

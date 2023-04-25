@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
 import com.sakethh.jetspacer.screens.space.apod.remote.data.APODPaginationFetching
@@ -25,6 +26,7 @@ class APODScreenVM(private val apodPaginationFetching: APODPaginationFetching = 
     val currentBtmSheetType= mutableStateOf(HomeScreenViewModel.BtmSheetType.Details)
 
     init {
+        CurrentHTTPCodes.apodPaginationHTTPCode.value=200
         viewModelScope.launch(Dispatchers.IO) {
             fetchAPODData()
         }

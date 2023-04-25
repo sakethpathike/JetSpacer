@@ -49,6 +49,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.localDB.NewsDB
 import com.sakethh.jetspacer.navigation.NavigationRoutes
@@ -170,7 +171,7 @@ fun NewsScreen(navController: NavController) {
                     )
                 }) {
                 Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
-                    if (topHeadLinesData.value.isEmpty()) {
+                    if (topHeadLinesData.value.isEmpty() && CurrentHTTPCodes.newsAPICurrentHttpCode.value==200) {
                         Column {
                             val status = if (isConnectedToInternet.value) {
                                 Status.LOADING
@@ -180,15 +181,25 @@ fun NewsScreen(navController: NavController) {
                             Spacer(modifier = Modifier.height(35.dp))
                             StatusScreen(
                                 title = "Wait a moment!",
-                                description = "Fetching the latest space-related top headlines from around the globe\n" +
-                                        "\n" +
-                                        "if this take toooooo long,\n" +
-                                        "try changing API Keys from Settings(ಥ _ ಥ)",
+                                description = "Fetching the latest space-related top headlines from around the globe.",
                                 status = status
                             )
                         }
-                    } else {
-
+                    } else if(topHeadLinesData.value.isEmpty() && CurrentHTTPCodes.newsAPICurrentHttpCode.value!=200) {
+                        Column {
+                            val status = if (isConnectedToInternet.value) {
+                                Status.NO_INTERNET
+                            } else {
+                                Status.NO_INTERNET
+                            }
+                            Spacer(modifier = Modifier.height(35.dp))
+                            StatusScreen(
+                                title = "API usage limit exhausted!",
+                                description = "Change API Key for News-API from Settings to move further with latest top-headlines around space.",
+                                status = status
+                            )
+                        }
+                    }else{
                         LazyColumn(
                             contentPadding = it,
                             modifier = Modifier

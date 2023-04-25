@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.screens.home.data.remote.apod
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.home.data.remote.apod.dto.APOD_DTO
@@ -17,11 +18,13 @@ import kotlinx.coroutines.coroutineScope
 class APODImplementation(
     private val ktorClient: HttpClient,
     private val apodURL: String,
-) : APODService{
+) : APODService {
     override suspend fun getAPOD(): APOD_DTO {
         return try {
             HomeScreenViewModel.Network.isConnectionSucceed.value = true
-            ktorClient.get(apodURL).body()
+            val httpResponse = ktorClient.get(apodURL)
+            CurrentHTTPCodes.apodCurrentHTTPCode.value = httpResponse.status.value
+            httpResponse.body()
         } catch (_: Exception) {
             HomeScreenViewModel.Network.isConnectionSucceed.value = false
             APOD_DTO()
@@ -34,7 +37,9 @@ class APODImplementation(
             val _data = async {
                 try {
                     HomeScreenViewModel.Network.isConnectionSucceed.value = true
-                    ktorClient.get(apodURL).body<List<APOD_DTO>>()
+                    val httpResponse = ktorClient.get(apodURL)
+                    CurrentHTTPCodes.apodPaginationHTTPCode.value = httpResponse.status.value
+                    httpResponse.body<List<APOD_DTO>>()
                 } catch (_: Exception) {
                     HomeScreenViewModel.Network.isConnectionSucceed.value = false
                     emptyList()

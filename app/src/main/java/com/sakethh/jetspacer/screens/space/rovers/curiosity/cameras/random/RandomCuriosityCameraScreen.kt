@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Search
@@ -21,16 +22,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.constraintSet
@@ -73,74 +77,74 @@ fun ModifiedLazyVerticalGrid(
         }
     }
     AppTheme {
-        LazyVerticalStaggeredGrid(
-            state = lazyStaggeredGridState,
-            columns = StaggeredGridCells.Adaptive(150.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-        ) {
-            itemsIndexed(listData) { itemIndex: Int, dataItem: Photo ->
-                Coil_Image().CoilImage(
-                    imgURL = dataItem.img_src,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .padding(1.dp)
-                        .clickable {
-                            roversScreenVM.currentBtmSheetType.value =
-                                HomeScreenViewModel.BtmSheetType.Details
-                            coroutineScope.launch {
-                                roversScreenVM.openRoverBtmSheet(
-                                    imgURL = dataItem.img_src,
-                                    capturedOn = dataItem.earth_date,
-                                    cameraName = dataItem.camera.full_name,
-                                    sol = dataItem.sol.toString(),
-                                    earthDate = dataItem.earth_date,
-                                    roverName = dataItem.rover.name,
-                                    roverStatus = dataItem.rover.status,
-                                    launchingDate = dataItem.rover.launch_date,
-                                    landingDate = dataItem.rover.landing_date
+            LazyVerticalStaggeredGrid(
+                state = lazyStaggeredGridState,
+                columns = StaggeredGridCells.Adaptive(150.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                itemsIndexed(listData) { itemIndex: Int, dataItem: Photo ->
+                    Coil_Image().CoilImage(
+                        imgURL = dataItem.img_src,
+                        contentDescription = "",
+                        modifier = Modifier
+                            .padding(1.dp)
+                            .clickable {
+                                roversScreenVM.currentBtmSheetType.value =
+                                    HomeScreenViewModel.BtmSheetType.Details
+                                coroutineScope.launch {
+                                    roversScreenVM.openRoverBtmSheet(
+                                        imgURL = dataItem.img_src,
+                                        capturedOn = dataItem.earth_date,
+                                        cameraName = dataItem.camera.full_name,
+                                        sol = dataItem.sol.toString(),
+                                        earthDate = dataItem.earth_date,
+                                        roverName = dataItem.rover.name,
+                                        roverStatus = dataItem.rover.status,
+                                        launchingDate = dataItem.rover.launch_date,
+                                        landingDate = dataItem.rover.landing_date
+                                    )
+                                }
+                            },
+                        onError = painterResource(id = R.drawable.satellite_filled),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                item {
+                    if (loadMoreButtonBooleanExpression) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(15.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    onLoadMoreImagesBtnPress()
+                                },
+                                border = BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.onSurface
+                                )
+                            ) {
+                                Text(
+                                    text = "Load more images",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
-                        },
-                    onError = painterResource(id = R.drawable.satellite_filled),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            item {
-                if (loadMoreButtonBooleanExpression) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(15.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                onLoadMoreImagesBtnPress()
-                            },
-                            border = BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.onSurface
-                            )
-                        ) {
-                            Text(
-                                text = "Load more images",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
                         }
-                    }
-                }/* else if (roversScreenVM.atLastIndexInLazyVerticalGrid.value && curiosityCameraVM._fhazDataFromAPI.value.isEmpty()) {
+                    }/* else if (roversScreenVM.atLastIndexInLazyVerticalGrid.value && curiosityCameraVM._fhazDataFromAPI.value.isEmpty()) {
                     CircularProgressIndicator(
                         modifier = Modifier.padding(50.dp),
                         strokeWidth = 4.dp,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }*/
-                Spacer(modifier = Modifier.height(125.dp))
+                    Spacer(modifier = Modifier.height(125.dp))
+                }
             }
-        }
     }
 
 }
@@ -205,7 +209,7 @@ fun SolTextField(
                 },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = if (!inSettingsScreen || forRateLimit) KeyboardType.Number else KeyboardType.Ascii,
-                    imeAction = if (!inSettingsScreen || !forRateLimit) ImeAction.Search else ImeAction.Done
+                    imeAction = if (!inSettingsScreen && !forRateLimit) ImeAction.Search else ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(onDone = {
                     isEditedIconClicked.value = false

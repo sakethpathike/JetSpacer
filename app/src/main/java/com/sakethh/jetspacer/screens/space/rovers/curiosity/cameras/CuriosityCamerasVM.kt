@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.RandomCuriosityCameraVM
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 import kotlinx.coroutines.async
@@ -12,9 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class CuriosityCamerasVM(
     private val randomCuriosityCameraVM: RandomCuriosityCameraVM = RandomCuriosityCameraVM(),
-    private val curiosityCamerasImplementation: CuriosityCamerasImplementation = CuriosityCamerasImplementation()
+    private val curiosityCamerasImplementation: CuriosityCamerasImplementation = CuriosityCamerasImplementation(),
 ) :
-    ViewModel() { val _fhazDataFromAPI = mutableStateOf<List<Photo>>(emptyList())
+    ViewModel() {
+    val _fhazDataFromAPI = mutableStateOf<List<Photo>>(emptyList())
     val fhazDataFromAPI = mutableStateOf<List<Photo>>(emptyList())
     val isFHAZDataLoaded = mutableStateOf(false)
 
@@ -41,6 +43,10 @@ class CuriosityCamerasVM(
     val _navcamDataFromAPI = mutableStateOf<List<Photo>>(emptyList())
     val navcamDataFromAPI = mutableStateOf<List<Photo>>(emptyList())
     val isNAVCAMDataLoaded = mutableStateOf(false)
+
+    init {
+        CurrentHTTPCodes.marsRoversDataHTTPCode.value = 200
+    }
 
     suspend fun getFHAZData(sol: Int, page: Int) {
         _fhazDataFromAPI.value = curiosityCamerasImplementation.getFHAZData(sol, page)
@@ -95,26 +101,33 @@ class CuriosityCamerasVM(
             CuriosityCameras.FHAZ -> {
                 fhazDataFromAPI.value = emptyList()
             }
+
             CuriosityCameras.RHAZ -> {
                 rhazDataFromAPI.value = emptyList()
             }
+
             CuriosityCameras.MAST -> {
                 mastDataFromAPI.value = emptyList()
             }
+
             CuriosityCameras.CHEMCAM -> {
                 chemcamDataFromAPI.value = emptyList()
             }
+
             CuriosityCameras.MAHLI -> {
                 mahliDataFromAPI.value = emptyList()
             }
+
             CuriosityCameras.MARDI -> {
                 mardiDataFromAPI.value = emptyList()
             }
+
             CuriosityCameras.NAVCAM -> {
                 navcamDataFromAPI.value = emptyList()
             }
+
             CuriosityCameras.RANDOM -> {
-                randomCuriosityCameraVM.randomCuriosityCameraData.value= emptyList()
+                randomCuriosityCameraVM.randomCuriosityCameraData.value = emptyList()
             }
         }
     }

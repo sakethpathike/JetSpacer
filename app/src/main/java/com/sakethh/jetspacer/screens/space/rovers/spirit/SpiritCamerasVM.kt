@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.screens.space.rovers.spirit
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.space.rovers.RoverCameras
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 import com.sakethh.jetspacer.screens.space.rovers.opportunity.OpportunityCamerasVM
@@ -55,6 +56,10 @@ class SpiritCamerasVM(private val spiritCamerasImplementation: SpiritCamerasImpl
     val navcamDataFromAPI = mutableStateOf<List<Photo>>(emptyList())
     val isNAVCAMDataLoaded = mutableStateOf(false)
 
+
+    init {
+        CurrentHTTPCodes.marsRoversDataHTTPCode.value=200
+    }
 
     suspend fun retrieveSpiritCameraData(cameraName: SpiritCameras, sol: Int, page: Int) {
         when (cameraName) {

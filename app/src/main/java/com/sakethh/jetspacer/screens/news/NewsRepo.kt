@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.screens.news
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.httpClient.HTTPClient
 import com.sakethh.jetspacer.screens.bookMarks.BookMarksVM
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
@@ -15,15 +16,28 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 
-class NewsRepo : NewsService {
-    override suspend fun getCustomNewsList(page: Int): List<List<Article>> {
+class NewsRepo {
+    suspend fun getCustomNewsList(page: Int): List<List<Article>> {
         val _data = mutableStateListOf<Deferred<List<Article>>>()
         val client = try {
-            HomeScreenViewModel.Network.isConnectionSucceed.value =true
-            HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=$page&apiKey=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNewsAPIKey}")
-                .body()
-        }catch (_:Exception){
-            HomeScreenViewModel.Network.isConnectionSucceed.value=false
+            HomeScreenViewModel.Network.isConnectionSucceed.value = true
+            val httpResponse = HTTPClient.ktorClientWithoutCache.get(
+                "https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=$page&apiKey=${
+                    BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNewsAPIKey
+                }"
+            )
+            coroutineScope {
+                awaitAll(
+                    async {
+                        CurrentHTTPCodes.newsAPICurrentHttpCode.value = httpResponse.status.value
+                    },
+                    async {
+                        NewsVM.NewsData.totalResults = httpResponse.body<NewsDTO>().totalResults
+                    })
+            }
+            httpResponse.body()
+        } catch (_: Exception) {
+            HomeScreenViewModel.Network.isConnectionSucceed.value = false
             NewsDTO()
         }
         coroutineScope {
@@ -40,34 +54,4 @@ class NewsRepo : NewsService {
         }
         return _data.awaitAll()
     }
-
-    override suspend fun getStatus(): String {
-        val client = HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=1&apiKey=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNewsAPIKey}")
-            .body<NewsDTO>()
-        return try {
-            HomeScreenViewModel.Network.isConnectionSucceed.value = true
-            client.status
-        } catch (_: Exception) {
-            HomeScreenViewModel.Network.isConnectionSucceed.value = false
-            ""
-        }
-    }
-
-    override suspend fun totalResults(): Int {
-        val client = HTTPClient.ktorClientWithoutCache.get("https://newsapi.org/v2/top-headlines?q=space&category=science&language=en&sortBy=popularity&pageSize=10&page=1&apiKey=${BookMarksVM.dbImplementation.localDBData().getAPIKeys()[0].currentNewsAPIKey}")
-            .body<NewsDTO>()
-        return try {
-            HomeScreenViewModel.Network.isConnectionSucceed.value = true
-            client.totalResults
-        } catch (_: Exception) {
-            HomeScreenViewModel.Network.isConnectionSucceed.value = false
-            0
-        }
-    }
-}
-
-interface NewsService {
-    suspend fun getCustomNewsList(page: Int): List<List<Article>>
-    suspend fun getStatus(): String
-    suspend fun totalResults(): Int
 }

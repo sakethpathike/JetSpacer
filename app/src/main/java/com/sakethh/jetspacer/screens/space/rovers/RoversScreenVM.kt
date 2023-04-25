@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.CuriosityRoverScreen
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.CuriosityCamerasScreen
@@ -20,6 +21,11 @@ class RoversScreenVM : ViewModel() {
         RoversScreen(screenName = "Opportunity", composable = { OpportunityMainRoverScreen() }),
         RoversScreen(screenName = "Spirit", composable = { SpiritRoverMainScreen() }),
     )
+
+    init {
+        CurrentHTTPCodes.marsRoversDataHTTPCode.value=200
+    }
+
     val curiosityRoverCameras = listOf(
         RoverCameras(
             name = "Random",

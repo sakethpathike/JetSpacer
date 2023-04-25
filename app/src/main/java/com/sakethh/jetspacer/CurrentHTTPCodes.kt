@@ -1,7 +1,12 @@
 package com.sakethh.jetspacer
 
+import androidx.compose.runtime.mutableStateOf
+
 object CurrentHTTPCodes {
-    var apodCurrentHTTPCode = 200
-    var ipGeoLocationCurrentHttpCode = 200
-    var newsAPICurrentHttpCode = 200
+    val apodCurrentHTTPCode = mutableStateOf(200)
+    val apodPaginationHTTPCode = mutableStateOf(200)
+    val apodParticularDateDataHTTPCode = mutableStateOf(200)
+    val ipGeoLocationCurrentHttpCode = mutableStateOf(200)
+    val newsAPICurrentHttpCode = mutableStateOf(200)
+    val marsRoversDataHTTPCode = mutableStateOf(200)
 }

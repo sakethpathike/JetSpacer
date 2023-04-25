@@ -63,6 +63,7 @@ import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.sakethh.jetspacer.Coil_Image
 import com.sakethh.jetspacer.Constants
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.downloads.DownloadImpl
 import com.sakethh.jetspacer.localDB.*
@@ -313,23 +314,25 @@ fun HomeScreen(navController: NavController) {
                     BtmSaveComposableContent(
                         coroutineScope = coroutineScope,
                         modalBottomSheetState = bottomSheetState,
-                        data = CustomBookMarkData(dataType = SavedDataType.APOD, data = APOD_DB_DTO().apply {
-                            this.imageURL =
-                                homeScreenViewModel.apodDataFromAPI.value.url.toString()
-                            this.hdImageURL =
-                                homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-                            this.category =
-                                homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
-                            this.isBookMarked = true
-                            this.datePublished =
-                                homeScreenViewModel.apodDataFromAPI.value.date.toString()
-                            this.description =
-                                homeScreenViewModel.apodDataFromAPI.value.explanation.toString()
-                            this.title =
-                                homeScreenViewModel.apodDataFromAPI.value.title.toString()
-                            this.mediaType =
-                                homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
-                        })
+                        data = CustomBookMarkData(
+                            dataType = SavedDataType.APOD,
+                            data = APOD_DB_DTO().apply {
+                                this.imageURL =
+                                    homeScreenViewModel.apodDataFromAPI.value.url.toString()
+                                this.hdImageURL =
+                                    homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
+                                this.category =
+                                    homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
+                                this.isBookMarked = true
+                                this.datePublished =
+                                    homeScreenViewModel.apodDataFromAPI.value.date.toString()
+                                this.description =
+                                    homeScreenViewModel.apodDataFromAPI.value.explanation.toString()
+                                this.title =
+                                    homeScreenViewModel.apodDataFromAPI.value.title.toString()
+                                this.mediaType =
+                                    homeScreenViewModel.apodDataFromAPI.value.media_type.toString()
+                            })
                     )
                 }
             }
@@ -380,116 +383,18 @@ fun HomeScreen(navController: NavController) {
                 /*APOD*/
                 var doesExistsInDB = false
                 item {
-                    APODCardComposable(
-                        homeScreenViewModel = homeScreenViewModel,
-                        imageURL = apodURL,
-                        apodDate = apodDate,
-                        apodDescription = apodDescription,
-                        apodTitle = apodTitle,
-                        imageOnClick = {
-                            homeScreenViewModel.currentBtmSheetType.value =
-                                HomeScreenViewModel.BtmSheetType.Details
-                            coroutineScope.launch {
-                                bottomSheetState.show()
-                            }
-                        },
-                        apodMediaType = apodMediaType,
-                        inAPODBottomSheetContent = false,
-                        bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
-                        onBookMarkButtonClick = {
-                            triggerHapticFeedback(context = context)
-                            bookMarksVM.imgURL = apodURL
-                            val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                            val formattedDate = dateFormat.format(Date())
-                            coroutineScope.launch {
-                                didDataGetAddedInDB =
-                                    bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
-                                        this.title = apodTitle
-                                        this.datePublished = apodDate
-                                        this.description = apodDescription
-                                        this.imageURL = apodURL
-                                        this.mediaType = "image"
-                                        this.isBookMarked = true
-                                        this.category = "APOD"
-                                        this.hdImageURL =
-                                            homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-                                        this.addedToLocalDBOn = formattedDate
-                                    })
-                            }.invokeOnCompletion {
-                                if (didDataGetAddedInDB) {
-                                    Toast.makeText(
-                                        context,
-                                        "Added to bookmarks:)",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-                                } else {
-                                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                        true
-                                }
-                                bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                            }
-                        },
-                        onBookmarkLongPress = {
-                            coroutineScope.launch {
-                                if (bottomSheetState.isVisible) {
-                                    bottomSheetState.hide()
-                                }
-                            }.invokeOnCompletion {
-                                homeScreenViewModel.currentBtmSheetType.value =
-                                    HomeScreenViewModel.BtmSheetType.BookMarkCollection
-                                coroutineScope.launch {
-                                    bottomSheetState.show()
-                                }
-                            }
-                        },
-                        capturedOnSol = "",
-                        capturedBy = "",
-                        roverName = "",
-                        onConfirmButtonClick = {
-                            triggerHapticFeedback(context = context)
-                            coroutineScope.launch {
-                                doesExistsInDB =
-                                    bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
-                            }.invokeOnCompletion {
-                                if (doesExistsInDB) {
-                                    Toast.makeText(
-                                        context,
-                                        "Bookmark didn't got removed as expected, report it:(",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Removed from bookmarks:)",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-                                }
-                                bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                            }
-                            HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                                false
-                        },
-                        apodHDImageURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-                    )
-                }
-
-                /*ISS Location*/
-                item {
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                        modifier = Modifier
-                            .padding(start = 15.dp, end = 15.dp, top = 30.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                    ) {
-                        Column {
+                    if (CurrentHTTPCodes.apodCurrentHTTPCode.value != 200) {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                            modifier = Modifier
+                                .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                        ) {
                             ConstraintLayout(constraintSet = constraintSet) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.satellite_icon),
-                                    contentDescription = "Icon Of \"Satellite\"",
+                                    imageVector = Icons.Default.Error,
+                                    contentDescription = "Icon Of \"Error\"",
                                     modifier = Modifier
                                         .padding(top = 15.dp, start = 15.dp)
                                         .size(25.dp)
@@ -497,119 +402,284 @@ fun HomeScreen(navController: NavController) {
                                     tint = MaterialTheme.colorScheme.onPrimary
                                 )
                                 Text(
-                                    text = "ISS Info",
+                                    text = "NASA API Usage Limit Exhausted!",
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 18.sp,
                                     style = MaterialTheme.typography.headlineLarge,
                                     modifier = Modifier
-                                        .padding(start = 10.dp, top = 10.dp)
-                                        .layoutId("titleWithIcon")
-                                )
-                            }
-                            androidx.compose.material3.Divider(
-                                thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.padding(
-                                    start = 25.dp,
-                                    end = 25.dp,
-                                    top = 15.dp,
-                                    bottom = 15.dp
-                                )
-                            )
-                            Text(
-                                text = issInfo,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontSize = 16.sp,
-                                style = MaterialTheme.typography.headlineLarge,
-                                modifier = Modifier
-                                    .padding(start = 15.dp, end = 15.dp),
-                                lineHeight = 18.sp,
-                                textAlign = TextAlign.Start
-                            )
-                            androidx.compose.material3.Divider(
-                                thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.padding(
-                                    start = 25.dp,
-                                    end = 25.dp,
-                                    top = 15.dp,
-                                    bottom = 15.dp
-                                )
-                            )
-                            CardRowGrid(
-                                lhsCardTitle = "Latitude",
-                                lhsCardValue = issLatitude,
-                                isLHSShimmerVisible = issLatitude.isEmpty(),
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-
-                                isRHSShimmerVisible = issLongitude.isEmpty(),
-                                isLHSShimmering = issLatitude.isEmpty(),
-                                isRHSShimmering = issLongitude.isEmpty(),
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-
-                                rhsCardTitle = "Longitude",
-                                rhsCardValue = issLongitude
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Time Stamp",
-                                lhsCardValue = issTimestamp,
-
-                                isLHSShimmering = issTimestamp.toInt() == 0,
-                                isLHSShimmerVisible = issTimestamp.toInt() == 0,
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                rhsCardTitle = "",
-                                rhsCardValue = "",
-                                rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                        }
-                    }
-                }
-                /*Astronomical Data*/
-                item {
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                        modifier = Modifier
-                            .padding(start = 15.dp, end = 15.dp, top = 30.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                    ) {
-                        Column {
-                            ConstraintLayout(constraintSet = constraintSet) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.list_icon),
-                                    contentDescription = "Icon Of \"DataExploration\"",
-                                    modifier = Modifier
-                                        .padding(top = 15.dp, start = 15.dp)
-                                        .size(25.dp)
-                                        .layoutId("cardIcon"),
-                                    tint = MaterialTheme.colorScheme.onPrimary
+                                        .padding(start = 10.dp, top = 10.dp,end=50.dp)
+                                        .layoutId("cardTitle"),
+                                    lineHeight = 20.sp,
+                                    textAlign = TextAlign.Start
                                 )
                                 Text(
-                                    text = "Astronomical Data",
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = 18.sp,
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    modifier = Modifier
-                                        .padding(start = 10.dp, top = 10.dp)
-                                        .layoutId("cardTitle")
-                                )
-                                Text(
-                                    text = "Data is based on your IP address which gets updated after every ${Settings.astronomicalTimeInterval.value} second(s).",
+                                    text = "Change API Key of NASA API from Settings for further data fetching!",
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 14.sp,
                                     style = MaterialTheme.typography.headlineMedium,
                                     modifier = Modifier
-                                        .padding(start = 10.dp, top = 2.dp,end=50.dp)
+                                        .padding(start = 10.dp, top = 2.dp, end = 50.dp)
                                         .layoutId("cardDescription"),
                                     lineHeight = 16.sp,
                                     textAlign = TextAlign.Start
                                 )
                             }
+                            Spacer(modifier = Modifier.height(15.dp))
+                        }
+                    } else{
+                APODCardComposable(
+                    homeScreenViewModel = homeScreenViewModel,
+                    imageURL = apodURL,
+                    apodDate = apodDate,
+                    apodDescription = apodDescription,
+                    apodTitle = apodTitle,
+                    imageOnClick = {
+                        homeScreenViewModel.currentBtmSheetType.value =
+                            HomeScreenViewModel.BtmSheetType.Details
+                        coroutineScope.launch {
+                            bottomSheetState.show()
+                        }
+                    },
+                    apodMediaType = apodMediaType,
+                    inAPODBottomSheetContent = false,
+                    bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                    onBookMarkButtonClick = {
+                        triggerHapticFeedback(context = context)
+                        bookMarksVM.imgURL = apodURL
+                        val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                        val formattedDate = dateFormat.format(Date())
+                        coroutineScope.launch {
+                            didDataGetAddedInDB =
+                                bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                    this.title = apodTitle
+                                    this.datePublished = apodDate
+                                    this.description = apodDescription
+                                    this.imageURL = apodURL
+                                    this.mediaType = "image"
+                                    this.isBookMarked = true
+                                    this.category = "APOD"
+                                    this.hdImageURL =
+                                        homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
+                                    this.addedToLocalDBOn = formattedDate
+                                })
+                        }.invokeOnCompletion {
+                            if (didDataGetAddedInDB) {
+                                Toast.makeText(
+                                    context,
+                                    "Added to bookmarks:)",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            } else {
+                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                    true
+                            }
+                            bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                        }
+                    },
+                    onBookmarkLongPress = {
+                        coroutineScope.launch {
+                            if (bottomSheetState.isVisible) {
+                                bottomSheetState.hide()
+                            }
+                        }.invokeOnCompletion {
+                            homeScreenViewModel.currentBtmSheetType.value =
+                                HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                            coroutineScope.launch {
+                                bottomSheetState.show()
+                            }
+                        }
+                    },
+                    capturedOnSol = "",
+                    capturedBy = "",
+                    roverName = "",
+                    onConfirmButtonClick = {
+                        triggerHapticFeedback(context = context)
+                        coroutineScope.launch {
+                            doesExistsInDB =
+                                bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                        }.invokeOnCompletion {
+                            if (doesExistsInDB) {
+                                Toast.makeText(
+                                    context,
+                                    "Bookmark didn't got removed as expected, report it:(",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Removed from bookmarks:)",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                            bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                        }
+                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                            false
+                    },
+                    apodHDImageURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
+                )
+            }
+            }
+
+            /*ISS Location*/
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier
+                        .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ) {
+                    Column {
+                        ConstraintLayout(constraintSet = constraintSet) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.satellite_icon),
+                                contentDescription = "Icon Of \"Satellite\"",
+                                modifier = Modifier
+                                    .padding(top = 15.dp, start = 15.dp)
+                                    .size(25.dp)
+                                    .layoutId("cardIcon"),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                text = "ISS Info",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 18.sp,
+                                style = MaterialTheme.typography.headlineLarge,
+                                modifier = Modifier
+                                    .padding(start = 10.dp, top = 10.dp)
+                                    .layoutId("titleWithIcon")
+                            )
+                        }
+                        androidx.compose.material3.Divider(
+                            thickness = 0.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(
+                                start = 25.dp,
+                                end = 25.dp,
+                                top = 15.dp,
+                                bottom = 15.dp
+                            )
+                        )
+                        Text(
+                            text = issInfo,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.headlineLarge,
+                            modifier = Modifier
+                                .padding(start = 15.dp, end = 15.dp),
+                            lineHeight = 18.sp,
+                            textAlign = TextAlign.Start
+                        )
+                        androidx.compose.material3.Divider(
+                            thickness = 0.dp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(
+                                start = 25.dp,
+                                end = 25.dp,
+                                top = 15.dp,
+                                bottom = 15.dp
+                            )
+                        )
+                        CardRowGrid(
+                            lhsCardTitle = "Latitude",
+                            lhsCardValue = issLatitude,
+                            isLHSShimmerVisible = issLatitude.isEmpty(),
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+
+                            isRHSShimmerVisible = issLongitude.isEmpty(),
+                            isLHSShimmering = issLatitude.isEmpty(),
+                            isRHSShimmering = issLongitude.isEmpty(),
+                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+
+                            rhsCardTitle = "Longitude",
+                            rhsCardValue = issLongitude
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        CardRowGrid(
+                            lhsCardTitle = "Time Stamp",
+                            lhsCardValue = issTimestamp,
+
+                            isLHSShimmering = issTimestamp.toInt() == 0,
+                            isLHSShimmerVisible = issTimestamp.toInt() == 0,
+                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                            rhsCardTitle = "",
+                            rhsCardValue = "",
+                            rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                    }
+                }
+            }
+            /*Astronomical Data*/
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier
+                        .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ) {
+                        Column {
+                            if (CurrentHTTPCodes.ipGeoLocationCurrentHttpCode.value == 200) {
+                                ConstraintLayout(constraintSet = constraintSet) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.list_icon),
+                                        contentDescription = "Icon Of \"DataExploration\"",
+                                        modifier = Modifier
+                                            .padding(top = 15.dp, start = 15.dp)
+                                            .size(25.dp)
+                                            .layoutId("cardIcon"),
+                                        tint = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Text(
+                                        text = "Astronomical Data",
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontSize = 18.sp,
+                                        style = MaterialTheme.typography.headlineLarge,
+                                        modifier = Modifier
+                                            .padding(start = 10.dp, top = 10.dp)
+                                            .layoutId("cardTitle")
+                                    )
+
+                                    Text(
+                                        text = "Data is based on your IP address which gets updated after every ${Settings.astronomicalTimeInterval.value} second(s).",
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontSize = 14.sp,
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        modifier = Modifier
+                                            .padding(start = 10.dp, top = 2.dp, end = 50.dp)
+                                            .layoutId("cardDescription"),
+                                        lineHeight = 16.sp,
+                                        textAlign = TextAlign.Start
+                                    )
+                                }
+                            }else{
+                                Row(modifier=Modifier.fillMaxWidth()){
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.list_icon),
+                                        contentDescription = "Icon Of \"DataExploration\"",
+                                        modifier = Modifier
+                                            .padding(top = 15.dp, start = 15.dp)
+                                            .size(25.dp),
+                                        tint = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Text(
+                                        text = "Astronomical Data",
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontSize = 18.sp,
+                                        style = MaterialTheme.typography.headlineLarge,
+                                        modifier = Modifier
+                                            .padding(start = 10.dp, top = 15.dp)
+                                    )
+                                }
+                            }
                             androidx.compose.material3.Divider(
                                 thickness = 0.dp,
                                 color = MaterialTheme.colorScheme.onPrimary,
@@ -620,6 +690,53 @@ fun HomeScreen(navController: NavController) {
                                     bottom = 15.dp
                                 )
                             )
+
+                            if (CurrentHTTPCodes.ipGeoLocationCurrentHttpCode.value != 200) {
+                                ConstraintLayout(constraintSet = constraintSet) {
+                                    Icon(
+                                        imageVector = Icons.Default.Error,
+                                        contentDescription = "Icon Of \"Error\"",
+                                        modifier = Modifier
+                                            .padding(top = 15.dp, start = 15.dp)
+                                            .size(25.dp)
+                                            .layoutId("cardIcon"),
+                                        tint = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Text(
+                                        text = "IPGeolocation API Usage Limit Exhausted!",
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontSize = 18.sp,
+                                        style = MaterialTheme.typography.headlineLarge,
+                                        modifier = Modifier
+                                            .padding(start = 10.dp, top = 15.dp,end=50.dp)
+                                            .layoutId("cardTitle"),
+                                        lineHeight = 20.sp,
+                                        textAlign = TextAlign.Start
+                                    )
+                                    Text(
+                                        text = "Change API Key of IPGeolocation API from Settings for further data fetching!",
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontSize = 14.sp,
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        modifier = Modifier
+                                            .padding(start = 10.dp, top = 2.dp, end = 60.dp)
+                                            .layoutId("cardDescription"),
+                                        lineHeight = 16.sp,
+                                        textAlign = TextAlign.Start
+                                    )
+                                }
+
+                                androidx.compose.material3.Divider(
+                                    thickness = 0.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.padding(
+                                        start = 25.dp,
+                                        end = 25.dp,
+                                        top = 30.dp,
+                                        bottom = 15.dp
+                                    )
+                                )
+                            }else{
                             Text(
                                 text = currentTimeInfo,
                                 color = MaterialTheme.colorScheme.onPrimary,
@@ -736,51 +853,52 @@ fun HomeScreen(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.height(15.dp))
                         }
-                    }
-                    Spacer(modifier = Modifier.height(80.dp))
-                }
-            }
-            PullRefreshIndicator(
-                refreshing = isRefreshing.value,
-                state = pullRefreshState,
-                Modifier.align(Alignment.TopCenter),
-                scale = true
-            )
-        }
-        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
-            AlertDialogForDeletingFromDB(
-                bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
-                onConfirmBtnClick = {
-                    triggerHapticFeedback(context = context)
-                    coroutineScope.launch {
-                        didDataGetAddedInDB =
-                            bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL)
-                    }.invokeOnCompletion {
-                        if (didDataGetAddedInDB) {
-                            Toast.makeText(
-                                context,
-                                "Bookmark didn't got removed as expected, report it:(",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Removed from bookmarks:)",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
                         }
-                        bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
-                    }
-                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                        false
-                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                        false
                 }
-            )
+                Spacer(modifier = Modifier.height(80.dp))
+            }
         }
+        PullRefreshIndicator(
+            refreshing = isRefreshing.value,
+            state = pullRefreshState,
+            Modifier.align(Alignment.TopCenter),
+            scale = true
+        )
     }
+    if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+        AlertDialogForDeletingFromDB(
+            bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+            onConfirmBtnClick = {
+                triggerHapticFeedback(context = context)
+                coroutineScope.launch {
+                    didDataGetAddedInDB =
+                        bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL)
+                }.invokeOnCompletion {
+                    if (didDataGetAddedInDB) {
+                        Toast.makeText(
+                            context,
+                            "Bookmark didn't got removed as expected, report it:(",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Removed from bookmarks:)",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                    bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
+                }
+                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                    false
+                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                    false
+            }
+        )
+    }
+}
 
 }
 
@@ -901,8 +1019,8 @@ fun CardForRowGridRaw(
         } else {
             Modifier.padding(top = 4.dp)
         }
-    val height= remember {  mutableStateOf(0.dp) }
-    val density= LocalDensity.current
+    val height = remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
     AppTheme {
         Card(
             modifier = cardModifier,
@@ -910,8 +1028,8 @@ fun CardForRowGridRaw(
         ) {
             Row {
                 Column(
-                    modifier = Modifier.onGloballyPositioned { 
-                        height.value= with(density){
+                    modifier = Modifier.onGloballyPositioned {
+                        height.value = with(density) {
                             it.size.height.toDp()
                         }
                     }
@@ -919,36 +1037,36 @@ fun CardForRowGridRaw(
                     Column(
                         modifier = lhsTextColumnModifier
                     ) {
-                    Text(
-                        text = title,
-                        color = MaterialTheme.colorScheme.onSecondary,
-                        fontSize = 14.sp,
-                        style = MaterialTheme.typography.headlineMedium,
-                        lineHeight = 16.sp,
-                        softWrap = true,
-                        textAlign = TextAlign.Start
-                    )
-                    Text(
-                        text = value,
-                        color = MaterialTheme.colorScheme.onSecondary,
-                        fontSize = 16.sp,
-                        style = MaterialTheme.typography.headlineLarge,
-                        lineHeight = 18.sp,
-                        softWrap = true,
-                        textAlign = TextAlign.Start, modifier = textModifier
-                    )
-                }
+                        Text(
+                            text = title,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.headlineMedium,
+                            lineHeight = 16.sp,
+                            softWrap = true,
+                            textAlign = TextAlign.Start
+                        )
+                        Text(
+                            text = value,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.headlineLarge,
+                            lineHeight = 18.sp,
+                            softWrap = true,
+                            textAlign = TextAlign.Start, modifier = textModifier
+                        )
+                    }
                 }
                 if (inSpaceScreen) {
-                        Coil_Image().CoilImage(
-                            imgURL = imgURL,
-                            contentDescription = "",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(height.value),
-                            onError = painterResource(id = R.drawable.satellite_filled),
-                            contentScale = ContentScale.Crop
-                        )
+                    Coil_Image().CoilImage(
+                        imgURL = imgURL,
+                        contentDescription = "",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(height.value),
+                        onError = painterResource(id = R.drawable.satellite_filled),
+                        contentScale = ContentScale.Crop
+                    )
                 }
             }
         }

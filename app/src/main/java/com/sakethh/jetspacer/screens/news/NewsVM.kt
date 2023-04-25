@@ -3,6 +3,8 @@ package com.sakethh.jetspacer.screens.news
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.CurrentHTTPCodes
+import com.sakethh.jetspacer.screens.news.NewsVM.NewsData.totalResults
 import com.sakethh.jetspacer.screens.news.dto.Article
 import kotlinx.coroutines.*
 
@@ -13,7 +15,6 @@ class NewsVM(private val newsRepo: NewsRepo = NewsRepo()) : ViewModel() {
     val totalNewsCount = mutableStateOf(0)
     private val coroutineExceptionalHandler =
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
-
     companion object {
         val newsBottomSheetContentImpl = mutableStateOf(
             NewsBottomSheetMutableStateDTO(
@@ -28,7 +29,8 @@ class NewsVM(private val newsRepo: NewsRepo = NewsRepo()) : ViewModel() {
 
     init {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            loadTopHeadLinesData()
+            CurrentHTTPCodes.newsAPICurrentHttpCode.value=200
+                loadTopHeadLinesData()
         }
     }
 
@@ -45,8 +47,8 @@ class NewsVM(private val newsRepo: NewsRepo = NewsRepo()) : ViewModel() {
         }
     }
 
-    private suspend fun totalNewsCount() {
-        totalNewsCount.value = newsRepo.totalResults()
+    private fun totalNewsCount() {
+        totalNewsCount.value = totalResults
     }
 
     suspend fun reloadTopHeadLinesData() {
@@ -58,5 +60,6 @@ class NewsVM(private val newsRepo: NewsRepo = NewsRepo()) : ViewModel() {
 
     object NewsData {
         var currentPage = 1
+        var totalResults = 25
     }
 }

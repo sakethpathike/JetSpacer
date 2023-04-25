@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.screens.space.rovers.opportunity
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.space.rovers.RoverCameras
 import com.sakethh.jetspacer.screens.space.rovers.curiosity.cameras.random.remote.data.dto.Photo
 import com.sakethh.jetspacer.screens.space.rovers.opportunity.cameras.OpportunityRoverSubScreen
@@ -55,6 +56,9 @@ class OpportunityCamerasVM(private val opportunityCamerasImplementation: Opportu
     val navcamDataFromAPI = mutableStateOf<List<Photo>>(emptyList())
     val isNAVCAMDataLoaded = mutableStateOf(false)
 
+    init {
+        CurrentHTTPCodes.marsRoversDataHTTPCode.value=200
+    }
 
     suspend fun retrieveOpportunityCameraData(cameraName: OpportunityCameras, sol: Int, page: Int) {
         when (cameraName) {

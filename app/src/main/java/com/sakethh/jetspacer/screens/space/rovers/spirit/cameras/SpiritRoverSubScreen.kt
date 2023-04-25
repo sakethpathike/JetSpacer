@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sakethh.jetspacer.CurrentHTTPCodes
 import com.sakethh.jetspacer.screens.Status
 import com.sakethh.jetspacer.screens.StatusScreen
 import com.sakethh.jetspacer.screens.space.rovers.RoversScreenVM
@@ -85,6 +86,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                     page = 0
                 )
             }
+
             SpiritCamerasVM.SpiritCameras.RHAZ -> {
                 spiritVM.retrieveSpiritCameraData(
                     cameraName = SpiritCamerasVM.SpiritCameras.RHAZ,
@@ -92,6 +94,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                     page = 0
                 )
             }
+
             SpiritCamerasVM.SpiritCameras.FHAZ -> {
                 spiritVM.retrieveSpiritCameraData(
                     cameraName = SpiritCamerasVM.SpiritCameras.FHAZ,
@@ -99,6 +102,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                     page = 0
                 )
             }
+
             SpiritCamerasVM.SpiritCameras.PANCAM -> {
                 spiritVM.retrieveSpiritCameraData(
                     cameraName = SpiritCamerasVM.SpiritCameras.PANCAM,
@@ -106,6 +110,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                     page = 0
                 )
             }
+
             SpiritCamerasVM.SpiritCameras.NAVCAM -> {
                 spiritVM.retrieveSpiritCameraData(
                     cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM,
@@ -113,6 +118,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                     page = 0
                 )
             }
+
             SpiritCamerasVM.SpiritCameras.RANDOM -> {
                 spiritVM.retrieveSpiritCameraData(
                     cameraName = SpiritCamerasVM.SpiritCameras.RANDOM,
@@ -137,6 +143,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                     )
                 }
             }
+
             SpiritCamerasVM.SpiritCameras.RHAZ -> {
                 spiritVM.isRHAZCamDataLoaded.value = false
                 spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.RHAZ)
@@ -148,6 +155,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                     )
                 }
             }
+
             SpiritCamerasVM.SpiritCameras.FHAZ -> {
                 spiritVM.isFHAZDataLoaded.value = false
                 spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.FHAZ)
@@ -159,6 +167,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                     )
                 }
             }
+
             SpiritCamerasVM.SpiritCameras.PANCAM -> {
                 spiritVM.isPancamDataLoaded.value = false
                 spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.PANCAM)
@@ -170,6 +179,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                     )
                 }
             }
+
             SpiritCamerasVM.SpiritCameras.NAVCAM -> {
                 spiritVM.isNAVCAMDataLoaded.value = false
                 spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.NAVCAM)
@@ -181,6 +191,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                     )
                 }
             }
+
             SpiritCamerasVM.SpiritCameras.RANDOM -> {
                 spiritVM.isRandomCamerasDataLoaded.value = false
                 spiritVM.clearSpiritCameraData(cameraName = SpiritCamerasVM.SpiritCameras.RANDOM)
@@ -238,60 +249,66 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
             drawerScrimColor = Color.Transparent,
             backgroundColor = Color.Transparent,
             sheetBackgroundColor = Color.Transparent,
-            sheetPeekHeight = 0.dp,sheetContent = {
-        Snackbar(
-            containerColor = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier
-                .padding(start = 20.dp, end = 20.dp, bottom = 70.dp)
-                .wrapContentHeight()
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(15.dp)
-        ) {
-            Text(
-                text = "You've reached the end, change the sol value to explore more!",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onSecondary,
-                softWrap = true,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Start,
-                lineHeight = 18.sp
-            )
-        }
-    }) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(it)
-        ) {
-            SolTextField(solValue = currentScreenSolValue, onContinueClick = {
+            sheetPeekHeight = 0.dp, sheetContent = {
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .padding(start = 20.dp, end = 20.dp, bottom = 70.dp)
+                        .wrapContentHeight()
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(15.dp)
+                ) {
+                    Text(
+                        text = "You've reached the end, change the sol value to explore more!",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        softWrap = true,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Start,
+                        lineHeight = 18.sp
+                    )
+                }
+            }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(it)
+            ) {
+                SolTextField(solValue = currentScreenSolValue, onContinueClick = {
                     loadData()
-            })
-            val statusDescriptionForLoadingScreen =
-                if (cameraName != SpiritCamerasVM.SpiritCameras.RANDOM) {
-                    "fetching the images from this camera that were captured on sol ${currentScreenSolValue.value}\n\nif this take toooooo long,\ntry changing API Keys from Settings(ಥ _ ಥ)"
-                } else {
-                    "fetching the images that were captured on sol ${currentScreenSolValue.value}"
-                }
-            val statusDescriptionFor404Screen =
-                if (cameraName != SpiritCamerasVM.SpiritCameras.RANDOM) {
-                    "No images were captured by this camera on sol ${currentScreenSolValue.value}. Change the sol value; it may give results"
-                } else {
-                    "No images were captured on sol ${currentScreenSolValue.value}. Change the sol value; it may give results."
-                }
-            if (!isDataLoaded) {
-                StatusScreen(
-                    title = "Wait a moment!",
-                    description = statusDescriptionForLoadingScreen,
-                    status = Status.LOADING
-                )
+                })
+                val statusDescriptionForLoadingScreen =
+                    if (cameraName != SpiritCamerasVM.SpiritCameras.RANDOM) {
+                        "fetching the images from this camera that were captured on sol ${currentScreenSolValue.value}\n\nif this take toooooo long,\ntry changing API Keys from Settings(ಥ _ ಥ)"
+                    } else {
+                        "fetching the images that were captured on sol ${currentScreenSolValue.value}"
+                    }
+                val statusDescriptionFor404Screen =
+                    if (cameraName != SpiritCamerasVM.SpiritCameras.RANDOM) {
+                        "No images were captured by this camera on sol ${currentScreenSolValue.value}. Change the sol value; it may give results"
+                    } else {
+                        "No images were captured on sol ${currentScreenSolValue.value}. Change the sol value; it may give results."
+                    }
+                if (!isDataLoaded) {
+                    StatusScreen(
+                        title = "Wait a moment!",
+                        description = statusDescriptionForLoadingScreen,
+                        status = Status.LOADING
+                    )
 
-            } else if (solImagesData.isEmpty()) {
-                StatusScreen(
-                    title = "4ooooFour",
-                    description = statusDescriptionFor404Screen,
-                    status = Status.FOURO4InMarsScreen
-                )
-            } else {
+                } else if (solImagesData.isEmpty() && CurrentHTTPCodes.marsRoversDataHTTPCode.value == 200) {
+                    StatusScreen(
+                        title = "4ooooFour",
+                        description = statusDescriptionFor404Screen,
+                        status = Status.FOURO4InMarsScreen
+                    )
+                } else if (solImagesData.isEmpty() && CurrentHTTPCodes.marsRoversDataHTTPCode.value != 200) {
+                    StatusScreen(
+                        title = "NASA API Usage Limit Exhausted!",
+                        description = "Change API Key of NASA API from Settings for further data fetching!",
+                        status = Status.FOURO4InMarsScreen
+                    )
+                } else {
                     ModifiedLazyVerticalGrid(
                         listData = solImagesData,
                         loadMoreButtonBooleanExpression = expressionForShowingLoadMoreBtn
@@ -306,6 +323,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                                     )
                                 }
                             }
+
                             SpiritCamerasVM.SpiritCameras.RHAZ -> {
                                 coroutineScope.launch {
                                     spiritVM.retrieveSpiritCameraData(
@@ -315,6 +333,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                                     )
                                 }
                             }
+
                             SpiritCamerasVM.SpiritCameras.FHAZ -> {
                                 coroutineScope.launch {
                                     spiritVM.retrieveSpiritCameraData(
@@ -324,6 +343,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                                     )
                                 }
                             }
+
                             SpiritCamerasVM.SpiritCameras.PANCAM -> {
                                 coroutineScope.launch {
                                     spiritVM.retrieveSpiritCameraData(
@@ -333,6 +353,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                                     )
                                 }
                             }
+
                             SpiritCamerasVM.SpiritCameras.NAVCAM -> {
                                 coroutineScope.launch {
                                     spiritVM.retrieveSpiritCameraData(
@@ -342,6 +363,7 @@ fun SpiritRoverSubScreen(cameraName: SpiritCamerasVM.SpiritCameras) {
                                     )
                                 }
                             }
+
                             SpiritCamerasVM.SpiritCameras.RANDOM -> {
                                 coroutineScope.launch {
                                     spiritVM.retrieveSpiritCameraData(
