@@ -29,8 +29,9 @@ class NewsVM(private val newsRepo: NewsRepo = NewsRepo()) : ViewModel() {
 
     init {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            CurrentHTTPCodes.newsAPICurrentHttpCode.value=200
+            withContext(Dispatchers.Main){
                 loadTopHeadLinesData()
+            }
         }
     }
 

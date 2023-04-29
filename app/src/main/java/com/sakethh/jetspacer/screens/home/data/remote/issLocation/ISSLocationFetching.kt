@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.screens.home.data.remote.issLocation
 
+import android.util.Log
 import com.sakethh.jetspacer.screens.home.data.remote.issLocation.dto.ISSLocationDTO
 import com.sakethh.jetspacer.httpClient.HTTPClient
 import com.sakethh.jetspacer.screens.home.HomeScreenViewModel
@@ -16,7 +17,8 @@ class ISSLocationFetching() {
             flow {
                 while (true) {
                     emit(issLocationImplementation.getISSLocation())
-                    kotlinx.coroutines.delay(1500)
+                    Log.d("Logs for ipgeolocation",issLocationImplementation.getISSLocation().iss_position.latitude.toString())
+                    kotlinx.coroutines.delay(5000)
                 }
             }
         }catch (_:Exception){

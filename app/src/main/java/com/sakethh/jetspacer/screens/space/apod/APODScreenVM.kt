@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class APODScreenVM(private val apodPaginationFetching: APODPaginationFetching = APODPaginationFetching()) :
     ViewModel() {
@@ -27,8 +28,10 @@ class APODScreenVM(private val apodPaginationFetching: APODPaginationFetching = 
 
     init {
         CurrentHTTPCodes.apodPaginationHTTPCode.value=200
-        viewModelScope.launch(Dispatchers.IO) {
-            fetchAPODData()
+        viewModelScope.launch(Dispatchers.IO+coroutineExceptionalHandler) {
+            withContext(Dispatchers.Main){
+                fetchAPODData()
+            }
         }
     }
 

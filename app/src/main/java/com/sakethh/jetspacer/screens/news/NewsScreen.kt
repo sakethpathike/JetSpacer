@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Share
@@ -137,6 +138,8 @@ fun NewsScreen(navController: NavController) {
                     )
                 }
             })
+
+    val scrollState = rememberScrollState()
     AppTheme {
         ModalBottomSheetLayout(sheetShape =
         RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
@@ -171,7 +174,7 @@ fun NewsScreen(navController: NavController) {
                     )
                 }) {
                 Box(modifier = Modifier.pullRefresh(state = pullRefreshState)) {
-                    if (topHeadLinesData.value.isEmpty() && CurrentHTTPCodes.newsAPICurrentHttpCode.value==200) {
+                    if (topHeadLinesData.value.isEmpty() && CurrentHTTPCodes.newsAPICurrentHttpCode.value == 200) {
                         Column {
                             val status = if (isConnectedToInternet.value) {
                                 Status.LOADING
@@ -185,21 +188,48 @@ fun NewsScreen(navController: NavController) {
                                 status = status
                             )
                         }
-                    } else if(topHeadLinesData.value.isEmpty() && CurrentHTTPCodes.newsAPICurrentHttpCode.value!=200) {
-                        Column {
-                            val status = if (isConnectedToInternet.value) {
-                                Status.NO_INTERNET
-                            } else {
-                                Status.NO_INTERNET
-                            }
+                    } else if (topHeadLinesData.value.isEmpty() && CurrentHTTPCodes.newsAPICurrentHttpCode.value != 200) {
+                        Column(
+                            modifier = Modifier
+                                .background(androidx.compose.material3.MaterialTheme.colorScheme.surface)
+                                .fillMaxSize()
+                                .verticalScroll(scrollState)
+                        ) {
                             Spacer(modifier = Modifier.height(35.dp))
-                            StatusScreen(
-                                title = "API usage limit exhausted!",
-                                description = "Change API Key for News-API from Settings to move further with latest top-headlines around space.",
-                                status = status
+                            Text(
+                                text = "News API usage limit exhausted!",
+                                fontSize = 45.sp,
+                                style = MaterialTheme.typography.headlineLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Start,
+                                lineHeight = 47.sp,
+                                softWrap = true,
+                                modifier = Modifier.padding(
+                                    top = 100.dp,
+                                    start = 25.dp,
+                                    end = 50.dp
+                                )
+                            )
+                            Text(
+                                text = "Change API Key for News-API from Settings to move further with latest top-headlines around space.",
+                                fontSize = 25.sp,
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Start,
+                                lineHeight = 30.sp,
+                                softWrap = true,
+                                modifier = Modifier.padding(top = 15.dp, start = 25.dp, end = 20.dp)
+                            )
+                            androidx.compose.material3.Icon(
+                                imageVector = Icons.Default.Error,
+                                contentDescription = "Icon Of \"Error\"",
+                                modifier = Modifier
+                                    .padding(start = 25.dp, top = 22.dp)
+                                    .size(40.dp),
+                                tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
-                    }else{
+                    } else {
                         LazyColumn(
                             contentPadding = it,
                             modifier = Modifier

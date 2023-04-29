@@ -22,7 +22,7 @@ import java.util.Calendar
 
 @Suppress("ObjectPropertyName")
 @SuppressLint("LongLogTag")
-open class HomeScreenViewModel(
+class HomeScreenViewModel(
     private val ipGeolocationFetching: IPGeolocationFetching = IPGeolocationFetching(),
     private val issLocationFetching: ISSLocationFetching = ISSLocationFetching(),
     private val apodFetching: APODFetching = APODFetching(),
@@ -30,54 +30,59 @@ open class HomeScreenViewModel(
     var currentPhaseOfDay: String = ""
     private val coroutineExceptionalHandler =
         CoroutineExceptionHandler { _, throwable -> throwable.printStackTrace() }
-    val geolocationDTODataFromAPI = mutableStateOf(IPGeoLocationDTO())
     private val _astronomicalDataFromAPIFlow = MutableStateFlow(IPGeoLocationDTO())
     val astronomicalDataFromAPIFlow = _astronomicalDataFromAPIFlow.asStateFlow()
     private val _issLocationFromAPIFlow =
         MutableStateFlow(ISSLocationDTO(IssPosition("", ""), "", 0))
     val issLocationFromAPIFlow = _issLocationFromAPIFlow.asStateFlow()
     val apodDataFromAPI = mutableStateOf(APOD_DTO("", "", "", "", "", "", ""))
-
+    val isAPODDataLoaded = mutableStateOf(false)
     var currentBtmSheetType = mutableStateOf(BtmSheetType.Details)
-    enum class BtmSheetType{
+
+    var loadDataForHomeScreen = false
+    enum class BtmSheetType {
         Details, BookMarkCollection
     }
-
 
     init {
         when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
             in 0..3 -> {
                 currentPhaseOfDay = "Didn't slept?"
             }
+
             in 4..11 -> {
                 currentPhaseOfDay = "Good Morning"
             }
+
             in 12..15 -> {
                 currentPhaseOfDay = "Good Afternoon"
             }
+
             in 16..22 -> {
                 currentPhaseOfDay = "Good Evening"
             }
+
             in 23 downTo 0 -> {
                 currentPhaseOfDay = "Good Night?"
             }
+
             else -> {
                 currentPhaseOfDay = "Everything fine?"
             }
         }
+        CurrentHTTPCodes.ipGeoLocationCurrentHttpCode.value = 200
+        CurrentHTTPCodes.apodCurrentHTTPCode.value = 200
+
         this.viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            CurrentHTTPCodes.ipGeoLocationCurrentHttpCode.value=200
-            CurrentHTTPCodes.apodCurrentHTTPCode.value=200
-            loadData()
+            withContext(Dispatchers.Main){
+                loadData()
+            }
         }
     }
 
     suspend fun loadData() {
         coroutineScope {
             awaitAll(
-                async {
-                    geolocationDTODataFromAPI.value = ipGeolocationFetching.getGeoLocationData()
-                },
                 async {
                     issLocationFetching.getISSLatitudeAndLongitude()
                         .collect { _issLocationData ->
@@ -87,7 +92,7 @@ open class HomeScreenViewModel(
                         }
                 },
                 async {
-                        getAPODData()
+                    getAPODData()
                 },
                 async {
                     ipGeolocationFetching.getAstronomicalData().collect { ipGeolocationData ->
@@ -100,8 +105,11 @@ open class HomeScreenViewModel(
         }
     }
 
+
     private suspend fun getAPODData() {
+        isAPODDataLoaded.value = false
         apodDataFromAPI.value = apodFetching.getAPOD()
+        isAPODDataLoaded.value = true
     }
 
     object Network {

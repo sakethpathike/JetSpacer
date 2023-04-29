@@ -633,7 +633,9 @@ fun SettingsScreen(
                 IndividualSettingItemComposable(
                     modifier = Modifier,
                     title = "Rate Limit",
-                    description = "Enter the time interval (in seconds) for updating \"Astronomical Data\" in Home Screen.\ncurrent time interval is : ${Settings.astronomicalTimeInterval.value} seconds."
+                    description = "Enter the time interval (in seconds) for updating \"Astronomical Data\" in Home Screen.\ncurrent time interval is : ${Settings.astronomicalTimeInterval.value} seconds.\n"+
+                            "\n"+
+                            "Note: This is the duration for triggering the API, updating data may take some time."
                 )
             }
             item {

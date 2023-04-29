@@ -104,6 +104,7 @@ fun HomeScreen(navController: NavController) {
             activity?.finish()
         }
     }
+
     val issInfo = "The \"International Space Station\" is currently over ${
         homeScreenViewModel.issLocationFromAPIFlow.collectAsState(
             initial = ISSLocationDTO(IssPosition("", ""), "", 0)
@@ -383,7 +384,49 @@ fun HomeScreen(navController: NavController) {
                 /*APOD*/
                 var doesExistsInDB = false
                 item {
-                    if (CurrentHTTPCodes.apodCurrentHTTPCode.value != 200) {
+                    if (!homeScreenViewModel.isAPODDataLoaded.value) {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                            modifier = Modifier
+                                .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                        ) {
+                            ConstraintLayout(constraintSet = constraintSet) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .padding(top = 20.dp, start = 15.dp)
+                                        .size(25.dp)
+                                        .layoutId("cardIcon"),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    strokeWidth = 3.dp
+                                )
+                                Text(
+                                    text = "Fetching APOD Data",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontSize = 18.sp,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    modifier = Modifier
+                                        .padding(start = 10.dp, top = 15.dp, end = 50.dp)
+                                        .layoutId("cardTitle"),
+                                    lineHeight = 20.sp,
+                                    textAlign = TextAlign.Start
+                                )
+                                Text(
+                                    text = "This may take a moment.",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontSize = 14.sp,
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    modifier = Modifier
+                                        .padding(start = 10.dp, top = 2.dp, end = 50.dp)
+                                        .layoutId("cardDescription"),
+                                    lineHeight = 16.sp,
+                                    textAlign = TextAlign.Start
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(15.dp))
+                        }
+                    } else if (homeScreenViewModel.isAPODDataLoaded.value && CurrentHTTPCodes.apodCurrentHTTPCode.value != 200) {
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                             modifier = Modifier
@@ -407,7 +450,7 @@ fun HomeScreen(navController: NavController) {
                                     fontSize = 18.sp,
                                     style = MaterialTheme.typography.headlineLarge,
                                     modifier = Modifier
-                                        .padding(start = 10.dp, top = 10.dp,end=50.dp)
+                                        .padding(start = 10.dp, top = 10.dp, end = 50.dp)
                                         .layoutId("cardTitle"),
                                     lineHeight = 20.sp,
                                     textAlign = TextAlign.Start
@@ -426,206 +469,218 @@ fun HomeScreen(navController: NavController) {
                             }
                             Spacer(modifier = Modifier.height(15.dp))
                         }
-                    } else{
-                APODCardComposable(
-                    homeScreenViewModel = homeScreenViewModel,
-                    imageURL = apodURL,
-                    apodDate = apodDate,
-                    apodDescription = apodDescription,
-                    apodTitle = apodTitle,
-                    imageOnClick = {
-                        homeScreenViewModel.currentBtmSheetType.value =
-                            HomeScreenViewModel.BtmSheetType.Details
-                        coroutineScope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    apodMediaType = apodMediaType,
-                    inAPODBottomSheetContent = false,
-                    bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
-                    onBookMarkButtonClick = {
-                        triggerHapticFeedback(context = context)
-                        bookMarksVM.imgURL = apodURL
-                        val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                        val formattedDate = dateFormat.format(Date())
-                        coroutineScope.launch {
-                            didDataGetAddedInDB =
-                                bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
-                                    this.title = apodTitle
-                                    this.datePublished = apodDate
-                                    this.description = apodDescription
-                                    this.imageURL = apodURL
-                                    this.mediaType = "image"
-                                    this.isBookMarked = true
-                                    this.category = "APOD"
-                                    this.hdImageURL =
-                                        homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-                                    this.addedToLocalDBOn = formattedDate
-                                })
-                        }.invokeOnCompletion {
-                            if (didDataGetAddedInDB) {
-                                Toast.makeText(
-                                    context,
-                                    "Added to bookmarks:)",
-                                    Toast.LENGTH_SHORT
-                                )
-                                    .show()
-                            } else {
-                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                                    true
-                            }
-                            bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                        }
-                    },
-                    onBookmarkLongPress = {
-                        coroutineScope.launch {
-                            if (bottomSheetState.isVisible) {
-                                bottomSheetState.hide()
-                            }
-                        }.invokeOnCompletion {
-                            homeScreenViewModel.currentBtmSheetType.value =
-                                HomeScreenViewModel.BtmSheetType.BookMarkCollection
-                            coroutineScope.launch {
-                                bottomSheetState.show()
-                            }
-                        }
-                    },
-                    capturedOnSol = "",
-                    capturedBy = "",
-                    roverName = "",
-                    onConfirmButtonClick = {
-                        triggerHapticFeedback(context = context)
-                        coroutineScope.launch {
-                            doesExistsInDB =
-                                bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
-                        }.invokeOnCompletion {
-                            if (doesExistsInDB) {
-                                Toast.makeText(
-                                    context,
-                                    "Bookmark didn't got removed as expected, report it:(",
-                                    Toast.LENGTH_SHORT
-                                )
-                                    .show()
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Removed from bookmarks:)",
-                                    Toast.LENGTH_SHORT
-                                )
-                                    .show()
-                            }
-                            bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
-                        }
-                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                            false
-                    },
-                    apodHDImageURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
-                )
-            }
-            }
-
-            /*ISS Location*/
-            item {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                    modifier = Modifier
-                        .padding(start = 15.dp, end = 15.dp, top = 30.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                ) {
-                    Column {
-                        ConstraintLayout(constraintSet = constraintSet) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.satellite_icon),
-                                contentDescription = "Icon Of \"Satellite\"",
-                                modifier = Modifier
-                                    .padding(top = 15.dp, start = 15.dp)
-                                    .size(25.dp)
-                                    .layoutId("cardIcon"),
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
-                            Text(
-                                text = "ISS Info",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontSize = 18.sp,
-                                style = MaterialTheme.typography.headlineLarge,
-                                modifier = Modifier
-                                    .padding(start = 10.dp, top = 10.dp)
-                                    .layoutId("titleWithIcon")
-                            )
-                        }
-                        androidx.compose.material3.Divider(
-                            thickness = 0.dp,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.padding(
-                                start = 25.dp,
-                                end = 25.dp,
-                                top = 15.dp,
-                                bottom = 15.dp
-                            )
+                    } else {
+                        APODCardComposable(
+                            homeScreenViewModel = homeScreenViewModel,
+                            imageURL = apodURL,
+                            apodDate = apodDate,
+                            apodDescription = apodDescription,
+                            apodTitle = apodTitle,
+                            imageOnClick = {
+                                homeScreenViewModel.currentBtmSheetType.value =
+                                    HomeScreenViewModel.BtmSheetType.Details
+                                coroutineScope.launch {
+                                    bottomSheetState.show()
+                                }
+                            },
+                            apodMediaType = apodMediaType,
+                            inAPODBottomSheetContent = false,
+                            bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                            onBookMarkButtonClick = {
+                                triggerHapticFeedback(context = context)
+                                bookMarksVM.imgURL = apodURL
+                                val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                                val formattedDate = dateFormat.format(Date())
+                                coroutineScope.launch {
+                                    didDataGetAddedInDB =
+                                        bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
+                                            this.title = apodTitle
+                                            this.datePublished = apodDate
+                                            this.description = apodDescription
+                                            this.imageURL = apodURL
+                                            this.mediaType = "image"
+                                            this.isBookMarked = true
+                                            this.category = "APOD"
+                                            this.hdImageURL =
+                                                homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
+                                            this.addedToLocalDBOn = formattedDate
+                                        })
+                                }.invokeOnCompletion {
+                                    if (didDataGetAddedInDB) {
+                                        Toast.makeText(
+                                            context,
+                                            "Added to bookmarks:)",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                            .show()
+                                    } else {
+                                        HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                                            true
+                                    }
+                                    bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                                }
+                            },
+                            onBookmarkLongPress = {
+                                coroutineScope.launch {
+                                    if (bottomSheetState.isVisible) {
+                                        bottomSheetState.hide()
+                                    }
+                                }.invokeOnCompletion {
+                                    homeScreenViewModel.currentBtmSheetType.value =
+                                        HomeScreenViewModel.BtmSheetType.BookMarkCollection
+                                    coroutineScope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                }
+                            },
+                            capturedOnSol = "",
+                            capturedBy = "",
+                            roverName = "",
+                            onConfirmButtonClick = {
+                                triggerHapticFeedback(context = context)
+                                coroutineScope.launch {
+                                    doesExistsInDB =
+                                        bookMarksVM.deleteDataFromAPODDB(imageURL = bookMarksVM.imgURL)
+                                }.invokeOnCompletion {
+                                    if (doesExistsInDB) {
+                                        Toast.makeText(
+                                            context,
+                                            "Bookmark didn't got removed as expected, report it:(",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                            .show()
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Removed from bookmarks:)",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                            .show()
+                                    }
+                                    bookMarksVM.doesThisExistsInAPODIconTxt(bookMarksVM.imgURL)
+                                }
+                                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                                    false
+                            },
+                            apodHDImageURL = homeScreenViewModel.apodDataFromAPI.value.hdurl.toString()
                         )
-                        Text(
-                            text = issInfo,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 16.sp,
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier
-                                .padding(start = 15.dp, end = 15.dp),
-                            lineHeight = 18.sp,
-                            textAlign = TextAlign.Start
-                        )
-                        androidx.compose.material3.Divider(
-                            thickness = 0.dp,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.padding(
-                                start = 25.dp,
-                                end = 25.dp,
-                                top = 15.dp,
-                                bottom = 15.dp
-                            )
-                        )
-                        CardRowGrid(
-                            lhsCardTitle = "Latitude",
-                            lhsCardValue = issLatitude,
-                            isLHSShimmerVisible = issLatitude.isEmpty(),
-                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-
-                            isRHSShimmerVisible = issLongitude.isEmpty(),
-                            isLHSShimmering = issLatitude.isEmpty(),
-                            isRHSShimmering = issLongitude.isEmpty(),
-                            rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                            rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-
-                            rhsCardTitle = "Longitude",
-                            rhsCardValue = issLongitude
-                        )
-                        Spacer(modifier = Modifier.height(15.dp))
-                        CardRowGrid(
-                            lhsCardTitle = "Time Stamp",
-                            lhsCardValue = issTimestamp,
-
-                            isLHSShimmering = issTimestamp.toInt() == 0,
-                            isLHSShimmerVisible = issTimestamp.toInt() == 0,
-                            lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                            lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                            rhsCardTitle = "",
-                            rhsCardValue = "",
-                            rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
-                        )
-                        Spacer(modifier = Modifier.height(15.dp))
                     }
                 }
-            }
-            /*Astronomical Data*/
-            item {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                    modifier = Modifier
-                        .padding(start = 15.dp, end = 15.dp, top = 30.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                ) {
+
+                /*ISS Location*/
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier
+                            .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    ) {
+                        Column {
+                            ConstraintLayout(constraintSet = constraintSet) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.satellite_icon),
+                                    contentDescription = "Icon Of \"Satellite\"",
+                                    modifier = Modifier
+                                        .padding(top = 15.dp, start = 15.dp)
+                                        .size(25.dp)
+                                        .layoutId("cardIcon"),
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Text(
+                                    text = "ISS Info",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontSize = 18.sp,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    modifier = Modifier
+                                        .padding(start = 10.dp, top = 10.dp)
+                                        .layoutId("cardTitle")
+                                )
+
+                                Text(
+                                    text = "Data gets updated after every 5 seconds.",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontSize = 14.sp,
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    modifier = Modifier
+                                        .padding(start = 10.dp, top = 2.dp, end = 50.dp)
+                                        .layoutId("cardDescription"),
+                                    lineHeight = 16.sp,
+                                    textAlign = TextAlign.Start
+                                )
+                            }
+                            androidx.compose.material3.Divider(
+                                thickness = 0.dp,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(
+                                    start = 25.dp,
+                                    end = 25.dp,
+                                    top = 15.dp,
+                                    bottom = 15.dp
+                                )
+                            )
+                            Text(
+                                text = issInfo,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 16.sp,
+                                style = MaterialTheme.typography.headlineLarge,
+                                modifier = Modifier
+                                    .padding(start = 15.dp, end = 15.dp),
+                                lineHeight = 18.sp,
+                                textAlign = TextAlign.Start
+                            )
+                            androidx.compose.material3.Divider(
+                                thickness = 0.dp,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(
+                                    start = 25.dp,
+                                    end = 25.dp,
+                                    top = 15.dp,
+                                    bottom = 15.dp
+                                )
+                            )
+                            CardRowGrid(
+                                lhsCardTitle = "Latitude",
+                                lhsCardValue = issLatitude,
+                                isLHSShimmerVisible = issLatitude.isEmpty(),
+                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+
+                                isRHSShimmerVisible = issLongitude.isEmpty(),
+                                isLHSShimmering = issLatitude.isEmpty(),
+                                isRHSShimmering = issLongitude.isEmpty(),
+                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+
+                                rhsCardTitle = "Longitude",
+                                rhsCardValue = issLongitude
+                            )
+                            Spacer(modifier = Modifier.height(15.dp))
+                            CardRowGrid(
+                                lhsCardTitle = "Time Stamp",
+                                lhsCardValue = issTimestamp,
+
+                                isLHSShimmering = issTimestamp.toInt() == 0,
+                                isLHSShimmerVisible = issTimestamp.toInt() == 0,
+                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                rhsCardTitle = "",
+                                rhsCardValue = "",
+                                rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+                            )
+                            Spacer(modifier = Modifier.height(15.dp))
+                        }
+                    }
+                }
+                /*Astronomical Data*/
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier
+                            .padding(start = 15.dp, end = 15.dp, top = 30.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    ) {
                         Column {
                             if (CurrentHTTPCodes.ipGeoLocationCurrentHttpCode.value == 200) {
                                 ConstraintLayout(constraintSet = constraintSet) {
@@ -660,8 +715,8 @@ fun HomeScreen(navController: NavController) {
                                         textAlign = TextAlign.Start
                                     )
                                 }
-                            }else{
-                                Row(modifier=Modifier.fillMaxWidth()){
+                            } else {
+                                Row(modifier = Modifier.fillMaxWidth()) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.list_icon),
                                         contentDescription = "Icon Of \"DataExploration\"",
@@ -676,7 +731,7 @@ fun HomeScreen(navController: NavController) {
                                         fontSize = 18.sp,
                                         style = MaterialTheme.typography.headlineLarge,
                                         modifier = Modifier
-                                            .padding(start = 10.dp, top = 15.dp)
+                                            .padding(start = 10.dp, top = 17.dp)
                                     )
                                 }
                             }
@@ -708,13 +763,13 @@ fun HomeScreen(navController: NavController) {
                                         fontSize = 18.sp,
                                         style = MaterialTheme.typography.headlineLarge,
                                         modifier = Modifier
-                                            .padding(start = 10.dp, top = 15.dp,end=50.dp)
+                                            .padding(start = 10.dp, top = 15.dp, end = 50.dp)
                                             .layoutId("cardTitle"),
                                         lineHeight = 20.sp,
                                         textAlign = TextAlign.Start
                                     )
                                     Text(
-                                        text = "Change API Key of IPGeolocation API from Settings for further data fetching!",
+                                        text = "Change API Key of IPGeolocation API from Settings for further data fetching.",
                                         color = MaterialTheme.colorScheme.onPrimary,
                                         fontSize = 14.sp,
                                         style = MaterialTheme.typography.headlineMedium,
@@ -736,169 +791,169 @@ fun HomeScreen(navController: NavController) {
                                         bottom = 15.dp
                                     )
                                 )
-                            }else{
-                            Text(
-                                text = currentTimeInfo,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontSize = 16.sp,
-                                style = MaterialTheme.typography.headlineLarge,
-                                modifier = Modifier
-                                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                                lineHeight = 18.sp,
-                                textAlign = TextAlign.Start
-                            )
-                            androidx.compose.material3.Divider(
-                                thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.padding(
-                                    start = 25.dp,
-                                    end = 25.dp,
-                                    top = 0.dp,
-                                    bottom = 15.dp
+                            } else {
+                                Text(
+                                    text = currentTimeInfo,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontSize = 16.sp,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    modifier = Modifier
+                                        .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                                    lineHeight = 18.sp,
+                                    textAlign = TextAlign.Start
                                 )
-                            )
-                            // moon info
-                            CardRowGrid(
-                                lhsCardTitle = "Moon Altitude",
-                                lhsCardValue = moonAltitude,
-                                rhsCardTitle = "Moon Azimuth",
-                                rhsCardValue = moonAzimuthValue,
-                                isLHSShimmerVisible = moonAltitude == "null",
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                isRHSShimmerVisible = moonAzimuthValue == "null",
-                                isLHSShimmering = moonAltitude == "null",
-                                isRHSShimmering = moonAzimuthValue == "null",
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Moon Distance",
-                                lhsCardValue = moonDistanceValue,
-                                rhsCardTitle = "Moon Paralytic Angle",
-                                rhsCardValue = moonParalyticAngleValue,
-                                isLHSShimmerVisible = moonDistanceValue == "null",
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                isRHSShimmerVisible = moonParalyticAngleValue == "null",
-                                isLHSShimmering = moonDistanceValue == "null",
-                                isRHSShimmering = moonParalyticAngleValue == "null",
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Moon Rise",
-                                lhsCardValue = moonRiseValue,
-                                rhsCardTitle = "Moon Set",
-                                rhsCardValue = moonSetValue,
-                                isLHSShimmerVisible = moonRiseValue.isEmpty(),
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                isRHSShimmerVisible = moonSetValue.isEmpty(),
-                                isLHSShimmering = moonRiseValue.isEmpty(),
-                                isRHSShimmering = moonSetValue.isEmpty(),
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            androidx.compose.material3.Divider(
-                                thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.padding(
-                                    start = 25.dp,
-                                    end = 25.dp,
-                                    top = 0.dp,
-                                    bottom = 0.dp
+                                androidx.compose.material3.Divider(
+                                    thickness = 0.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.padding(
+                                        start = 25.dp,
+                                        end = 25.dp,
+                                        top = 0.dp,
+                                        bottom = 15.dp
+                                    )
                                 )
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            // sun info
-                            CardRowGrid(
-                                lhsCardTitle = "Sun Altitude",
-                                lhsCardValue = sunAltitudeValue,
-                                rhsCardTitle = "Sun Azimuth",
-                                rhsCardValue = sunAzimuthValue,
-                                isLHSShimmerVisible = sunAltitudeValue == "null",
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                isRHSShimmerVisible = sunAzimuthValue == "null",
-                                isLHSShimmering = sunAltitudeValue == "null",
-                                isRHSShimmering = sunAzimuthValue == "null",
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Sun Distance",
-                                lhsCardValue = sunDistanceValue,
-                                rhsCardTitle = "Sun Rise",
-                                rhsCardValue = sunRiseValue
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Sun Set",
-                                lhsCardValue = sunSetValue,
-                                rhsCardTitle = "Solar Noon",
-                                rhsCardValue = solarNoonValue,
-                                isLHSShimmerVisible = sunSetValue.isEmpty(),
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                isRHSShimmerVisible = solarNoonValue.isEmpty(),
-                                isLHSShimmering = sunSetValue.isEmpty(),
-                                isRHSShimmering = solarNoonValue.isEmpty(),
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
+                                // moon info
+                                CardRowGrid(
+                                    lhsCardTitle = "Moon Altitude",
+                                    lhsCardValue = moonAltitude,
+                                    rhsCardTitle = "Moon Azimuth",
+                                    rhsCardValue = moonAzimuthValue,
+                                    isLHSShimmerVisible = moonAltitude == "null",
+                                    lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                    lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                    isRHSShimmerVisible = moonAzimuthValue == "null",
+                                    isLHSShimmering = moonAltitude == "null",
+                                    isRHSShimmering = moonAzimuthValue == "null",
+                                    rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                    rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                )
+                                Spacer(modifier = Modifier.height(15.dp))
+                                CardRowGrid(
+                                    lhsCardTitle = "Moon Distance",
+                                    lhsCardValue = moonDistanceValue,
+                                    rhsCardTitle = "Moon Paralytic Angle",
+                                    rhsCardValue = moonParalyticAngleValue,
+                                    isLHSShimmerVisible = moonDistanceValue == "null",
+                                    lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                    lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                    isRHSShimmerVisible = moonParalyticAngleValue == "null",
+                                    isLHSShimmering = moonDistanceValue == "null",
+                                    isRHSShimmering = moonParalyticAngleValue == "null",
+                                    rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                    rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                )
+                                Spacer(modifier = Modifier.height(15.dp))
+                                CardRowGrid(
+                                    lhsCardTitle = "Moon Rise",
+                                    lhsCardValue = moonRiseValue,
+                                    rhsCardTitle = "Moon Set",
+                                    rhsCardValue = moonSetValue,
+                                    isLHSShimmerVisible = moonRiseValue.isEmpty(),
+                                    lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                    lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                    isRHSShimmerVisible = moonSetValue.isEmpty(),
+                                    isLHSShimmering = moonRiseValue.isEmpty(),
+                                    isRHSShimmering = moonSetValue.isEmpty(),
+                                    rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                    rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                )
+                                Spacer(modifier = Modifier.height(15.dp))
+                                androidx.compose.material3.Divider(
+                                    thickness = 0.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.padding(
+                                        start = 25.dp,
+                                        end = 25.dp,
+                                        top = 0.dp,
+                                        bottom = 0.dp
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(15.dp))
+                                // sun info
+                                CardRowGrid(
+                                    lhsCardTitle = "Sun Altitude",
+                                    lhsCardValue = sunAltitudeValue,
+                                    rhsCardTitle = "Sun Azimuth",
+                                    rhsCardValue = sunAzimuthValue,
+                                    isLHSShimmerVisible = sunAltitudeValue == "null",
+                                    lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                    lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                    isRHSShimmerVisible = sunAzimuthValue == "null",
+                                    isLHSShimmering = sunAltitudeValue == "null",
+                                    isRHSShimmering = sunAzimuthValue == "null",
+                                    rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                    rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                )
+                                Spacer(modifier = Modifier.height(15.dp))
+                                CardRowGrid(
+                                    lhsCardTitle = "Sun Distance",
+                                    lhsCardValue = sunDistanceValue,
+                                    rhsCardTitle = "Sun Rise",
+                                    rhsCardValue = sunRiseValue
+                                )
+                                Spacer(modifier = Modifier.height(15.dp))
+                                CardRowGrid(
+                                    lhsCardTitle = "Sun Set",
+                                    lhsCardValue = sunSetValue,
+                                    rhsCardTitle = "Solar Noon",
+                                    rhsCardValue = solarNoonValue,
+                                    isLHSShimmerVisible = sunSetValue.isEmpty(),
+                                    lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                    lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                    isRHSShimmerVisible = solarNoonValue.isEmpty(),
+                                    isLHSShimmering = sunSetValue.isEmpty(),
+                                    isRHSShimmering = solarNoonValue.isEmpty(),
+                                    rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                    rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                )
+                                Spacer(modifier = Modifier.height(15.dp))
+                            }
                         }
-                        }
-                }
-                Spacer(modifier = Modifier.height(80.dp))
-            }
-        }
-        PullRefreshIndicator(
-            refreshing = isRefreshing.value,
-            state = pullRefreshState,
-            Modifier.align(Alignment.TopCenter),
-            scale = true
-        )
-    }
-    if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
-        AlertDialogForDeletingFromDB(
-            bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
-            onConfirmBtnClick = {
-                triggerHapticFeedback(context = context)
-                coroutineScope.launch {
-                    didDataGetAddedInDB =
-                        bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL)
-                }.invokeOnCompletion {
-                    if (didDataGetAddedInDB) {
-                        Toast.makeText(
-                            context,
-                            "Bookmark didn't got removed as expected, report it:(",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    } else {
-                        Toast.makeText(
-                            context,
-                            "Removed from bookmarks:)",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
                     }
-                    bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
-                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
-                    false
-                HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
-                    false
             }
-        )
+            PullRefreshIndicator(
+                refreshing = isRefreshing.value,
+                state = pullRefreshState,
+                Modifier.align(Alignment.TopCenter),
+                scale = true
+            )
+        }
+        if (HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value || HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value) {
+            AlertDialogForDeletingFromDB(
+                bookMarkedCategory = Constants.SAVED_IN_APOD_DB,
+                onConfirmBtnClick = {
+                    triggerHapticFeedback(context = context)
+                    coroutineScope.launch {
+                        didDataGetAddedInDB =
+                            bookMarksVM.deleteDataFromAPODDB(imageURL = apodURL)
+                    }.invokeOnCompletion {
+                        if (didDataGetAddedInDB) {
+                            Toast.makeText(
+                                context,
+                                "Bookmark didn't got removed as expected, report it:(",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Removed from bookmarks:)",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
+                        bookMarksVM.doesThisExistsInAPODIconTxt(apodURL)
+                    }
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForAPODDB.value =
+                        false
+                    HomeScreenViewModel.BookMarkUtils.isAlertDialogEnabledForRoversDB.value =
+                        false
+                }
+            )
+        }
     }
-}
 
 }
 
@@ -1099,6 +1154,7 @@ fun APODCardComposable(
     imageURL: String = "",
     apodHDImageURL: String,
     apodDate: String = "",
+    onSuccess: (() -> Unit)? = null,
     apodDescription: String = "",
     apodTitle: String = "",
     apodMediaType: String = "",
@@ -1134,6 +1190,7 @@ fun APODCardComposable(
         Column(modifier = Modifier.animateContentSize()) {
             ConstraintLayout(constraintSet = constraintSet) {
                 APODMediaLayout(
+                    onSuccess = {onSuccess?.invoke()},
                     homeScreenViewModel = homeScreenViewModel,
                     imageURL = imageURL,
                     imageOnClick = {
@@ -1249,7 +1306,7 @@ fun APODCardComposable(
             )
             if (bookMarkedCategory != Constants.SAVED_IN_ROVERS_DB) {
                 Text(
-                    text = "Title : $apodTitle",
+                    text = "$apodTitle",
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 18.sp,
                     style = MaterialTheme.typography.headlineLarge,
@@ -1463,6 +1520,7 @@ fun APODMediaLayout(
     imageOnClick: () -> Unit = {},
     apodMediaType: String,
     onBookmarkLongPress: () -> Unit = {},
+    onSuccess: (() -> Unit)? = null,
 ) {
     val bookMarksVM: BookMarksVM = viewModel()
     val context = LocalContext.current
@@ -1488,7 +1546,8 @@ fun APODMediaLayout(
                         imageOnClick()
                     }
                     .layoutId("apodMedia"),
-                onError = painterResource(id = R.drawable.ic_launcher_background),
+                onError = painterResource(id = R.drawable.baseline_image_24),
+                onSuccess = { onSuccess?.invoke() },
                 contentScale = ContentScale.Crop
             )
             BoxWithConstraints(

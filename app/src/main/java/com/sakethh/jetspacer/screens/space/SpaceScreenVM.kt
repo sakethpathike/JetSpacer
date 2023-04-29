@@ -24,22 +24,27 @@ class SpaceScreenVM(
 
     val btmSheetType= mutableStateOf(HomeScreenViewModel.BtmSheetType.Details)
 
+    val isCustomAPODLoaded = mutableStateOf(false)
     init {
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionalHandler) {
-            CurrentHTTPCodes.apodCurrentHTTPCode.value=200
-            CurrentHTTPCodes.apodParticularDateDataHTTPCode.value=200
+        CurrentHTTPCodes.apodCurrentHTTPCode.value=200
+        CurrentHTTPCodes.apodParticularDateDataHTTPCode.value=200
+        viewModelScope.launch(Dispatchers.Main + coroutineExceptionalHandler) {
             loadData()
         }
     }
 
     suspend fun loadData() {
+        isCustomAPODLoaded.value=false
         apodDateData.value = apodFetching.getAPOD()
-        marsWeatherDTO.value = spaceScreenImplementation.getMarsWeatherData()
+        isCustomAPODLoaded.value=true
+        // marsWeatherDTO.value = spaceScreenImplementation.getMarsWeatherData()
     }
 
     suspend fun getAPODDateData(apodDateForURL: String) {
+        isCustomAPODLoaded.value=false
         CurrentHTTPCodes.apodParticularDateDataHTTPCode.value=200
         apodDateData.value =
             spaceScreenImplementation.getAPODSpecificDateData(apodDateForURL = apodDateForURL)
+        isCustomAPODLoaded.value=true
     }
 }

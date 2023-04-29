@@ -237,11 +237,53 @@ fun SpaceScreen(navController: NavController) {
                         )
                     }
                     item {
-                        if(CurrentHTTPCodes.apodParticularDateDataHTTPCode.value!=200 || CurrentHTTPCodes.apodCurrentHTTPCode.value!=200){
+                        if (!spaceScreenVM.isCustomAPODLoaded.value) {
                             androidx.compose.material3.Card(
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                                 modifier = Modifier
-                                    .padding(15.dp)
+                                    .padding(start = 15.dp, end = 15.dp, top = 0.dp)
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                            ) {
+                                ConstraintLayout(constraintSet = constraintSet) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .padding(top = 20.dp, start = 15.dp)
+                                            .size(25.dp)
+                                            .layoutId("cardIcon"),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        strokeWidth = 3.dp
+                                    )
+                                    androidx.compose.material3.Text(
+                                        text = "Fetching APOD Data",
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontSize = 18.sp,
+                                        style = MaterialTheme.typography.headlineLarge,
+                                        modifier = Modifier
+                                            .padding(start = 10.dp, top = 15.dp, end = 50.dp)
+                                            .layoutId("cardTitle"),
+                                        lineHeight = 20.sp,
+                                        textAlign = TextAlign.Start
+                                    )
+                                    androidx.compose.material3.Text(
+                                        text = "This may take a moment.",
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontSize = 14.sp,
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        modifier = Modifier
+                                            .padding(start = 10.dp, top = 2.dp, end = 50.dp)
+                                            .layoutId("cardDescription"),
+                                        lineHeight = 16.sp,
+                                        textAlign = TextAlign.Start
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(15.dp))
+                            }
+                        } else if (spaceScreenVM.isCustomAPODLoaded.value && CurrentHTTPCodes.apodParticularDateDataHTTPCode.value != 200) {
+                            androidx.compose.material3.Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                                modifier = Modifier
+                                    .padding(start = 15.dp, end = 15.dp, top = 30.dp)
                                     .fillMaxWidth()
                                     .wrapContentHeight()
                             ) {
@@ -280,7 +322,7 @@ fun SpaceScreen(navController: NavController) {
                                 }
                                 Spacer(modifier = Modifier.height(15.dp))
                             }
-                        }else{
+                        } else {
                             bookMarksVM.doesThisExistsInAPODIconTxt(apodData.value.url.toString())
                             APODCardComposable(
                                 homeScreenViewModel = homeScreenViewModel,
@@ -313,7 +355,8 @@ fun SpaceScreen(navController: NavController) {
                                             bookMarksVM.addDataToAPODDB(APOD_DB_DTO().apply {
                                                 this.title = apodData.value.title.toString()
                                                 this.datePublished = apodData.value.date.toString()
-                                                this.description = apodData.value.explanation.toString()
+                                                this.description =
+                                                    apodData.value.explanation.toString()
                                                 this.imageURL = apodData.value.url.toString()
                                                 this.mediaType = "image"
                                                 this.isBookMarked = true
@@ -402,174 +445,174 @@ fun SpaceScreen(navController: NavController) {
 
 
                     // the following item won't be in v1.1.0, will be re-added in later version with the valid data, the information now being shown isn't same as official
-                   /* item {
-                        androidx.compose.material3.Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                            modifier = Modifier
-                                .padding(start = 15.dp, end = 15.dp, top = 0.dp)
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                        ) {
-                            ConstraintLayout(constraintSet = constraintSet) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Insights,
-                                    contentDescription = "Icon Of \"Insights\"",
-                                    modifier = Modifier
-                                        .padding(top = 15.dp, start = 15.dp)
-                                        .size(25.dp)
-                                        .layoutId("cardIcon"),
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                                Text(
-                                    text = "Weather on the Red Planet",
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = 18.sp,
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    modifier = Modifier
-                                        .padding(start = 10.dp, top = 10.dp)
-                                        .layoutId("cardTitle")
-                                )
-                                Text(
-                                    text = "Based on Curiosity Rover on Mars",
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = 14.sp,
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    modifier = Modifier
-                                        .padding(start = 10.dp, top = 2.dp)
-                                        .layoutId("cardDescription")
-                                )
-                            }
-                            androidx.compose.material3.Divider(
-                                thickness = 0.dp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.padding(
-                                    start = 25.dp,
-                                    end = 25.dp,
-                                    top = 15.dp,
-                                    bottom = 15.dp
-                                )
-                            )
-                            CardRowGrid(
-                                lhsCardTitle = "Terrestrial Date",
-                                lhsCardValue = marsWeatherData.terrestrial_date,
-                                isLHSShimmerVisible = marsWeatherData.terrestrial_date.isEmpty(),
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                rhsCardTitle = "Season",
-                                rhsCardValue = marsWeatherData.season,
-                                isRHSShimmerVisible = marsWeatherData.season.isEmpty(),
-                                isLHSShimmering = marsWeatherData.terrestrial_date.isEmpty(),
-                                isRHSShimmering = marsWeatherData.season.isEmpty(),
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Min Temperature",
-                                lhsCardValue = marsWeatherData.min_temp.toString(),
-                                isLHSShimmerVisible = marsWeatherData.min_temp == 0,
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                rhsCardTitle = "Max Temperature",
-                                rhsCardValue = marsWeatherData.max_temp.toString(),
-                                isRHSShimmerVisible = marsWeatherData.max_temp == 0,
-                                isLHSShimmering = marsWeatherData.min_temp == 0,
-                                isRHSShimmering = marsWeatherData.max_temp == 0,
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Pressure",
-                                lhsCardValue = marsWeatherData.pressure.toString(),
-                                isLHSShimmerVisible = marsWeatherData.pressure == 0,
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                rhsCardTitle = "Pressure String",
-                                rhsCardValue = marsWeatherData.pressure_string,
-                                isRHSShimmerVisible = marsWeatherData.pressure_string.isBlank(),
-                                isLHSShimmering = marsWeatherData.pressure == 0,
-                                isRHSShimmering = marsWeatherData.pressure_string.isBlank(),
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                    /* item {
+                         androidx.compose.material3.Card(
+                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                             modifier = Modifier
+                                 .padding(start = 15.dp, end = 15.dp, top = 0.dp)
+                                 .fillMaxWidth()
+                                 .wrapContentHeight()
+                         ) {
+                             ConstraintLayout(constraintSet = constraintSet) {
+                                 Icon(
+                                     imageVector = Icons.Outlined.Insights,
+                                     contentDescription = "Icon Of \"Insights\"",
+                                     modifier = Modifier
+                                         .padding(top = 15.dp, start = 15.dp)
+                                         .size(25.dp)
+                                         .layoutId("cardIcon"),
+                                     tint = MaterialTheme.colorScheme.onPrimary
+                                 )
+                                 Text(
+                                     text = "Weather on the Red Planet",
+                                     color = MaterialTheme.colorScheme.onPrimary,
+                                     fontSize = 18.sp,
+                                     style = MaterialTheme.typography.headlineLarge,
+                                     modifier = Modifier
+                                         .padding(start = 10.dp, top = 10.dp)
+                                         .layoutId("cardTitle")
+                                 )
+                                 Text(
+                                     text = "Based on Curiosity Rover on Mars",
+                                     color = MaterialTheme.colorScheme.onPrimary,
+                                     fontSize = 14.sp,
+                                     style = MaterialTheme.typography.headlineMedium,
+                                     modifier = Modifier
+                                         .padding(start = 10.dp, top = 2.dp)
+                                         .layoutId("cardDescription")
+                                 )
+                             }
+                             androidx.compose.material3.Divider(
+                                 thickness = 0.dp,
+                                 color = MaterialTheme.colorScheme.onPrimary,
+                                 modifier = Modifier.padding(
+                                     start = 25.dp,
+                                     end = 25.dp,
+                                     top = 15.dp,
+                                     bottom = 15.dp
+                                 )
+                             )
+                             CardRowGrid(
+                                 lhsCardTitle = "Terrestrial Date",
+                                 lhsCardValue = marsWeatherData.terrestrial_date,
+                                 isLHSShimmerVisible = marsWeatherData.terrestrial_date.isEmpty(),
+                                 lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                 rhsCardTitle = "Season",
+                                 rhsCardValue = marsWeatherData.season,
+                                 isRHSShimmerVisible = marsWeatherData.season.isEmpty(),
+                                 isLHSShimmering = marsWeatherData.terrestrial_date.isEmpty(),
+                                 isRHSShimmering = marsWeatherData.season.isEmpty(),
+                                 rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                             )
+                             Spacer(modifier = Modifier.height(15.dp))
+                             CardRowGrid(
+                                 lhsCardTitle = "Min Temperature",
+                                 lhsCardValue = marsWeatherData.min_temp.toString(),
+                                 isLHSShimmerVisible = marsWeatherData.min_temp == 0,
+                                 lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                 rhsCardTitle = "Max Temperature",
+                                 rhsCardValue = marsWeatherData.max_temp.toString(),
+                                 isRHSShimmerVisible = marsWeatherData.max_temp == 0,
+                                 isLHSShimmering = marsWeatherData.min_temp == 0,
+                                 isRHSShimmering = marsWeatherData.max_temp == 0,
+                                 rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 rhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                             )
+                             Spacer(modifier = Modifier.height(15.dp))
+                             CardRowGrid(
+                                 lhsCardTitle = "Pressure",
+                                 lhsCardValue = marsWeatherData.pressure.toString(),
+                                 isLHSShimmerVisible = marsWeatherData.pressure == 0,
+                                 lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                 rhsCardTitle = "Pressure String",
+                                 rhsCardValue = marsWeatherData.pressure_string,
+                                 isRHSShimmerVisible = marsWeatherData.pressure_string.isBlank(),
+                                 isLHSShimmering = marsWeatherData.pressure == 0,
+                                 isRHSShimmering = marsWeatherData.pressure_string.isBlank(),
+                                 rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
 
-                                )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Atmosphere",
-                                lhsCardValue = marsWeatherData.atmo_opacity,
-                                isLHSShimmerVisible = marsWeatherData.atmo_opacity.toString()
-                                    .isEmpty(),
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                rhsCardTitle = "Local UV Irradiance",
-                                rhsCardValue = marsWeatherData.local_uv_irradiance_index,
-                                isRHSShimmerVisible = marsWeatherData.local_uv_irradiance_index.isBlank(),
-                                isLHSShimmering = marsWeatherData.atmo_opacity.toString().isEmpty(),
-                                isRHSShimmering = marsWeatherData.local_uv_irradiance_index.isBlank(),
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 )
+                             Spacer(modifier = Modifier.height(15.dp))
+                             CardRowGrid(
+                                 lhsCardTitle = "Atmosphere",
+                                 lhsCardValue = marsWeatherData.atmo_opacity,
+                                 isLHSShimmerVisible = marsWeatherData.atmo_opacity.toString()
+                                     .isEmpty(),
+                                 lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                 rhsCardTitle = "Local UV Irradiance",
+                                 rhsCardValue = marsWeatherData.local_uv_irradiance_index,
+                                 isRHSShimmerVisible = marsWeatherData.local_uv_irradiance_index.isBlank(),
+                                 isLHSShimmering = marsWeatherData.atmo_opacity.toString().isEmpty(),
+                                 isRHSShimmering = marsWeatherData.local_uv_irradiance_index.isBlank(),
+                                 rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
 
-                                )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Sunrise",
-                                lhsCardValue = marsWeatherData.sunrise,
-                                isLHSShimmerVisible = marsWeatherData.sunrise.toString().isEmpty(),
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                rhsCardTitle = "Sunset",
-                                rhsCardValue = marsWeatherData.sunset,
-                                isRHSShimmerVisible = marsWeatherData.sunset.isBlank(),
-                                isLHSShimmering = marsWeatherData.sunrise.toString().isEmpty(),
-                                isRHSShimmering = marsWeatherData.sunset.isBlank(),
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 )
+                             Spacer(modifier = Modifier.height(15.dp))
+                             CardRowGrid(
+                                 lhsCardTitle = "Sunrise",
+                                 lhsCardValue = marsWeatherData.sunrise,
+                                 isLHSShimmerVisible = marsWeatherData.sunrise.toString().isEmpty(),
+                                 lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                 rhsCardTitle = "Sunset",
+                                 rhsCardValue = marsWeatherData.sunset,
+                                 isRHSShimmerVisible = marsWeatherData.sunset.isBlank(),
+                                 isLHSShimmering = marsWeatherData.sunrise.toString().isEmpty(),
+                                 isRHSShimmering = marsWeatherData.sunset.isBlank(),
+                                 rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
 
-                                )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Min GTS Temperature",
-                                lhsCardValue = marsWeatherData.min_gts_temp.toString(),
-                                isLHSShimmerVisible = marsWeatherData.min_gts_temp == 0,
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                rhsCardTitle = "Max GTS Temperature",
-                                rhsCardValue = marsWeatherData.max_gts_temp.toString(),
-                                isRHSShimmerVisible = marsWeatherData.max_gts_temp.toString()
-                                    .isBlank(),
-                                isLHSShimmering = marsWeatherData.min_gts_temp == 0,
-                                isRHSShimmering = marsWeatherData.max_gts_temp.toString().isBlank(),
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Unit Of Measure",
-                                lhsCardValue = marsWeatherData.unitOfMeasure,
-                                isLHSShimmerVisible = marsWeatherData.unitOfMeasure.toString()
-                                    .isEmpty(),
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                isRHSShimmerVisible = marsWeatherData.TZ_Data.isBlank(),
-                                isLHSShimmering = marsWeatherData.unitOfMeasure.toString()
-                                    .isEmpty(),
-                                isRHSShimmering = marsWeatherData.TZ_Data.isBlank(),
-                                rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                rhsCardTitle = "Timezone",
-                                rhsCardValue = marsWeatherData.TZ_Data
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            CardRowGrid(
-                                lhsCardTitle = "Sol",
-                                lhsCardValue = marsWeatherData.sol.toString(),
-                                isLHSShimmerVisible = marsWeatherData.sol == 0,
-                                lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
-                                lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                isLHSShimmering = marsWeatherData.sol == 0,
-                                rhsCardTitle = "",
-                                rhsCardValue = "",
-                                rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                        }
-                    }*/
+                                 )
+                             Spacer(modifier = Modifier.height(15.dp))
+                             CardRowGrid(
+                                 lhsCardTitle = "Min GTS Temperature",
+                                 lhsCardValue = marsWeatherData.min_gts_temp.toString(),
+                                 isLHSShimmerVisible = marsWeatherData.min_gts_temp == 0,
+                                 lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                 rhsCardTitle = "Max GTS Temperature",
+                                 rhsCardValue = marsWeatherData.max_gts_temp.toString(),
+                                 isRHSShimmerVisible = marsWeatherData.max_gts_temp.toString()
+                                     .isBlank(),
+                                 isLHSShimmering = marsWeatherData.min_gts_temp == 0,
+                                 isRHSShimmering = marsWeatherData.max_gts_temp.toString().isBlank(),
+                                 rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
+                             )
+                             Spacer(modifier = Modifier.height(15.dp))
+                             CardRowGrid(
+                                 lhsCardTitle = "Unit Of Measure",
+                                 lhsCardValue = marsWeatherData.unitOfMeasure,
+                                 isLHSShimmerVisible = marsWeatherData.unitOfMeasure.toString()
+                                     .isEmpty(),
+                                 lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                 isRHSShimmerVisible = marsWeatherData.TZ_Data.isBlank(),
+                                 isLHSShimmering = marsWeatherData.unitOfMeasure.toString()
+                                     .isEmpty(),
+                                 isRHSShimmering = marsWeatherData.TZ_Data.isBlank(),
+                                 rhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 rhsCardTitle = "Timezone",
+                                 rhsCardValue = marsWeatherData.TZ_Data
+                             )
+                             Spacer(modifier = Modifier.height(15.dp))
+                             CardRowGrid(
+                                 lhsCardTitle = "Sol",
+                                 lhsCardValue = marsWeatherData.sol.toString(),
+                                 isLHSShimmerVisible = marsWeatherData.sol == 0,
+                                 lhsShimmerColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+                                 lhsShimmerHighlightColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                 isLHSShimmering = marsWeatherData.sol == 0,
+                                 rhsCardTitle = "",
+                                 rhsCardValue = "",
+                                 rhsCardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+                             )
+                             Spacer(modifier = Modifier.height(15.dp))
+                         }
+                     }*/
 
                     item {
                         Spacer(modifier = Modifier.height(75.dp))
@@ -650,74 +693,3 @@ fun SpaceScreen(navController: NavController) {
         }
     }
 }
-
-/*
-androidx.compose.material3.AlertDialog(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .padding(20.dp)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                onDismissRequest = {
-                    isDatePickerAlertDialogEnabled.value = false
-                }, content = {
-                    Column(
-                        modifier = Modifier
-                            .padding(20.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                    ) {
-                        androidx.compose.material3.Text(
-                            text = "Pick a date!",
-                            style = MaterialTheme.typography.headlineLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 18.sp
-                        )
-                        Spacer(modifier = Modifier.height(15.dp))
-                        WheelDatePicker(
-                            minDate = LocalDate.of(1995, 6, 16),
-                            maxDate = LocalDate.parse(homeScreenViewModel.apodDataFromAPI.value.date.toString()),
-                            textStyle = MaterialTheme.typography.headlineMedium,
-                            textColor = MaterialTheme.colorScheme.onSurface
-                        ) { selectedDate ->
-                            apodURL.value =
-                                "${selectedDate.year}-${selectedDate.monthValue}-${selectedDate.dayOfMonth}"
-                        }
-                        Spacer(modifier = Modifier.height(15.dp))
-                        androidx.compose.material3.OutlinedButton(
-                            modifier = Modifier.align(Alignment.End),
-                            onClick = {
-                                isDatePickerAlertDialogEnabled.value =
-                                    false
-                            },
-                            border = BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.onSurface
-                            )
-                        ) {
-                            androidx.compose.material3.Text(
-                                text = "Not really(¬_¬ )",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(15.dp))
-                        androidx.compose.material3.Button(
-                            modifier = Modifier.align(Alignment.End),
-                            onClick = {
-                                isDatePickerAlertDialogEnabled.value = false
-
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
-                        ) {
-                            androidx.compose.material3.Text(
-                                text = "Change date NOW!",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.surface
-                            )
-                        }
-                    }
-                })
-
-* */

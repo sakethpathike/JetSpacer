@@ -151,7 +151,7 @@ fun APODScreen(navController: NavController) {
                 }
 
             }) {
-                if (CurrentHTTPCodes.apodPaginationHTTPCode.value != 200) {
+                if (apodScreenVM.isDataForAPODPaginationLoaded.value && CurrentHTTPCodes.apodPaginationHTTPCode.value != 200) {
                     Column(
                         modifier = Modifier
                             .background(androidx.compose.material3.MaterialTheme.colorScheme.surface)
@@ -167,7 +167,7 @@ fun APODScreen(navController: NavController) {
                             textAlign = TextAlign.Start,
                             lineHeight = 47.sp,
                             softWrap = true,
-                            modifier = Modifier.padding(top = 75.dp, start = 25.dp, end = 50.dp)
+                            modifier = Modifier.padding(top =100.dp, start = 25.dp, end = 50.dp)
                         )
                         Text(
                             text = "Change API Key of NASA API from Settings for further data fetching!",
