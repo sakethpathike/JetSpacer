@@ -10,39 +10,113 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18588ca3-8822-4166-859a-33b9544748e4" name="Changes" comment="changes in ui, added an option to delete and rename an existing collection and few other minor changes">
-      <change afterPath="$PROJECT_DIR$/.gradle/7.5/checksums/checksums.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/7.5/checksums/sha1-checksums.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/7.5/dependencies-accessors/dependencies-accessors.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/7.5/dependencies-accessors/gc.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/7.5/executionHistory/executionHistory.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/7.5/executionHistory/executionHistory.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/7.5/fileHashes/fileHashes.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/7.5/fileHashes/fileHashes.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/7.5/fileHashes/resourceHashesCache.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/7.5/gc.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/vcs-1/gc.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/build/generated/source/kapt/debug/com/sakethh/jetspacer/localDB/DBImplementation_AutoMigration_1_2_Impl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/build/generated/source/kapt/debug/com/sakethh/jetspacer/localDB/DBImplementation_Impl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/appInsightsSettings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/migrations.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/BottomNavigation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/BottomNavigation.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/StatusScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/StatusScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksVM.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksVM.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/BtmSaveComposableContent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/BtmSaveComposableContent.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreenVM.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreenVM.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/news/NewsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/news/NewsScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/apod/APODScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/apod/APODScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/generated/source/buildConfig/debug/com/sakethh/jetspacer/BuildConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/generated/source/buildConfig/debug/com/sakethh/jetspacer/BuildConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/generated/source/kapt/debug/com/sakethh/jetspacer/localDB/DBService_Impl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/Coil_Image.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/Constants.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/CurrentHTTPCodes.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/MainActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/downloads/DownloadImpl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/httpClient/HTTPClient.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBDTO.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBImplementation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/localDB/DBService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/BottomNavigation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/Navigation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/navigation/NavigationRoutes.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/ConstraintSet.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/StatusScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/BookMarksVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/BtmSaveComposableContent.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/BtmSaveComposableVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/bookMarks/screens/SelectedBookMarkScreenVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/HomeScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/HomeScreenViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/apod/APODFetching.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/apod/APODImplementation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/apod/APODService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/apod/dto/APOD_DTO.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/ipGeoLocation/IPGeoLocationImplementation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/ipGeoLocation/IPGeolocationFetching.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/ipGeoLocation/IPGeolocationService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/ipGeoLocation/dto/IPGeoLocationDTO.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/ipGeoLocation/dto/Location.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/issLocation/ISSLocationFetching.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/issLocation/ISSLocationImplementation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/issLocation/ISSLocationService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/issLocation/dto/ISSLocationDTO.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/home/data/remote/issLocation/dto/IssPosition.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/news/NewsRepo.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/news/NewsScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/news/NewsVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/news/dto/Article.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/news/dto/NewsDTO.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/news/dto/Source.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/settings/SettingsScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/SpaceScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/SpaceScreenVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/apod/APODScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/apod/APODScreenVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/apod/remote/data/APODPaginationFetching.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/remote/data/SpaceScreenRepo.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/remote/data/marsWeather/dto/MarsWeatherDTO.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/RoversScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/RoversScreenVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/CuriosityMainScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/CuriosityCamerasImplementation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/CuriosityCamerasScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/CuriosityCamerasService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/CuriosityCamerasVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/RandomCuriosityCameraScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/RandomCuriosityCameraVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/remote/data/RandomCameraCuriosityFetching.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/remote/data/RandomCuriosityImpl.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/remote/data/RandomCuriosityService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/remote/data/dto/Camera.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/remote/data/dto/Photo.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/remote/data/dto/RandomCameraDTO.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/cameras/random/remote/data/dto/Rover.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/manifest/ManifestForCuriosityImplementation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/manifest/ManifestForCuriosityVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/manifest/ManifestService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/manifest/dto/Photo.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/manifest/dto/PhotoManifest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/curiosity/manifest/dto/RoverManifestDTO.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/opportunity/OpportunityCamerasService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/opportunity/OpportunityCamerasVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/opportunity/OpportunityImplementation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/opportunity/OpportunityMainRoverScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/opportunity/cameras/OpportunityRoverSubScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/spirit/SpiritCamerasService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/spirit/SpiritCamerasVM.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/spirit/SpiritImplementation.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/spirit/SpiritMainScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/space/rovers/spirit/cameras/SpiritRoverSubScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/screens/webview/WebViewScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/ui/theme/Color.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/ui/theme/Color.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/ui/theme/Theme.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/sakethh/jetspacer/ui/theme/Theme.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/local.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[192.168.0.158:5555]" />
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=9ae928ec)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -59,9 +133,24 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;sakethpathike&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/sakethpathike/JetSpacer.git&quot;,
+    &quot;accountId&quot;: &quot;525c07b9-f0f8-4aed-a6bf-d75fdc923f0e&quot;
+  }
+}</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
   <component name="ProjectId" id="2NpU5Nsmmc4AGrYxKPSySQtBcLu" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -69,14 +158,38 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;E:/JetSpacer&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;live.edit.configurable&quot;
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Saketh/StudioProjects/JetSpacer/app/src/main/res&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Suggestions&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.17&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.kotlinCompiler&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;kotlin-gradle-user-dirs&quot;: [
+      &quot;C:\\Users\\Saketh\\.gradle&quot;
+    ]
   }
 }</component>
+  <component name="PsdUISettings">
+    <option name="MODULE_TAB" value="Default Config" />
+    <option name="LAST_EDITED_BUILD_TYPE" value="release" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Saketh\StudioProjects\JetSpacer\app\src\main\res" />
+      <recent name="C:\Users\Saketh\StudioProjects\JetSpacer\app\src\main\java\com\sakethh\jetspacer\ui\theme" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App">
       <module name="Jet_Spacer.app.main" />
@@ -93,7 +206,6 @@
       <option name="MODE" value="default_activity" />
       <option name="CLEAR_LOGCAT" value="false" />
       <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
-      <option name="INSPECTION_WITHOUT_ACTIVITY_RESTART" value="false" />
       <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
       <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
       <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
@@ -104,6 +216,8 @@
         <option name="WORKING_DIR" value="" />
         <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
         <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
       </Auto>
       <Hybrid>
         <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
@@ -111,14 +225,21 @@
         <option name="WORKING_DIR" value="" />
         <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
         <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
       </Hybrid>
-      <Java />
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Java>
       <Native>
         <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
         <option name="SHOW_STATIC_VARS" value="true" />
         <option name="WORKING_DIR" value="" />
         <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
         <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
       </Native>
       <Profilers>
         <option name="ADVANCED_PROFILING_ENABLED" value="false" />
