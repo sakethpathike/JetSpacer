@@ -13,5 +13,5 @@ dependencyResolutionManagement {
         maven {url 'https://jitpack.io'}
     }
 }
-rootProject.name = "Jet Spacer"
+rootProject.name = "JetSpacer"
 include ':app'
