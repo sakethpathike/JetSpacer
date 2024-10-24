@@ -138,7 +138,7 @@ fun NewsComponent(
             modifier = Modifier
                 .padding(5.dp),
             text = article.publishedAt,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             maxLines = 1,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,

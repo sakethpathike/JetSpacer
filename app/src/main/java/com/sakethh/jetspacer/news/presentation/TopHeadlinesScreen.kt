@@ -22,21 +22,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.sakethh.jetspacer.TopHeadlineDetailScreen
 import com.sakethh.jetspacer.news.presentation.components.NewsComponent
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewsScreen() {
+fun TopHeadlinesScreen(navController: NavController) {
     val systemUiController = rememberSystemUiController()
     systemUiController.setNavigationBarColor(TopAppBarDefaults.topAppBarColors().containerColor)
     val newsScreenViewModel = viewModel<NewsScreenViewModel>()
     val topHeadlines = newsScreenViewModel.topHeadLinesState
     Scaffold(topBar = {
         Column {
-            TopAppBar(actions = {
-
-            }, title = {
+            TopAppBar(title = {
                 Text(
                     text = "Top Headlines",
                     style = MaterialTheme.typography.titleMedium,
@@ -73,8 +76,11 @@ fun NewsScreen() {
             items(items = topHeadlines.value.data.articles, key = { it.urlToImage }) { article ->
                 NewsComponent(
                     article = article,
-                    onImgClick = { -> },
-                    onItemClick = { -> },
+                    onImgClick = {
+                    },
+                    onItemClick = {
+                        navController.navigate(TopHeadlineDetailScreen(Json.encodeToString(article)))
+                    },
                 )
             }
         }
