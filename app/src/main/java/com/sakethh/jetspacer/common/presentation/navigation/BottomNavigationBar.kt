@@ -30,7 +30,9 @@ fun BottomNavigationBar(navController: NavController) {
                 NavigationBarItem(
                     selected = isSelected,
                     onClick = {
-                        navController.navigate(it.route)
+                        if (!isSelected) {
+                            navController.navigate(it.route)
+                        }
                     },
                     icon = {
                         Icon(if (isSelected) it.selectedIcon else it.nonSelectedIcon, null)

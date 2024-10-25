@@ -47,6 +47,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -171,7 +173,12 @@ fun TopHeadlineDetailScreen(encodedString: String) {
 }
 
 @Composable
-fun HeadlineDetailComponent(string: String, imageVector: ImageVector) {
+fun HeadlineDetailComponent(
+    string: String,
+    imageVector: ImageVector,
+    fontSize: TextUnit = 16.sp,
+    iconSize: Dp = 24.dp
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically, modifier = Modifier
             .clip(
@@ -180,11 +187,11 @@ fun HeadlineDetailComponent(string: String, imageVector: ImageVector) {
             .background(MaterialTheme.colorScheme.primary.copy(0.1f))
             .padding(5.dp)
     ) {
-        Spacer(Modifier.width(2.dp))
-        Icon(imageVector, null)
+        Spacer(Modifier.width(5.dp))
+        Icon(imageVector, contentDescription = null, modifier = Modifier.size(iconSize))
         Spacer(Modifier.width(5.dp))
         Text(
-            text = string, style = MaterialTheme.typography.titleSmall, fontSize = 16.sp
+            text = string, style = MaterialTheme.typography.titleSmall, fontSize = fontSize
         )
         Spacer(Modifier.width(5.dp))
     }
