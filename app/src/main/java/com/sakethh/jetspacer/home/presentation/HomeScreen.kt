@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Copyright
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -161,6 +162,29 @@ fun HomeScreen() {
                     )
                 }
             }
+        }
+        item {
+            Spacer(Modifier.height(15.dp))
+            HorizontalDivider()
+        }
+        item {
+            Spacer(Modifier.height(15.dp))
+            Text(
+                "EPIC",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(0.25f))
+                    .padding(5.dp)
+            )
+            Spacer(Modifier.height(5.dp))
+            Text(
+                "Earth Polychromatic Imaging Camera",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Spacer(Modifier.height(15.dp))
         }
         item {
             Spacer(Modifier.height(150.dp))
