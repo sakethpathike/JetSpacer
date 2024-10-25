@@ -1,7 +1,6 @@
-package com.sakethh.jetspacer.news.presentation.components
+package com.sakethh.jetspacer.common.presentation.components
 
 import android.content.Intent
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -45,9 +44,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.news.domain.model.Article
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NewsComponent(
+fun InfoComponent(
     article: Article,
     onImgClick: () -> Unit,
     onItemClick: () -> Unit

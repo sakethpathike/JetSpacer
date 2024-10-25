@@ -2,8 +2,14 @@ package com.sakethh.jetspacer.explore.presentation
 
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.Search
@@ -24,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun ExploreScreen() {
     val exploreScreenViewModel: ExploreScreenViewModel = viewModel()
+    val searchResultsState = exploreScreenViewModel.searchResultsState
     Column {
         SearchBar(
             modifier = Modifier
@@ -66,6 +73,14 @@ fun ExploreScreen() {
             onExpandedChange = {
                 ExploreScreenViewModel.isSearchBarExpanded.value = it
             }) {
+            LazyVerticalStaggeredGrid(columns = StaggeredGridCells.Adaptive(150.dp)) {
+                items(searchResultsState.value.data) {
+                    SearchResultComponent(it, {})
+                }
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Spacer(Modifier.height(25.dp))
+                }
+            }
         }
     }
 }
