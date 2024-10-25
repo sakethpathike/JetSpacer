@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Copyright
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,6 +43,7 @@ fun HomeScreen() {
     val context = LocalContext.current
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val apodDataState = homeScreenViewModel.apodState
+    val epicDataState = homeScreenViewModel.epicState
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -184,7 +187,68 @@ fun HomeScreen() {
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.secondary
             )
+            if (epicDataState.value.data.isNotEmpty()) {
+                Spacer(Modifier.height(5.dp))
+                HeadlineDetailComponent(
+                    string = epicDataState.value.data.first().date.substringBefore(" "),
+                    imageVector = Icons.Outlined.CalendarToday,
+                    fontSize = 14.sp,
+                    iconSize = 20.dp
+                )
+            }
             Spacer(Modifier.height(15.dp))
+        }
+        item {
+            if (epicDataState.value.data.isEmpty() && epicDataState.value.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(0.25f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
+        if (epicDataState.value.data.isNotEmpty()) {
+            itemsIndexed(epicDataState.value.data) { index, epicItem ->
+
+                // https://epic.gsfc.nasa.gov/about/api
+
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(epicItem.image)
+                        .crossfade(true).build(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(15.dp))
+                        .border(
+                            1.5.dp,
+                            LocalContentColor.current.copy(0.25f),
+                            RoundedCornerShape(15.dp)
+                        )
+                        .clickable {
+
+                        },
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(Modifier.height(5.dp))
+                HeadlineDetailComponent(
+                    string = epicItem.date.substringAfter(" "),
+                    imageVector = Icons.Outlined.AccessTime,
+                    fontSize = 14.sp,
+                    iconSize = 20.dp
+                )
+                if (index != epicDataState.value.data.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 15.dp, bottom = 15.dp, start = 5.dp, end = 5.dp)
+                    )
+                }
+            }
         }
         item {
             Spacer(Modifier.height(150.dp))
