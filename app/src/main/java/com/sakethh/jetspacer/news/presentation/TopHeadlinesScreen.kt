@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.sakethh.jetspacer.TopHeadlineDetailScreen
+import com.sakethh.jetspacer.common.presentation.navigation.TopHeadlineDetailScreenRoute
 import com.sakethh.jetspacer.news.presentation.components.NewsComponent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -79,7 +79,13 @@ fun TopHeadlinesScreen(navController: NavController) {
                     onImgClick = {
                     },
                     onItemClick = {
-                        navController.navigate(TopHeadlineDetailScreen(Json.encodeToString(article)))
+                        navController.navigate(
+                            TopHeadlineDetailScreenRoute(
+                                encodedString = Json.encodeToString(
+                                    article
+                                )
+                            )
+                        )
                     },
                 )
             }

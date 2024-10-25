@@ -58,9 +58,9 @@ import kotlinx.serialization.json.Json
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun TopHeadlineDetailScreen(rawArticleString: String) {
+fun TopHeadlineDetailScreen(encodedString: String) {
     val article = rememberSaveable(saver = ArticleSaver) {
-        Json.decodeFromString<Article>(rawArticleString)
+        Json.decodeFromString<Article>(encodedString)
     }
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
