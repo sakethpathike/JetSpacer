@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.home.presentation
+package com.sakethh.jetspacer.home.presentation.state
 
 import com.sakethh.jetspacer.home.domain.model.APODDTO
 

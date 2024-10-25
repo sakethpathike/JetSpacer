@@ -1,18 +1,23 @@
 package com.sakethh.jetspacer.home.domain.model.epic.specific
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class EPICSpecificDTO(
-    val attitude_quaternions: AttitudeQuaternions,
+    @SerialName("attitude_quaternions")
+    val satelliteAttitude: AttitudeQuaternions,
     val caption: String,
-    val centroid_coordinates: CentroidCoordinates,
-    val coords: Coords,
+    @SerialName("centroid_coordinates")
+    val coordinatesThatTheSatelliteIsLookingAt: CentroidCoordinates,
     val date: String,
-    val dscovr_j2000_position: DscovrJ2000PositionX,
+    @SerialName("dscovr_j2000_position")
+    val positionOfTheSatelliteInSpace: DscovrJ2000PositionX,
     val identifier: String,
     val image: String,
-    val lunar_j2000_position: LunarJ2000PositionX,
-    val sun_j2000_position: SunJ2000PositionX,
+    @SerialName("lunar_j2000_position")
+    val positionOfTheMoonInSpace: LunarJ2000PositionX,
+    @SerialName("sun_j2000_position")
+    val positionOfTheSunInSpace: SunJ2000PositionX,
     val version: String
 )

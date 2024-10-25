@@ -5,11 +5,11 @@ import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.home.domain.model.APODDTO
 import com.sakethh.jetspacer.home.domain.model.epic.all.AllEPICDTOItem
 import com.sakethh.jetspacer.home.domain.model.epic.specific.EPICSpecificDTO
-import com.sakethh.jetspacer.home.domain.repository.HomeScreenRepository
+import com.sakethh.jetspacer.home.domain.repository.HomeScreenRelatedAPIsRepository
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 
-class HomeScreenImplementation : HomeScreenRepository {
+class HomeScreenRelatedAPIsRelatedAPIsImplementation : HomeScreenRelatedAPIsRepository {
     override suspend fun getAPODDataFromTheAPI(): APODDTO {
         return HTTPClient.ktorClient.get("https://api.nasa.gov/planetary/apod?api_key=bCUlmKS9EpyQ1ChMIUnsglSTGTwQy1CdLhLP4FCL")
             .body()

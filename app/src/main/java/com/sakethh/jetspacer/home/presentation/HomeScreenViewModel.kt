@@ -7,6 +7,8 @@ import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.home.domain.model.APODDTO
 import com.sakethh.jetspacer.home.domain.useCase.HomeScreenRelatedAPIsUseCase
+import com.sakethh.jetspacer.home.presentation.state.APODState
+import com.sakethh.jetspacer.home.presentation.state.EPICState
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -24,6 +26,10 @@ class HomeScreenViewModel(homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUse
                 url = ""
             )
         )
+    )
+
+    val epicState = mutableStateOf(
+        EPICState(data = listOf(), isLoading = false, error = false)
     )
 
     init {
@@ -54,11 +60,11 @@ class HomeScreenViewModel(homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUse
                 }
 
                 is NetworkState.Loading -> {
-                    jetSpacerLog("loading in epic data")
+                    epicState.value = epicState.value.copy(isLoading = true)
                 }
 
                 is NetworkState.Success -> {
-                    jetSpacerLog("sucess :" + epicData.data.toString())
+                    epicState.value = epicState.value.copy(isLoading = false, data = epicData.data)
                 }
             }
         }.launchIn(viewModelScope)
