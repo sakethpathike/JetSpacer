@@ -51,7 +51,7 @@ fun SearchResultComponent(
                 color = MaterialTheme.colorScheme.secondary.copy(0.5f),
                 shape = RoundedCornerShape(5.dp)
             )
-            .clickable { }
+            .clickable { onItemClick() }
             .animateContentSize()
     ) {
         Box {

@@ -25,10 +25,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.sakethh.jetspacer.common.presentation.navigation.SearchResultScreenRoute
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExploreScreen() {
+fun ExploreScreen(navController: NavController) {
     val exploreScreenViewModel: ExploreScreenViewModel = viewModel()
     val searchResultsState = exploreScreenViewModel.searchResultsState
     Column {
@@ -75,7 +79,9 @@ fun ExploreScreen() {
             }) {
             LazyVerticalStaggeredGrid(columns = StaggeredGridCells.Adaptive(150.dp)) {
                 items(searchResultsState.value.data) {
-                    SearchResultComponent(it, {})
+                    SearchResultComponent(it, onItemClick = {
+                        navController.navigate(SearchResultScreenRoute(Json.encodeToString(it)))
+                    })
                 }
                 item(span = StaggeredGridItemSpan.FullLine) {
                     Spacer(Modifier.height(25.dp))
