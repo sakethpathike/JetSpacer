@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.sakethh.jetspacer.explore.presentation.ExploreScreen
+import com.sakethh.jetspacer.explore.presentation.search.SearchResultScreen
 import com.sakethh.jetspacer.home.presentation.HomeScreen
 import com.sakethh.jetspacer.news.presentation.TopHeadlineDetailScreen
 import com.sakethh.jetspacer.news.presentation.TopHeadlinesScreen
@@ -29,7 +30,12 @@ fun MainNavigation(navController: NavHostController) {
             )
         }
         composable<ExploreScreenRoute> {
-            ExploreScreen()
+            ExploreScreen(navController)
+        }
+        composable<SearchResultScreenRoute> {
+            SearchResultScreen(
+                it.toRoute<SearchResultScreenRoute>().encodedString
+            )
         }
     }
 }
@@ -45,5 +51,10 @@ data object ExploreScreenRoute
 
 @Serializable
 data class TopHeadlineDetailScreenRoute(
+    val encodedString: String
+)
+
+@Serializable
+data class SearchResultScreenRoute(
     val encodedString: String
 )

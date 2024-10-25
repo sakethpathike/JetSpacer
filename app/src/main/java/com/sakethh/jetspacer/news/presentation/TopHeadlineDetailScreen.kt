@@ -77,6 +77,7 @@ fun TopHeadlineDetailScreen(encodedString: String) {
                 .padding(start = 15.dp, end = 15.dp)
                 .align(Alignment.BottomCenter)
         ) {
+            Spacer(Modifier.height(50.dp))
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(article.urlToImage)
