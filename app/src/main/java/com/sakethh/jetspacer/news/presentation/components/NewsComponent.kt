@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.news.presentation.components
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.rounded.ImageNotSupported
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -92,6 +94,11 @@ fun NewsComponent(
                         .width(95.dp)
                         .height(60.dp)
                         .clip(RoundedCornerShape(15.dp))
+                        .border(
+                            1.5.dp,
+                            LocalContentColor.current.copy(0.25f),
+                            RoundedCornerShape(15.dp)
+                        )
                         .clickable {
                             onImgClick()
                         },
@@ -118,6 +125,16 @@ fun NewsComponent(
         }
         Text(
             modifier = Modifier
+                .padding(top = 15.dp, end = 15.dp),
+            text = article.description,
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Start,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 12.sp,
+            maxLines = 2
+        )
+        Text(
+            modifier = Modifier
                 .padding(
                     top = 15.dp,
                     end = 15.dp
@@ -129,16 +146,6 @@ fun NewsComponent(
                 .padding(5.dp),
             text = article.source.name,
             style = MaterialTheme.typography.titleLarge,
-            maxLines = 1,
-            textAlign = TextAlign.Start,
-            overflow = TextOverflow.Ellipsis,
-            fontSize = 12.sp
-        )
-        Text(
-            modifier = Modifier
-                .padding(5.dp),
-            text = article.publishedAt,
-            style = MaterialTheme.typography.titleMedium,
             maxLines = 1,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
