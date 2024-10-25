@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.sakethh.jetspacer.explore.presentation.ExploreScreen
 import com.sakethh.jetspacer.home.presentation.HomeScreen
 import com.sakethh.jetspacer.news.presentation.TopHeadlineDetailScreen
 import com.sakethh.jetspacer.news.presentation.TopHeadlinesScreen
@@ -14,7 +15,7 @@ import kotlinx.serialization.Serializable
 fun MainNavigation(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = HomeScreenRoute
+        startDestination = ExploreScreenRoute
     ) {
         composable<HomeScreenRoute> {
             HomeScreen()
@@ -27,6 +28,9 @@ fun MainNavigation(navController: NavHostController) {
                 navBackStackEntry.toRoute<TopHeadlineDetailScreenRoute>().encodedString
             )
         }
+        composable<ExploreScreenRoute> {
+            ExploreScreen()
+        }
     }
 }
 
@@ -35,6 +39,9 @@ data object HomeScreenRoute
 
 @Serializable
 data object TopHeadlinesScreenRoute
+
+@Serializable
+data object ExploreScreenRoute
 
 @Serializable
 data class TopHeadlineDetailScreenRoute(
