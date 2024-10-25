@@ -1,8 +1,10 @@
 package com.sakethh.jetspacer.explore.presentation
 
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,14 +18,18 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.common.presentation.navigation.SearchResultScreenRoute
@@ -77,7 +83,33 @@ fun ExploreScreen(navController: NavController) {
             onExpandedChange = {
                 ExploreScreenViewModel.isSearchBarExpanded.value = it
             }) {
+            if (searchResultsState.value.isLoading) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
             LazyVerticalStaggeredGrid(columns = StaggeredGridCells.Adaptive(150.dp)) {
+                if (searchResultsState.value.data.isEmpty() && !searchResultsState.value.isLoading && exploreScreenViewModel.querySearch.value.isNotBlank()) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 75.dp, start = 15.dp)
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Nothing found here",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 32.sp,
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(end = 50.dp)
+                                )
+                            }
+                        }
+                    }
+                }
                 items(searchResultsState.value.data) {
                     SearchResultComponent(it, onItemClick = {
                         navController.navigate(SearchResultScreenRoute(Json.encodeToString(it)))
