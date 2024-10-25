@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.sakethh.jetspacer.home.presentation.HomeScreen
 import com.sakethh.jetspacer.news.presentation.TopHeadlineDetailScreen
 import com.sakethh.jetspacer.news.presentation.TopHeadlinesScreen
 import kotlinx.serialization.Serializable
@@ -13,8 +14,11 @@ import kotlinx.serialization.Serializable
 fun MainNavigation(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = TopHeadlinesScreenRoute
+        startDestination = HomeScreenRoute
     ) {
+        composable<HomeScreenRoute> {
+            HomeScreen()
+        }
         composable<TopHeadlinesScreenRoute> {
             TopHeadlinesScreen(navController)
         }
@@ -25,6 +29,9 @@ fun MainNavigation(navController: NavHostController) {
         }
     }
 }
+
+@Serializable
+data object HomeScreenRoute
 
 @Serializable
 data object TopHeadlinesScreenRoute

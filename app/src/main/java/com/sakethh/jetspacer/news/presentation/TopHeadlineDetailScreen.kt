@@ -93,19 +93,25 @@ fun TopHeadlineDetailScreen(encodedString: String) {
                 fontSize = 16.sp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 10.dp)
+                    .padding(bottom = if (article.author.isNotBlank()) 15.dp else 0.dp)
             )
-            HeadlineDetailComponent(
-                string = article.author, imageVector = Icons.Default.PersonOutline
-            )
-            Spacer(Modifier.height(5.dp))
-            HeadlineDetailComponent(
-                string = article.source.name, imageVector = Icons.Default.Public
-            )
-            Spacer(Modifier.height(5.dp))
-            HeadlineDetailComponent(
-                string = article.publishedAt, imageVector = Icons.Default.AccessTime
-            )
+            if (article.author.isNotBlank()) {
+                HeadlineDetailComponent(
+                    string = article.author, imageVector = Icons.Default.PersonOutline
+                )
+            }
+            if (article.source.name.isNotBlank()) {
+                Spacer(Modifier.height(if (article.author.isNotBlank()) 5.dp else 15.dp))
+                HeadlineDetailComponent(
+                    string = article.source.name, imageVector = Icons.Default.Public
+                )
+            }
+            if (article.publishedAt.isNotBlank()) {
+                Spacer(Modifier.height(if (article.source.name.isNotBlank()) 5.dp else 15.dp))
+                HeadlineDetailComponent(
+                    string = article.publishedAt, imageVector = Icons.Default.AccessTime
+                )
+            }
             Spacer(Modifier.height(15.dp))
             HorizontalDivider(modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(15.dp))
