@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -23,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -33,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.sakethh.jetspacer.common.utils.jetSpacerLog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +44,7 @@ fun APODArchiveScreen(navController: NavController) {
     val apodArchiveState = apodArchiveScreenViewModel.apodArchiveState.value
     val context = LocalContext.current
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val lazyVerticalStaggeredGridState = rememberLazyStaggeredGridState()
     Scaffold(modifier = Modifier.fillMaxSize(),
         topBar = {
             MediumTopAppBar(scrollBehavior = topAppBarScrollBehavior, title = {
@@ -54,6 +58,7 @@ fun APODArchiveScreen(navController: NavController) {
             })
         }) {
         LazyVerticalStaggeredGrid(
+            state = lazyVerticalStaggeredGridState,
             columns = StaggeredGridCells.Adaptive(150.dp),
             modifier = Modifier
                 .padding(it)
@@ -76,6 +81,13 @@ fun APODArchiveScreen(navController: NavController) {
                         ), contentDescription = null
                 )
             }
+        }
+    }
+
+    LaunchedEffect(lazyVerticalStaggeredGridState.canScrollForward) {
+        if (lazyVerticalStaggeredGridState.canScrollForward.not() && apodArchiveState.data.isNotEmpty() && !apodArchiveState.isLoading && !apodArchiveState.error) {
+            jetSpacerLog("triggering from launched effect")
+            apodArchiveScreenViewModel.retrieveNextBatchOfAPODArchive()
         }
     }
 }
