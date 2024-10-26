@@ -86,7 +86,7 @@ fun HomeScreen() {
             } else {
                 AsyncImage(
                     model = ImageRequest.Builder(context)
-                        .data(apodDataState.value.apod.url)
+                        .data(apodDataState.value.apod.url.trim())
                         .crossfade(true).build(),
                     contentDescription = null,
                     modifier = Modifier
@@ -103,29 +103,29 @@ fun HomeScreen() {
                 )
             }
         }
-        if (apodDataState.value.apod.date.isNotBlank()) {
+        if (apodDataState.value.apod.date.trim().isNotBlank()) {
             item {
                 Spacer(Modifier.height(15.dp))
                 HeadlineDetailComponent(
-                    string = apodDataState.value.apod.date,
+                    string = apodDataState.value.apod.date.trim(),
                     imageVector = Icons.Outlined.CalendarToday,
                     fontSize = 14.sp,
                     iconSize = 20.dp
                 )
             }
         }
-        if (apodDataState.value.apod.copyright.isNotBlank()) {
+        if (apodDataState.value.apod.copyright.trim().isNotBlank()) {
             item {
                 Spacer(Modifier.height(5.dp))
                 HeadlineDetailComponent(
-                    string = apodDataState.value.apod.copyright,
+                    string = apodDataState.value.apod.copyright.trim().replace("\n", ""),
                     imageVector = Icons.Outlined.Copyright,
                     fontSize = 14.sp,
                     iconSize = 20.dp
                 )
             }
         }
-        if (apodDataState.value.apod.title.isNotBlank()) {
+        if (apodDataState.value.apod.title.trim().isNotBlank()) {
             item {
                 Spacer(Modifier.height(15.dp))
                 Text(
@@ -134,14 +134,14 @@ fun HomeScreen() {
                     color = MaterialTheme.colorScheme.secondary
                 )
                 Text(
-                    apodDataState.value.apod.title,
+                    apodDataState.value.apod.title.trim(),
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
         }
-        if (apodDataState.value.apod.explanation.isNotBlank()) {
+        if (apodDataState.value.apod.explanation.trim().isNotBlank()) {
             item {
                 val isExplanationExpanded = rememberSaveable {
                     mutableStateOf(false)
@@ -155,7 +155,7 @@ fun HomeScreen() {
                 Spacer(Modifier.height(2.dp))
                 Box {
                     Text(
-                        apodDataState.value.apod.explanation,
+                        apodDataState.value.apod.explanation.trim(),
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 16.sp,
                         overflow = TextOverflow.Ellipsis,
@@ -215,9 +215,6 @@ fun HomeScreen() {
         }
         if (epicDataState.value.data.isNotEmpty()) {
             itemsIndexed(epicDataState.value.data) { index, epicItem ->
-
-                // https://epic.gsfc.nasa.gov/about/api
-
                 AsyncImage(
                     model = ImageRequest.Builder(context)
                         .data(epicItem.imageURL)
