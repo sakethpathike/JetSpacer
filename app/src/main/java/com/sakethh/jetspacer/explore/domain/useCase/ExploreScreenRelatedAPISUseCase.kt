@@ -1,14 +1,17 @@
 package com.sakethh.jetspacer.explore.domain.useCase
 
 import com.sakethh.jetspacer.common.network.NetworkState
-import com.sakethh.jetspacer.explore.data.repository.NASAImageLibrarySearchImplementation
+import com.sakethh.jetspacer.explore.data.repository.ExploreScreenRelatedAPIsImplementation
+import com.sakethh.jetspacer.explore.domain.model.api.iss.modified.ISSLocationModifiedDTO
 import com.sakethh.jetspacer.explore.domain.model.local.NASAImageLibrarySearchModifiedDTO
-import com.sakethh.jetspacer.explore.domain.repository.NASAImageLibrarySearchRepository
+import com.sakethh.jetspacer.explore.domain.repository.ExploreScreenRelatedAPIsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.util.Date
 
-class NASAImageLibrarySearchUseCase(private val nasaImageLibrarySearchRepository: NASAImageLibrarySearchRepository = NASAImageLibrarySearchImplementation()) {
-    operator fun invoke(
+class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsRepository: ExploreScreenRelatedAPIsRepository = ExploreScreenRelatedAPIsImplementation()) {
+
+    fun nasaImageLibrarySearch(
         query: String,
         page: Int
     ): Flow<NetworkState<List<NASAImageLibrarySearchModifiedDTO>>> {
@@ -16,7 +19,7 @@ class NASAImageLibrarySearchUseCase(private val nasaImageLibrarySearchRepository
             try {
                 emit(NetworkState.Loading(""))
                 val retrievedCollectionData =
-                    nasaImageLibrarySearchRepository.getResultsFromNASAImageLibrary(
+                    exploreScreenRelatedAPIsRepository.getResultsFromNASAImageLibrary(
                         query,
                         page
                     ).collection
@@ -43,6 +46,22 @@ class NASAImageLibrarySearchUseCase(private val nasaImageLibrarySearchRepository
                 e.printStackTrace()
                 emit(NetworkState.Failure(e.message.toString()))
             }
+        }
+    }
+
+    suspend fun issLocation(): NetworkState<ISSLocationModifiedDTO> {
+        return try {
+            val originalData = exploreScreenRelatedAPIsRepository.getISSLocation()
+            val modifiedData = ISSLocationModifiedDTO(
+                latitude = originalData.issPosition.latitude,
+                longitude = originalData.issPosition.longitude,
+                message = originalData.message,
+                timestamp = Date(originalData.timestamp.toLong() * 1000).toString()
+            )
+            NetworkState.Success(modifiedData)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            NetworkState.Failure(e.message.toString())
         }
     }
 }

@@ -3,13 +3,13 @@ package com.sakethh.jetspacer.common.presentation.navigation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -62,10 +62,10 @@ data class BottomNavigationItem<T>(
 
 private val navItems = listOf(
     BottomNavigationItem(
-        name = "Home",
+        name = "Latest",
         route = HomeScreenRoute,
-        selectedIcon = Icons.Filled.Home,
-        nonSelectedIcon = Icons.Outlined.Home
+        selectedIcon = Icons.Filled.CameraAlt,
+        nonSelectedIcon = Icons.Outlined.CameraAlt
     ),
     BottomNavigationItem(
         name = "Explore",

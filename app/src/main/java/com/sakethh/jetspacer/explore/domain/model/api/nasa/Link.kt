@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.explore.domain.model.api
+package com.sakethh.jetspacer.explore.domain.model.api.nasa
 
 import kotlinx.serialization.Serializable
 

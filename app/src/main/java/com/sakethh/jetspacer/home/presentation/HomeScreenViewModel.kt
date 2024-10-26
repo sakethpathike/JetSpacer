@@ -8,7 +8,7 @@ import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.home.domain.model.APODDTO
 import com.sakethh.jetspacer.home.domain.useCase.HomeScreenRelatedAPIsUseCase
 import com.sakethh.jetspacer.home.presentation.state.APODState
-import com.sakethh.jetspacer.home.presentation.state.EPICState
+import com.sakethh.jetspacer.home.presentation.state.epic.EPICState
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Copyright
+import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
@@ -190,7 +191,7 @@ fun HomeScreen() {
             if (epicDataState.value.data.isNotEmpty()) {
                 Spacer(Modifier.height(5.dp))
                 HeadlineDetailComponent(
-                    string = epicDataState.value.data.first().date.substringBefore(" "),
+                    string = epicDataState.value.data.first().date,
                     imageVector = Icons.Outlined.CalendarToday,
                     fontSize = 14.sp,
                     iconSize = 20.dp
@@ -219,7 +220,7 @@ fun HomeScreen() {
 
                 AsyncImage(
                     model = ImageRequest.Builder(context)
-                        .data(epicItem.image)
+                        .data(epicItem.imageURL)
                         .crossfade(true).build(),
                     contentDescription = null,
                     modifier = Modifier
@@ -238,6 +239,13 @@ fun HomeScreen() {
                 HeadlineDetailComponent(
                     string = epicItem.date.substringAfter(" "),
                     imageVector = Icons.Outlined.AccessTime,
+                    fontSize = 14.sp,
+                    iconSize = 20.dp
+                )
+                Spacer(Modifier.height(5.dp))
+                HeadlineDetailComponent(
+                    string = epicItem.distanceBetweenSunAndEarth.toString(),
+                    imageVector = Icons.Outlined.NearMe,
                     fontSize = 14.sp,
                     iconSize = 20.dp
                 )

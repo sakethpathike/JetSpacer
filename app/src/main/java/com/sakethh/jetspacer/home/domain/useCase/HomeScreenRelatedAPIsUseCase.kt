@@ -4,15 +4,13 @@ import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.home.data.repository.HomeScreenRelatedAPIsRelatedAPIsImplementation
 import com.sakethh.jetspacer.home.domain.model.APODDTO
-import com.sakethh.jetspacer.home.domain.model.epic.specific.EPICSpecificDTO
 import com.sakethh.jetspacer.home.domain.repository.HomeScreenRelatedAPIsRepository
+import com.sakethh.jetspacer.home.presentation.state.epic.EpicStateItem
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlin.math.sqrt
 
 class HomeScreenRelatedAPIsUseCase(private val homeScreenRelatedAPIsRepository: HomeScreenRelatedAPIsRepository = HomeScreenRelatedAPIsRelatedAPIsImplementation()) {
     fun apodData(): Flow<NetworkState<APODDTO>> {
@@ -26,29 +24,51 @@ class HomeScreenRelatedAPIsUseCase(private val homeScreenRelatedAPIsRepository: 
         }
     }
 
-    fun epicData(coroutineScope: CoroutineScope): Flow<NetworkState<List<EPICSpecificDTO>>> {
+    fun epicData(coroutineScope: CoroutineScope): Flow<NetworkState<List<EpicStateItem>>> {
         return flow {
             try {
                 emit(NetworkState.Loading(""))
-                val epicData = mutableListOf<Deferred<EPICSpecificDTO>>()
+                val epicData = mutableListOf<EpicStateItem>()
                 val epicDataJob = coroutineScope.launch {
-                    homeScreenRelatedAPIsRepository.getEpicDataForASpecificDate(
-                        homeScreenRelatedAPIsRepository.getAllEpicDataDates().first().date
-                    ).forEach {
-                        val modifiedData = async {
-                            jetSpacerLog(it.date.substringBefore(" ").replace("-", "/"))
-                            jetSpacerLog(it.image)
-                            it.copy(
-                                image = "https://epic.gsfc.nasa.gov/archive/natural/${
-                                    it.date.substringBefore(" ").replace("-", "/")
-                                }/png/${it.image}.png"
+                    try {
+                        homeScreenRelatedAPIsRepository.getEpicDataForASpecificDate(
+                            homeScreenRelatedAPIsRepository.getAllEpicDataDates().first().date
+                        ).map {
+                            jetSpacerLog(
+                                sqrt(
+                                    (it.positionOfTheSunInSpace.x * it.positionOfTheSunInSpace.x)
+                                            + (it.positionOfTheSunInSpace.y * it.positionOfTheSunInSpace.y)
+                                            + (it.positionOfTheSunInSpace.z * it.positionOfTheSunInSpace.z)
+                                ).toLong().toString()
                             )
+                            EpicStateItem(
+                                imageURL = "https://epic.gsfc.nasa.gov/archive/natural/${
+                                    it.date.substringBefore(" ").replace("-", "/")
+                                }/png/${it.image}.png",
+                                timeWhenImageWasCaptured = it.date.substringAfter(" "),
+                                distanceToEarthFromTheEPIC = sqrt(
+                                    (it.positionOfTheSatelliteInSpace.x * it.positionOfTheSatelliteInSpace.x)
+                                            + (it.positionOfTheSatelliteInSpace.y * it.positionOfTheSatelliteInSpace.y)
+                                            + (it.positionOfTheSatelliteInSpace.z * it.positionOfTheSatelliteInSpace.z)
+                                ).toLong(),
+                                distanceToSunFromEPIC = sqrt(
+                                    (it.positionOfTheSunInSpace.x * it.positionOfTheSunInSpace.x)
+                                            + (it.positionOfTheSunInSpace.y * it.positionOfTheSunInSpace.y)
+                                            + (it.positionOfTheSunInSpace.z * it.positionOfTheSunInSpace.z)
+                                ).toLong(),
+                                date = it.date.substringBefore(" "),
+                                distanceBetweenEarthToMoon = 0
+                            )
+                        }.forEach {
+                            epicData.add(it)
                         }
-                        epicData.add(modifiedData)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        emit(NetworkState.Failure(e.message.toString()))
                     }
                 }
                 epicDataJob.join()
-                emit(NetworkState.Success(epicData.awaitAll()))
+                emit(NetworkState.Success(epicData))
             } catch (e: Exception) {
                 e.printStackTrace()
                 emit(NetworkState.Failure(e.message.toString()))
