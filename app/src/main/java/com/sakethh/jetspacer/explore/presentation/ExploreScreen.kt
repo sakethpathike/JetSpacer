@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.explore.presentation
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -57,6 +58,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.sakethh.jetspacer.common.presentation.navigation.APODArchiveScreen
 import com.sakethh.jetspacer.common.presentation.navigation.SearchResultScreenRoute
 import com.sakethh.jetspacer.news.presentation.HeadlineDetailComponent
 import kotlinx.serialization.encodeToString
@@ -82,7 +84,11 @@ fun ExploreScreen(navController: NavController) {
                 ProvideTextStyle(MaterialTheme.typography.titleSmall) {
                     SearchBarDefaults.InputField(
                         placeholder = {
-                            Text("Search in NASA Image Library", modifier = Modifier.basicMarquee())
+                            Text(
+                                "Search in NASA Image Library",
+                                modifier = Modifier.basicMarquee(),
+                                style = MaterialTheme.typography.titleSmall
+                            )
                         },
                         trailingIcon = {
                             if (ExploreScreenViewModel.isSearchBarExpanded.value) {
@@ -277,12 +283,18 @@ fun ExploreScreen(navController: NavController) {
         ) {
             ExploreSectionItem(
                 imgURL = "https://apod.nasa.gov/apod/image/2410/IC63_1024.jpg",
-                itemTitle = "APOD Archive"
+                itemTitle = "APOD Archive",
+                onClick = {
+                    navController.navigate(APODArchiveScreen)
+                }
             )
             Spacer(Modifier.height(10.dp))
             ExploreSectionItem(
                 imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg/435px-Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg",
-                itemTitle = "Mars Gallery"
+                itemTitle = "Mars Gallery",
+                onClick = {
+
+                }
             )
             Spacer(Modifier.height(110.dp))
         }
@@ -290,7 +302,7 @@ fun ExploreScreen(navController: NavController) {
 }
 
 @Composable
-private fun ExploreSectionItem(imgURL: String, itemTitle: String) {
+private fun ExploreSectionItem(imgURL: String, itemTitle: String, onClick: () -> Unit) {
     val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
     Box(
@@ -299,6 +311,7 @@ private fun ExploreSectionItem(imgURL: String, itemTitle: String) {
             .height(150.dp)
             .clip(RoundedCornerShape(15.dp))
             .background(MaterialTheme.colorScheme.primary.copy(0.25f))
+            .clickable { onClick() }
     ) {
         AsyncImage(
             model = ImageRequest.Builder(context)

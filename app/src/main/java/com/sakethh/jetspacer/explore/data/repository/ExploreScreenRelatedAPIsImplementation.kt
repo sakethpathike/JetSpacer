@@ -6,6 +6,8 @@ import com.sakethh.jetspacer.explore.domain.model.api.nasa.NASAImageLibrarySearc
 import com.sakethh.jetspacer.explore.domain.repository.ExploreScreenRelatedAPIsRepository
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
+import kotlinx.serialization.json.Json
 
 class ExploreScreenRelatedAPIsImplementation : ExploreScreenRelatedAPIsRepository {
     override suspend fun getResultsFromNASAImageLibrary(
@@ -22,6 +24,9 @@ class ExploreScreenRelatedAPIsImplementation : ExploreScreenRelatedAPIsRepositor
     }
 
     override suspend fun getISSLocation(): ISSLocationDTO {
-        return HTTPClient.ktorClient.get("http://api.open-notify.org/iss-now.json").body()
+        return HTTPClient.ktorClient.get("http://api.open-notify.org/iss-now.json").bodyAsText()
+            .let {
+                Json.decodeFromString(it)
+            }
     }
 }
