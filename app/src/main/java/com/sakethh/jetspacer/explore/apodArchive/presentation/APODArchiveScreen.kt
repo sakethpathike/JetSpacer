@@ -1,6 +1,8 @@
 package com.sakethh.jetspacer.explore.apodArchive.presentation
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -23,8 +25,14 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -36,8 +44,12 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.common.utils.jetSpacerLog
+import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
+import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun APODArchiveScreen(navController: NavController) {
     val apodArchiveScreenViewModel: APODArchiveScreenViewModel = viewModel()
@@ -45,6 +57,24 @@ fun APODArchiveScreen(navController: NavController) {
     val context = LocalContext.current
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val lazyVerticalStaggeredGridState = rememberLazyStaggeredGridState()
+    val isBtmSheetVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val btmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val selectedAPODData = rememberSaveable(saver = ModifiedAPODDTOSaver) {
+        mutableStateOf(
+            ModifiedAPODDTO(
+                copyright = "",
+                date = "",
+                explanation = "",
+                hdUrl = "",
+                mediaType = "",
+                title = "",
+                url = ""
+            )
+        )
+    }
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(modifier = Modifier.fillMaxSize(),
         topBar = {
             MediumTopAppBar(scrollBehavior = topAppBarScrollBehavior, title = {
@@ -78,12 +108,23 @@ fun APODArchiveScreen(navController: NavController) {
                         .clip(RoundedCornerShape(15.dp))
                         .border(
                             1.5.dp, LocalContentColor.current.copy(0.25f), RoundedCornerShape(15.dp)
-                        ), contentDescription = null
+                        )
+                        .combinedClickable(onClick = {}, onLongClick = {
+                            selectedAPODData.value = it
+                            isBtmSheetVisible.value = true
+                            coroutineScope.launch {
+                                btmSheetState.show()
+                            }
+                        }), contentDescription = null
                 )
             }
         }
     }
-
+    APODBtmSheet(
+        modifiedAPODDTO = selectedAPODData.value,
+        visible = isBtmSheetVisible,
+        btmSheetState = btmSheetState
+    )
     LaunchedEffect(lazyVerticalStaggeredGridState.canScrollForward) {
         if (lazyVerticalStaggeredGridState.canScrollForward.not() && apodArchiveState.data.isNotEmpty() && !apodArchiveState.isLoading && !apodArchiveState.error) {
             jetSpacerLog("triggering from launched effect")
@@ -91,3 +132,9 @@ fun APODArchiveScreen(navController: NavController) {
         }
     }
 }
+
+private val ModifiedAPODDTOSaver = Saver<MutableState<ModifiedAPODDTO>, String>(save = {
+    Json.encodeToString(it.value)
+}, restore = {
+    mutableStateOf(Json.decodeFromString<ModifiedAPODDTO>(it))
+})
