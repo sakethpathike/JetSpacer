@@ -1,10 +1,14 @@
 package com.sakethh.jetspacer.explore.apodArchive.presentation
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -16,15 +20,25 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Button
+import androidx.compose.material3.CalendarLocale
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerFormatter
+import androidx.compose.material3.DateRangePicker
+import androidx.compose.material3.DateRangePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -48,6 +63,8 @@ import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.text.SimpleDateFormat
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -61,6 +78,10 @@ fun APODArchiveScreen(navController: NavController) {
         mutableStateOf(false)
     }
     val btmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val dateRangePickerState = rememberDateRangePickerState()
+    val isDateRangePickerDialogVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
     val selectedAPODData = rememberSaveable(saver = ModifiedAPODDTOSaver) {
         mutableStateOf(
             ModifiedAPODDTO(
@@ -75,6 +96,9 @@ fun APODArchiveScreen(navController: NavController) {
         )
     }
     val coroutineScope = rememberCoroutineScope()
+    val isDataBasedOnCustomRangeSelector = rememberSaveable {
+        mutableStateOf(false)
+    }
     Scaffold(modifier = Modifier.fillMaxSize(),
         topBar = {
             MediumTopAppBar(scrollBehavior = topAppBarScrollBehavior, title = {
@@ -85,6 +109,12 @@ fun APODArchiveScreen(navController: NavController) {
                 }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
                 }
+            }, actions = {
+                IconButton(onClick = {
+                    isDateRangePickerDialogVisible.value = true
+                }) {
+                    Icon(Icons.Default.DateRange, null)
+                }
             })
         }) {
         LazyVerticalStaggeredGrid(
@@ -94,8 +124,10 @@ fun APODArchiveScreen(navController: NavController) {
                 .padding(it)
                 .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
         ) {
-            item(span = StaggeredGridItemSpan.FullLine) {
-                Spacer(Modifier.height(10.dp))
+            if (apodArchiveState.isLoading.not()) {
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Spacer(Modifier.height(10.dp))
+                }
             }
             items(apodArchiveState.data) {
                 AsyncImage(
@@ -109,14 +141,48 @@ fun APODArchiveScreen(navController: NavController) {
                         .border(
                             1.5.dp, LocalContentColor.current.copy(0.25f), RoundedCornerShape(15.dp)
                         )
-                        .combinedClickable(onClick = {}, onLongClick = {
+                        .combinedClickable(onClick = {
                             selectedAPODData.value = it
                             isBtmSheetVisible.value = true
                             coroutineScope.launch {
                                 btmSheetState.show()
                             }
+                        }, onLongClick = {
+
                         }), contentDescription = null
                 )
+            }
+            if (apodArchiveState.isLoading) {
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+            }
+            if (isDataBasedOnCustomRangeSelector.value && apodArchiveState.isLoading.not()) {
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Column {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(15.dp)
+                        )
+                        Text(
+                            "That's all the data found based on the filter you applied.",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+                        )
+                        Button(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp), onClick = {
+                                isDataBasedOnCustomRangeSelector.value = false
+                                apodArchiveScreenViewModel.resetAPODArchiveStateAndReloadAgain()
+                            }) {
+                            Text("Clear the filter", style = MaterialTheme.typography.titleSmall)
+                        }
+                    }
+                }
             }
         }
     }
@@ -125,8 +191,91 @@ fun APODArchiveScreen(navController: NavController) {
         visible = isBtmSheetVisible,
         btmSheetState = btmSheetState
     )
+    if (isDateRangePickerDialogVisible.value) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(DatePickerDefaults.colors().containerColor)
+        ) {
+            Column {
+                Spacer(Modifier.height(50.dp))
+                DateRangePicker(state = dateRangePickerState, title = {
+                    Text(
+                        "Select the date range",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(start = 15.dp, top = 15.dp)
+                    )
+                }, headline = {
+                    DateRangePickerDefaults.DateRangePickerHeadline(
+                        selectedStartDateMillis = dateRangePickerState.selectedStartDateMillis,
+                        selectedEndDateMillis = dateRangePickerState.selectedEndDateMillis,
+                        displayMode = dateRangePickerState.displayMode,
+                        modifier = Modifier.padding(start = 15.dp),
+                        dateFormatter = object : DatePickerFormatter {
+                            override fun formatDate(
+                                dateMillis: Long?,
+                                locale: CalendarLocale,
+                                forContentDescription: Boolean
+                            ): String? {
+                                val dateFormat = if (forContentDescription) {
+                                    SimpleDateFormat("EEEE, MMMM d, yyyy", locale)
+                                } else {
+                                    SimpleDateFormat("MMM d, yyyy", locale)
+                                }
+
+                                return dateMillis?.let { Date(it) }?.let { dateFormat.format(it) }
+                            }
+
+                            override fun formatMonthYear(
+                                monthMillis: Long?,
+                                locale: CalendarLocale
+                            ): String? {
+                                if (monthMillis == null) return null
+                                val monthYearFormat = SimpleDateFormat("MMMM yyyy", locale)
+                                return monthYearFormat.format(Date(monthMillis))
+                            }
+                        }
+                    )
+                })
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(DatePickerDefaults.colors().containerColor)
+                    .align(Alignment.BottomCenter)
+            ) {
+                Button(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp), onClick = {
+                    isDateRangePickerDialogVisible.value = false
+                    isDataBasedOnCustomRangeSelector.value = true
+                    val endDate = Date(
+                        dateRangePickerState.selectedStartDateMillis ?: 0
+                    ).let {
+                        if (it.time > Date.parse(apodArchiveScreenViewModel.apodStartDate)) {
+                            jetSpacerLog("start date cant be applied, falling back to default")
+                            Date(apodArchiveScreenViewModel.apodStartDate)
+                        } else {
+                            jetSpacerLog("start date can be applied")
+                            it
+                        }
+                    }
+                    apodArchiveScreenViewModel.retrieveAPODDataBetweenSpecificDates(
+                        apodStartDate = SimpleDateFormat("yyyy-M-dd").format(
+                            dateRangePickerState.selectedEndDateMillis ?: 0
+                        ),
+                        apodEndDate = SimpleDateFormat("yyyy-M-dd").format(endDate),
+                        erasePreviousData = true
+                    )
+                }) {
+                    Text("Apply", style = MaterialTheme.typography.titleSmall)
+                }
+            }
+        }
+    }
     LaunchedEffect(lazyVerticalStaggeredGridState.canScrollForward) {
-        if (lazyVerticalStaggeredGridState.canScrollForward.not() && apodArchiveState.data.isNotEmpty() && !apodArchiveState.isLoading && !apodArchiveState.error) {
+        if (isDataBasedOnCustomRangeSelector.value.not() && lazyVerticalStaggeredGridState.canScrollForward.not() && apodArchiveState.data.isNotEmpty() && !apodArchiveState.isLoading) {
             jetSpacerLog("triggering from launched effect")
             apodArchiveScreenViewModel.retrieveNextBatchOfAPODArchive()
         }

@@ -32,6 +32,7 @@ class APODArchiveScreenViewModel(
     private var startDate = ""
 
     private var endDate = Calendar.getInstance()
+    var apodStartDate = ""
 
     init {
         homeScreenRelatedAPIsUseCase.apodData().onEach {
@@ -46,6 +47,7 @@ class APODArchiveScreenViewModel(
 
                 is NetworkState.Success -> {
                     apodData.data.date?.let {
+                        apodStartDate = it
                         startDate = it
                         retrieveNextBatchOfAPODArchive()
                     }
@@ -54,17 +56,23 @@ class APODArchiveScreenViewModel(
         }.launchIn(viewModelScope)
     }
 
-    fun retrieveNextBatchOfAPODArchive() {
+    fun resetAPODArchiveStateAndReloadAgain() {
+        startDate = apodStartDate
+        apodArchiveState.value =
+            apodArchiveState.value.copy(isLoading = true, data = emptyList(), error = false)
+        retrieveNextBatchOfAPODArchive()
+    }
 
-        jetSpacerLog("start date : $startDate")
+    fun retrieveAPODDataBetweenSpecificDates(
+        apodStartDate: String,
+        apodEndDate: String,
+        erasePreviousData: Boolean = false
+    ) {
+        if (erasePreviousData) {
+            apodArchiveState.value = apodArchiveState.value.copy(data = emptyList())
+        }
 
-        endDate.time = dateFormat.parse(startDate)
-        endDate.add(Calendar.DAY_OF_YEAR, -30)
-        val modifiedEndDate = dateFormat.format(endDate.time)
-
-        jetSpacerLog("end date : $modifiedEndDate")
-
-        apodArchiveUseCase(startDate, modifiedEndDate).cancellable().onEach {
+        apodArchiveUseCase(apodStartDate, apodEndDate).cancellable().onEach {
             when (val apodData = it) {
                 is NetworkState.Failure -> {
                     apodArchiveState.value =
@@ -96,6 +104,19 @@ class APODArchiveScreenViewModel(
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun retrieveNextBatchOfAPODArchive() {
+
+        jetSpacerLog("start date : $startDate")
+
+        endDate.time = dateFormat.parse(startDate)
+        endDate.add(Calendar.DAY_OF_YEAR, -30)
+        val modifiedEndDate = dateFormat.format(endDate.time)
+
+        jetSpacerLog("end date : $modifiedEndDate")
+
+        retrieveAPODDataBetweenSpecificDates(startDate, modifiedEndDate)
 
         startDate = dateFormat.format(
             Calendar.getInstance().apply {
