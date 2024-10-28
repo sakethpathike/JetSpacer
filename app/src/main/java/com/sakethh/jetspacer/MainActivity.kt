@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.sakethh.jetspacer.common.presentation.navigation.BottomNavigationBar
 import com.sakethh.jetspacer.common.presentation.navigation.MainNavigation
-import com.sakethh.jetspacer.ui.theme.JetSpacerTheme
+import com.sakethh.jetspacer.common.theme.JetSpacerTheme
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

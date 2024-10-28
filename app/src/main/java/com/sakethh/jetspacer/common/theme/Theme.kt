@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.ui.theme
+package com.sakethh.jetspacer.common.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.ui.theme
+package com.sakethh.jetspacer.common.theme
 import androidx.compose.ui.graphics.Color
 
 val primaryLight = Color(0xFF565992)
