@@ -59,6 +59,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.common.presentation.navigation.APODArchiveScreen
+import com.sakethh.jetspacer.common.presentation.navigation.MarsGalleryRoute
 import com.sakethh.jetspacer.common.presentation.navigation.SearchResultScreenRoute
 import com.sakethh.jetspacer.news.presentation.HeadlineDetailComponent
 import kotlinx.serialization.encodeToString
@@ -293,7 +294,7 @@ fun ExploreScreen(navController: NavController) {
                 imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg/435px-Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg",
                 itemTitle = "Mars Gallery",
                 onClick = {
-
+                    navController.navigate(MarsGalleryRoute)
                 }
             )
             Spacer(Modifier.height(110.dp))
