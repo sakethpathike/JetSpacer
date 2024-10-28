@@ -27,7 +27,7 @@ class APODArchiveScreenViewModel(
         )
     )
 
-    private val dateFormat = SimpleDateFormat("yyyy-M-dd")
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd")
 
     private var startDate = ""
 

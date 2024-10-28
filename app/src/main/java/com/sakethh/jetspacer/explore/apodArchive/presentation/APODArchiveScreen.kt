@@ -36,6 +36,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDateRangePickerState
@@ -64,7 +65,10 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -78,7 +82,6 @@ fun APODArchiveScreen(navController: NavController) {
         mutableStateOf(false)
     }
     val btmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val dateRangePickerState = rememberDateRangePickerState()
     val isDateRangePickerDialogVisible = rememberSaveable {
         mutableStateOf(false)
     }
@@ -192,6 +195,26 @@ fun APODArchiveScreen(navController: NavController) {
         btmSheetState = btmSheetState
     )
     if (isDateRangePickerDialogVisible.value) {
+
+        val dateRangePickerState =
+            rememberDateRangePickerState(selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    if (apodArchiveScreenViewModel.apodStartDate.isBlank()) {
+                        return false
+                    }
+
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+                    val lastSelectableDate =
+                        dateFormat.parse(apodArchiveScreenViewModel.apodStartDate)
+                    return utcTimeMillis < lastSelectableDate.time
+                }
+
+                override fun isSelectableYear(year: Int): Boolean {
+                    return year <= Calendar.getInstance().get(Calendar.YEAR)
+                }
+            })
+
         Box(
             Modifier
                 .fillMaxSize()
@@ -252,20 +275,12 @@ fun APODArchiveScreen(navController: NavController) {
                     isDataBasedOnCustomRangeSelector.value = true
                     val endDate = Date(
                         dateRangePickerState.selectedStartDateMillis ?: 0
-                    ).let {
-                        if (it.time > Date.parse(apodArchiveScreenViewModel.apodStartDate)) {
-                            jetSpacerLog("start date cant be applied, falling back to default")
-                            Date(apodArchiveScreenViewModel.apodStartDate)
-                        } else {
-                            jetSpacerLog("start date can be applied")
-                            it
-                        }
-                    }
+                    )
                     apodArchiveScreenViewModel.retrieveAPODDataBetweenSpecificDates(
-                        apodStartDate = SimpleDateFormat("yyyy-M-dd").format(
+                        apodStartDate = SimpleDateFormat("yyyy-MM-dd").format(
                             dateRangePickerState.selectedEndDateMillis ?: 0
                         ),
-                        apodEndDate = SimpleDateFormat("yyyy-M-dd").format(endDate),
+                        apodEndDate = SimpleDateFormat("yyyy-MM-dd").format(endDate),
                         erasePreviousData = true
                     )
                 }) {
