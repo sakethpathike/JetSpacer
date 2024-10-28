@@ -36,8 +36,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,14 +52,14 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.R
+import com.sakethh.jetspacer.common.presentation.utils.customRememberSavable
 import com.sakethh.jetspacer.news.domain.model.Article
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun TopHeadlineDetailScreen(encodedString: String) {
-    val article = rememberSaveable(saver = ArticleSaver) {
+    val article = customRememberSavable {
         Json.decodeFromString<Article>(encodedString)
     }
     val context = LocalContext.current
@@ -197,8 +195,3 @@ fun HeadlineDetailComponent(
         Spacer(Modifier.width(5.dp))
     }
 }
-
-private val ArticleSaver = Saver<Article, String>(
-    save = { Json.encodeToString(it) },
-    restore = { Json.decodeFromString<Article>(it) }
-)

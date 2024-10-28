@@ -4,8 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.network.NetworkState
-import com.sakethh.jetspacer.common.presentation.utils.UIEvent
-import com.sakethh.jetspacer.common.presentation.utils.UiChannel
+import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
+import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.news.domain.model.NewsDTO
 import com.sakethh.jetspacer.news.domain.useCase.TopHeadlinesUseCase

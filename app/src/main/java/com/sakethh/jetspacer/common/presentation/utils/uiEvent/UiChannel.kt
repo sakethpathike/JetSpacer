@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.common.presentation.utils
+package com.sakethh.jetspacer.common.presentation.utils.uiEvent
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel

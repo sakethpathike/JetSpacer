@@ -35,8 +35,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,15 +48,17 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.R
+import com.sakethh.jetspacer.common.presentation.utils.customRememberSavable
 import com.sakethh.jetspacer.explore.domain.model.local.NASAImageLibrarySearchModifiedDTO
 import com.sakethh.jetspacer.news.presentation.HeadlineDetailComponent
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Composable
 fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
-    val searchResult = rememberSaveable(saver = SearchResultSaver) {
-        Json.decodeFromString(encodedNasaImageLibrarySearchModifiedDTO)
+    val searchResult = customRememberSavable {
+        Json.decodeFromString<NASAImageLibrarySearchModifiedDTO>(
+            encodedNasaImageLibrarySearchModifiedDTO
+        )
     }
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
@@ -188,8 +188,3 @@ fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
         }
     }
 }
-
-private val SearchResultSaver = Saver<NASAImageLibrarySearchModifiedDTO, String>(
-    save = { Json.encodeToString(it) },
-    restore = { Json.decodeFromString<NASAImageLibrarySearchModifiedDTO>(it) }
-)

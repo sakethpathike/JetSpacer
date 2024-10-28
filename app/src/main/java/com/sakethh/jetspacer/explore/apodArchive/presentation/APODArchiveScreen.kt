@@ -43,10 +43,8 @@ import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,11 +57,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.sakethh.jetspacer.common.presentation.utils.customRememberSavable
 import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -85,7 +82,7 @@ fun APODArchiveScreen(navController: NavController) {
     val isDateRangePickerDialogVisible = rememberSaveable {
         mutableStateOf(false)
     }
-    val selectedAPODData = rememberSaveable(saver = ModifiedAPODDTOSaver) {
+    val selectedAPODData = customRememberSavable {
         mutableStateOf(
             ModifiedAPODDTO(
                 copyright = "",
@@ -296,9 +293,3 @@ fun APODArchiveScreen(navController: NavController) {
         }
     }
 }
-
-private val ModifiedAPODDTOSaver = Saver<MutableState<ModifiedAPODDTO>, String>(save = {
-    Json.encodeToString(it.value)
-}, restore = {
-    mutableStateOf(Json.decodeFromString<ModifiedAPODDTO>(it))
-})
