@@ -72,9 +72,7 @@ fun ExploreScreen(navController: NavController) {
     val issLocationState = exploreScreenViewModel.issLocationState
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+        modifier = Modifier.fillMaxSize()
     ) {
         SearchBar(
             modifier = Modifier
@@ -128,9 +126,7 @@ fun ExploreScreen(navController: NavController) {
                 if (searchResultsState.value.data.isEmpty() && !searchResultsState.value.isLoading && exploreScreenViewModel.querySearch.value.isNotBlank()) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Box(
-                            modifier = Modifier
-                                .padding(top = 75.dp, start = 15.dp)
-                                .fillMaxSize(),
+                            modifier = Modifier.padding(top = 75.dp, start = 15.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Column {
@@ -141,7 +137,6 @@ fun ExploreScreen(navController: NavController) {
                                     fontSize = 32.sp,
                                     textAlign = TextAlign.Start,
                                     modifier = Modifier
-                                        .fillMaxSize()
                                         .padding(end = 50.dp)
                                 )
                             }
@@ -158,6 +153,11 @@ fun ExploreScreen(navController: NavController) {
                 }
             }
         }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
         Text(
             "ISS",
             style = MaterialTheme.typography.titleMedium,
@@ -298,6 +298,7 @@ fun ExploreScreen(navController: NavController) {
             )
             Spacer(Modifier.height(110.dp))
         }
+        }
     }
 }
 
@@ -325,8 +326,7 @@ private fun ExploreSectionItem(imgURL: String, itemTitle: String, onClick: () ->
                     drawRect(
                         Brush.verticalGradient(
                             listOf(
-                                colorScheme.surface,
-                                Color.Transparent
+                                colorScheme.surface, Color.Transparent
                             )
                         ), blendMode = BlendMode.DstIn
                     )
