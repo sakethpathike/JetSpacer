@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.sakethh.jetspacer.common.presentation.ImageViewerScreen
 import com.sakethh.jetspacer.explore.apodArchive.presentation.APODArchiveScreen
 import com.sakethh.jetspacer.explore.presentation.ExploreScreen
 import com.sakethh.jetspacer.explore.presentation.search.SearchResultScreen
@@ -41,6 +42,9 @@ fun MainNavigation(navController: NavHostController) {
         composable<APODArchiveScreen> {
             APODArchiveScreen(navController)
         }
+        composable<ImageViewerScreen> {
+            ImageViewerScreen()
+        }
     }
 }
 
@@ -65,3 +69,6 @@ data class SearchResultScreenRoute(
 
 @Serializable
 data object APODArchiveScreen
+
+@Serializable
+data object ImageViewerScreen
