@@ -57,7 +57,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.sakethh.jetspacer.common.presentation.utils.customRememberSavable
+import com.sakethh.jetspacer.common.presentation.utils.customMutableRememberSavable
 import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
 import kotlinx.coroutines.launch
@@ -82,7 +82,7 @@ fun APODArchiveScreen(navController: NavController) {
     val isDateRangePickerDialogVisible = rememberSaveable {
         mutableStateOf(false)
     }
-    val selectedAPODData = customRememberSavable {
+    val selectedAPODData = customMutableRememberSavable {
         mutableStateOf(
             ModifiedAPODDTO(
                 copyright = "",
