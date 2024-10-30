@@ -34,7 +34,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +51,11 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.sakethh.jetspacer.common.presentation.utils.customMutableRememberSavable
+import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.Camera
+import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.LatestPhoto
+import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.Rover
+import kotlinx.coroutines.launch
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalPagerApi::class, ExperimentalLayoutApi::class
@@ -56,6 +65,33 @@ fun MarsGalleryScreen(navController: NavController) {
     val marsGalleryScreenViewModel: MarsGalleryScreenViewModel = viewModel()
     val latestImagesState = marsGalleryScreenViewModel.latestImagesState
     val context = LocalContext.current
+    val isBtmSheetVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val btmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val selectedLatestImage = customMutableRememberSavable {
+        mutableStateOf(
+            LatestPhoto(
+                camera = Camera(
+                    fullName = "",
+                    id = 0,
+                    name = "",
+                    roverID = 0
+                ), earthDate = "", id = 0, imgSrc = "", rover = Rover(
+                    cameras = listOf(),
+                    id = 0,
+                    landingDate = "",
+                    launchDate = "",
+                    maxDate = "",
+                    maxSol = 0,
+                    name = "",
+                    status = "",
+                    totalImages = 0
+                ), sol = 0
+            )
+        )
+    }
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(title = {
             Column {
@@ -118,7 +154,14 @@ fun MarsGalleryScreen(navController: NavController) {
                                 1.5.dp,
                                 LocalContentColor.current.copy(0.25f),
                                 RoundedCornerShape(15.dp)
-                            ),
+                            )
+                            .clickable {
+                                selectedLatestImage.value = latestImage
+                                isBtmSheetVisible.value = true
+                                coroutineScope.launch {
+                                    btmSheetState.show()
+                                }
+                            },
                         contentDescription = null
                     )
                 }
@@ -156,4 +199,9 @@ fun MarsGalleryScreen(navController: NavController) {
             }
         }
     }
+    RoverImageDetailsBtmSheet(
+        image = selectedLatestImage.value,
+        visible = isBtmSheetVisible,
+        btmSheetState = btmSheetState
+    )
 }
