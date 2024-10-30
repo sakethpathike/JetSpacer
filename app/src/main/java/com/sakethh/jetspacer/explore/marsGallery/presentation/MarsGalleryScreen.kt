@@ -1,192 +1,158 @@
 package com.sakethh.jetspacer.explore.marsGallery.presentation
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.withLink
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalPagerApi::class, ExperimentalLayoutApi::class
 )
 @Composable
 fun MarsGalleryScreen(navController: NavController) {
-    val pagerState = rememberPagerState(0)
-    val isSolTextFieldReadOnly = rememberSaveable {
-        mutableStateOf(true)
-    }
-    val focusRequest = remember {
-        FocusRequester()
-    }
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize(),
-        topBar = {
-            TopAppBar(title = {
-                Column {
-                    Text("Mars Gallery", style = MaterialTheme.typography.titleSmall)
+    val marsGalleryScreenViewModel: MarsGalleryScreenViewModel = viewModel()
+    val latestImagesState = marsGalleryScreenViewModel.latestImagesState
+    val context = LocalContext.current
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+        TopAppBar(title = {
+            Column {
+                Text("Mars Gallery", style = MaterialTheme.typography.titleSmall)
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            "Curiosity",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontSize = 18.sp
-                        )
-                        Spacer(Modifier.width(2.dp))
-                        Icon(Icons.Default.ArrowDropDown,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .clip(
-                                    RoundedCornerShape(100.dp)
-                                )
-                                .clickable {
-
-                                })
-                    }
-                }
-            }, navigationIcon = {
-                IconButton(onClick = {
-                    navController.navigateUp()
-                }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                }
-            })
-        }) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .background(BottomAppBarDefaults.containerColor)
-                    .animateContentSize()
-                    .padding(bottom = if (WindowInsets.isImeVisible) it.calculateBottomPadding() * 4 else 0.dp)
-            ) {
-                TextField(keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Go
-                ), keyboardActions = KeyboardActions(onGo = {
-                    isSolTextFieldReadOnly.value = isSolTextFieldReadOnly.value.not()
-                    focusRequest.freeFocus()
-                }), readOnly = isSolTextFieldReadOnly.value, value = "",
-                    onValueChange = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 15.dp, top = 15.dp, end = 15.dp, bottom = 5.dp)
-                        .focusRequester(focusRequest),
-                    leadingIcon = {
-                        Icon(Icons.Default.Search, null)
-                    },
-                    supportingText = {
-                        Text(text = buildAnnotatedString {
-                            append("value of ")
-                            withStyle(
-                                SpanStyle(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            ) {
-                                withLink(LinkAnnotation.Url("https://an.rsl.wustl.edu/help/Content/Using%20the%20Notebook/Concepts%20and%20deep%20dive/Time%20on%20Mars.htm#:~:text=a%20simple%20measure%20of%20time%20on%20mars%20is%20the%20sol%2C%20that%20is%2C%20a%20solar%20day.")) {
-                                    append("Sol")
-                                }
-                            }
-                            append(" should be >=0 and <=45")
-                        }, style = MaterialTheme.typography.titleSmall)
-                    })
-
-                FilledTonalButton(
-                    onClick = {
-                        isSolTextFieldReadOnly.value = isSolTextFieldReadOnly.value.not()
-                        if (isSolTextFieldReadOnly.value) focusRequest.freeFocus() else focusRequest.requestFocus()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        if (isSolTextFieldReadOnly.value.not()) "Apply" else "Edit",
-                        style = MaterialTheme.typography.titleSmall
+                        "Curiosity", style = MaterialTheme.typography.titleMedium, fontSize = 18.sp
                     )
+                    Spacer(Modifier.width(2.dp))
+                    Icon(Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .clip(
+                                RoundedCornerShape(100.dp)
+                            )
+                            .clickable {
+
+                            })
                 }
             }
-            Column(
-                Modifier.padding(it)
+        }, navigationIcon = {
+            IconButton(onClick = {
+                navController.navigateUp()
+            }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+            }
+        })
+    }) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
+            LazyVerticalStaggeredGrid(
+                modifier = Modifier.fillMaxWidth(), columns = StaggeredGridCells.Adaptive(150.dp)
             ) {
-                ScrollableTabRow(selectedTabIndex = pagerState.currentPage) {
-                    (1..5).forEach {
-                        Tab(
-                            selected = listOf(true, false).random(),
-                            onClick = {},
-                            modifier = Modifier.padding(15.dp)
-                        ) {
-                            Text(text = it.toString(), style = MaterialTheme.typography.titleSmall)
-                        }
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Text(
+                        text = "Latest",
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(15.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                if (latestImagesState.value.isLoading) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                     }
                 }
-                HorizontalPager(count = 5, state = pagerState) {
-                    LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Adaptive(150.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        item(span = StaggeredGridItemSpan.FullLine) {
-                            Spacer(Modifier.height(500.dp))
+                items(latestImagesState.value.data.latestImages) { latestImage ->
+                    AsyncImage(
+                        model = ImageRequest.Builder(context).data(latestImage.imgSrc)
+                            .crossfade(true).build(),
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .padding(5.dp)
+                            .clip(RoundedCornerShape(15.dp))
+                            .border(
+                                1.5.dp,
+                                LocalContentColor.current.copy(0.25f),
+                                RoundedCornerShape(15.dp)
+                            ),
+                        contentDescription = null
+                    )
+                }
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    if (latestImagesState.value.isLoading.not() && latestImagesState.value.error.not()) {
+                        Column {
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(15.dp)
+                            )
+                            Text(
+                                "That's all the data found.",
+                                style = MaterialTheme.typography.titleSmall,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+                            )
                         }
                     }
+                    Spacer(Modifier.height(200.dp))
                 }
+            }
+            FilledTonalIconButton(
+                onClick = {
+
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 15.dp, bottom = 25.dp)
+                    .size(45.dp)
+            ) {
+                Icon(Icons.Default.ChevronRight, null)
             }
         }
     }
