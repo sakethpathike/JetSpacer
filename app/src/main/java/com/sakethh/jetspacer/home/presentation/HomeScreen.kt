@@ -6,10 +6,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,7 +55,9 @@ fun HomeScreen() {
             .animateContentSize()
     ) {
         item {
-            Spacer(Modifier.height(50.dp))
+            repeat(2) {
+                Spacer(Modifier.windowInsetsPadding(WindowInsets.statusBars))
+            }
             Text(
                 "APOD",
                 style = MaterialTheme.typography.titleMedium,
