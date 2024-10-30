@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.sakethh.jetspacer.common.presentation.components.InfoComponent
 import com.sakethh.jetspacer.common.presentation.navigation.TopHeadlineDetailScreenRoute
+import com.sakethh.jetspacer.news.presentation.components.HeadlineComponent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -74,7 +74,7 @@ fun TopHeadlinesScreen(navController: NavController) {
                 return@LazyColumn
             }
             items(items = topHeadlines.value.data.articles, key = { it.urlToImage }) { article ->
-                InfoComponent(
+                HeadlineComponent(
                     article = article,
                     onImgClick = {
                     },

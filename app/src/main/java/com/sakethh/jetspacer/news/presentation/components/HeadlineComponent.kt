@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.common.presentation.components
+package com.sakethh.jetspacer.news.presentation.components
 
 import android.content.Intent
 import androidx.compose.foundation.background
@@ -45,7 +45,7 @@ import coil.request.ImageRequest
 import com.sakethh.jetspacer.news.domain.model.Article
 
 @Composable
-fun InfoComponent(
+fun HeadlineComponent(
     article: Article,
     onImgClick: () -> Unit,
     onItemClick: () -> Unit
