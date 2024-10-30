@@ -10,6 +10,7 @@ import com.sakethh.jetspacer.explore.marsGallery.presentation.state.latest.MarsG
 import com.sakethh.jetspacer.explore.marsGallery.presentation.utils.Rover
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseCase = MarsGalleryUseCase()) :
     ViewModel() {
@@ -17,7 +18,7 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
         MarsGalleryLatestImagesState(
             data = RoverLatestImagesDTO(
                 latestImages = listOf()
-            ), isLoading = true, error = false
+            ), isLoading = true, error = false, roverName = Rover.Curiosity.name
         )
     )
 
@@ -27,23 +28,44 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
 
     fun loadLatestImagesFromRover(roverName: String) {
         viewModelScope.launch {
-            marsGalleryUseCase(roverName).collectLatest {
+            marsGalleryUseCase(roverName.lowercase()).collectLatest {
                 when (val latestImagesData = it) {
                     is NetworkState.Failure -> {
                         latestImagesState.value =
-                            latestImagesState.value.copy(isLoading = false, error = true)
+                            latestImagesState.value.copy(
+                                isLoading = false, error = true,
+                                roverName = roverName.replaceFirstChar {
+                                    if (it.isLowerCase()) it.titlecase(
+                                        Locale.getDefault()
+                                    ) else it.toString()
+                                }
+                            )
                     }
 
                     is NetworkState.Loading -> {
                         latestImagesState.value =
-                            latestImagesState.value.copy(isLoading = true, error = false)
+                            latestImagesState.value.copy(
+                                isLoading = true, error = false, data = RoverLatestImagesDTO(
+                                    latestImages = listOf()
+                                ),
+                                roverName = roverName.replaceFirstChar {
+                                    if (it.isLowerCase()) it.titlecase(
+                                        Locale.getDefault()
+                                    ) else it.toString()
+                                }
+                            )
                     }
 
                     is NetworkState.Success -> {
                         latestImagesState.value = latestImagesState.value.copy(
                             isLoading = false,
                             error = false,
-                            data = latestImagesData.data
+                            data = latestImagesData.data,
+                            roverName = roverName.replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase(
+                                    Locale.getDefault()
+                                ) else it.toString()
+                            }
                         )
                     }
                 }

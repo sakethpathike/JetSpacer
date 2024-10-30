@@ -7,5 +7,6 @@ import kotlinx.serialization.Serializable
 data class MarsGalleryLatestImagesState(
     val data: RoverLatestImagesDTO,
     val isLoading: Boolean,
-    val error: Boolean
+    val error: Boolean,
+    val roverName: String
 )

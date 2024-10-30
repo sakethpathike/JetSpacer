@@ -21,7 +21,8 @@ fun LabelValueCard(
     title: String,
     value: String,
     innerPadding: Dp = 10.dp,
-    outerPaddingValues: PaddingValues = PaddingValues(start = 15.dp, end = 15.dp)
+    outerPaddingValues: PaddingValues = PaddingValues(start = 15.dp, end = 15.dp),
+    modifier: Modifier = Modifier
 ) {
     Column(
         Modifier
@@ -29,14 +30,17 @@ fun LabelValueCard(
             .clip(RoundedCornerShape(10.dp))
             .background(MaterialTheme.colorScheme.primary.copy(0.25f))
             .padding(innerPadding)
+            .then(modifier)
     ) {
-        Text(
-            title,
-            fontSize = 12.sp,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.secondary
-        )
-        Spacer(Modifier.height(2.dp))
+        if (title.isNotBlank()) {
+            Text(
+                title,
+                fontSize = 12.sp,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Spacer(Modifier.height(2.dp))
+        }
         Text(
             value,
             style = MaterialTheme.typography.titleMedium,
