@@ -18,7 +18,6 @@ class NewsScreenViewModel(private val topHeadlinesUseCase: TopHeadlinesUseCase =
         mutableStateOf(NewsScreenState(isLoading = true, data = NewsDTO(), error = false))
 
     init {
-        jetSpacerLog("yeahh")
         retrieveTopHeadLines()
     }
 
@@ -30,7 +29,7 @@ class NewsScreenViewModel(private val topHeadlinesUseCase: TopHeadlinesUseCase =
                     topHeadLinesState.value =
                         topHeadLinesState.value.copy(isLoading = false, error = true)
                     UiChannel.pushUiEvent(
-                        uiEvent = UIEvent.ShowToast(topHeadLinesData.msg),
+                        uiEvent = UIEvent.ShowSnackbar(topHeadLinesData.msg),
                         coroutineScope = viewModelScope
                     )
                 }

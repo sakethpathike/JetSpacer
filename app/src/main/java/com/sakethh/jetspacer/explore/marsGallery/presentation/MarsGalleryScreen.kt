@@ -77,7 +77,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.sakethh.jetspacer.common.presentation.components.LabelValueCard
 import com.sakethh.jetspacer.common.presentation.utils.customMutableRememberSavable
 import com.sakethh.jetspacer.common.theme.Typography
@@ -88,7 +87,7 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalPagerApi::class, ExperimentalLayoutApi::class
+    ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class
 )
 @Composable
 fun MarsGalleryScreen(navController: NavController) {
@@ -311,6 +310,7 @@ fun MarsGalleryScreen(navController: NavController) {
                                 .clickable {
                                     isDropDownForRoverSelectionExpanded.value =
                                         !isDropDownForRoverSelectionExpanded.value
+                                    isDataSwitchedToCameraSpecific.value = false
                                     marsGalleryScreenViewModel.loadLatestImagesFromRover(rover.name.lowercase())
                                 }) {
                             Text(

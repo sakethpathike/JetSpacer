@@ -5,6 +5,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.network.NetworkState
+import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
+import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.explore.domain.model.api.iss.modified.ISSLocationModifiedDTO
 import com.sakethh.jetspacer.explore.domain.useCase.ExploreScreenRelatedAPISUseCase
 import com.sakethh.jetspacer.explore.presentation.state.SearchResultState
@@ -88,6 +90,10 @@ class ExploreScreenViewModel(private val exploreScreenRelatedAPISUseCase: Explor
                         is NetworkState.Failure -> {
                             searchResultsState.value =
                                 searchResultsState.value.copy(isLoading = false, error = true)
+                            UiChannel.pushUiEvent(
+                                uiEvent = UIEvent.ShowSnackbar(nasaSearchData.msg),
+                                coroutineScope = this
+                            )
                         }
 
                         is NetworkState.Loading -> {

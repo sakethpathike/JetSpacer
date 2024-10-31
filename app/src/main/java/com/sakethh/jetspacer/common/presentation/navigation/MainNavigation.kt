@@ -19,7 +19,7 @@ import kotlinx.serialization.Serializable
 fun MainNavigation(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = MarsGalleryRoute
+        startDestination = HomeScreenRoute
     ) {
         composable<HomeScreenRoute> {
             HomeScreen()

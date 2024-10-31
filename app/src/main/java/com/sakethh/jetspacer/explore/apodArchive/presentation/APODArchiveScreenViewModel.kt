@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.network.NetworkState
+import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
+import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.explore.apodArchive.domain.useCase.APODArchiveUseCase
 import com.sakethh.jetspacer.home.domain.useCase.HomeScreenRelatedAPIsUseCase
@@ -38,7 +40,10 @@ class APODArchiveScreenViewModel(
         homeScreenRelatedAPIsUseCase.apodData().onEach {
             when (val apodData = it) {
                 is NetworkState.Failure -> {
-
+                    UiChannel.pushUiEvent(
+                        uiEvent = UIEvent.ShowSnackbar(apodData.msg),
+                        coroutineScope = this.viewModelScope
+                    )
                 }
 
                 is NetworkState.Loading -> {
@@ -77,7 +82,10 @@ class APODArchiveScreenViewModel(
                 is NetworkState.Failure -> {
                     apodArchiveState.value =
                         apodArchiveState.value.copy(isLoading = false, error = true)
-                    jetSpacerLog("error")
+                    UiChannel.pushUiEvent(
+                        uiEvent = UIEvent.ShowSnackbar(apodData.msg),
+                        coroutineScope = this.viewModelScope
+                    )
                 }
 
                 is NetworkState.Loading -> {

@@ -4,7 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.network.NetworkState
-import com.sakethh.jetspacer.common.utils.jetSpacerLog
+import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
+import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.home.domain.useCase.HomeScreenRelatedAPIsUseCase
 import com.sakethh.jetspacer.home.presentation.state.apod.APODState
 import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
@@ -37,6 +38,10 @@ class HomeScreenViewModel(homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUse
             when (val apodData = it) {
                 is NetworkState.Failure -> {
                     apodState.value = apodState.value.copy(isLoading = false, error = true)
+                    UiChannel.pushUiEvent(
+                        uiEvent = UIEvent.ShowSnackbar(apodData.msg),
+                        coroutineScope = this.viewModelScope
+                    )
                 }
 
                 is NetworkState.Loading -> {
@@ -64,7 +69,10 @@ class HomeScreenViewModel(homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUse
         homeScreenRelatedAPIsUseCase.epicData(viewModelScope).onEach {
             when (val epicData = it) {
                 is NetworkState.Failure -> {
-                    jetSpacerLog(epicData.msg)
+                    UiChannel.pushUiEvent(
+                        uiEvent = UIEvent.ShowSnackbar(epicData.msg),
+                        coroutineScope = this.viewModelScope
+                    )
                 }
 
                 is NetworkState.Loading -> {
