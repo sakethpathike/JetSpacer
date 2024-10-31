@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -177,105 +178,113 @@ fun ExploreScreen(navController: NavController) {
             modifier = Modifier.padding(start = 15.dp, end = 15.dp)
         )
         Spacer(Modifier.height(5.dp))
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(start = 15.dp, end = 15.dp)
-        ) {
-            HeadlineDetailComponent(
-                string = issLocationState.value.timestamp,
-                Icons.Default.Event
-            )
-        }
-        Spacer(Modifier.height(10.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(
-                Modifier
-                    .padding(start = 15.dp, end = 15.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(0.25f))
-                    .padding(10.dp)
-            ) {
-                Text(
-                    "Latitude",
-                    fontSize = 12.sp,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    issLocationState.value.latitude,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            Column(
-                Modifier
-                    .padding(end = 15.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(0.25f))
-                    .padding(10.dp)
-            ) {
-                Text(
-                    "Longitude",
-                    fontSize = 12.sp,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    issLocationState.value.longitude,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        Card(
-            border = BorderStroke(
-                1.dp,
-                contentColorFor(MaterialTheme.colorScheme.surface)
-            ),
-            colors = CardDefaults.cardColors(containerColor = AlertDialogDefaults.containerColor),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 15.dp, end = 15.dp, top = 15.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(
-                        top = 10.dp, bottom = 10.dp
-                    ),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Info,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(
-                                start = 10.dp, end = 10.dp
-                            )
-                    )
-                }
-                Text(
-                    text = "Data will be refreshed after every 5 seconds",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
-                    textAlign = TextAlign.Start,
+            if (issLocationState.value.timestamp.isBlank()) {
+                LinearProgressIndicator(
                     modifier = Modifier
-                        .padding(end = 10.dp)
+                        .fillMaxWidth()
+                        .padding(start = 15.dp, top = 15.dp, end = 15.dp, bottom = 10.dp)
                 )
+            } else {
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(start = 15.dp, end = 15.dp)
+                ) {
+                    HeadlineDetailComponent(
+                        string = issLocationState.value.timestamp,
+                        Icons.Default.Event
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(
+                            Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(0.25f))
+                                .padding(10.dp)
+                        ) {
+                            Text(
+                                "Latitude",
+                                fontSize = 12.sp,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                issLocationState.value.latitude,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontSize = 15.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Spacer(Modifier.width(5.dp))
+                        Column(
+                            Modifier
+                                .padding(end = 15.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(0.25f))
+                                .padding(10.dp)
+                        ) {
+                            Text(
+                                "Longitude",
+                                fontSize = 12.sp,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                issLocationState.value.longitude,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontSize = 15.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    Card(
+                        border = BorderStroke(
+                            1.dp,
+                            contentColorFor(MaterialTheme.colorScheme.surface)
+                        ),
+                        colors = CardDefaults.cardColors(containerColor = AlertDialogDefaults.containerColor),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 15.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .padding(
+                                    top = 10.dp, bottom = 10.dp
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .padding(
+                                            start = 10.dp, end = 10.dp
+                                        )
+                                )
+                            }
+                            Text(
+                                text = "Data will be refreshed after every 5 seconds",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontSize = 14.sp,
+                                lineHeight = 18.sp,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier
+                                    .padding(end = 10.dp)
+                            )
+                        }
+                    }
+                }
             }
-        }
         HorizontalDivider(Modifier.padding(15.dp))
         Column(
             Modifier
