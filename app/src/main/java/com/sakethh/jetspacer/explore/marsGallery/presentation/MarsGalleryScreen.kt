@@ -3,31 +3,43 @@ package com.sakethh.jetspacer.explore.marsGallery.presentation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.CameraFront
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,8 +49,12 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetProperties
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -49,7 +65,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -59,6 +78,7 @@ import coil.request.ImageRequest
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.sakethh.jetspacer.common.presentation.components.LabelValueCard
 import com.sakethh.jetspacer.common.presentation.utils.customMutableRememberSavable
+import com.sakethh.jetspacer.common.theme.Typography
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.Camera
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.LatestPhoto
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.Rover
@@ -107,6 +127,19 @@ fun MarsGalleryScreen(navController: NavController) {
     val isDropDownForRoverSelectionExpanded = rememberSaveable {
         mutableStateOf(false)
     }
+    val isFilterBtmSheetExpanded = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val filterBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isCameraSelectionDialogBoxVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val selectedCameraFullName = rememberSaveable {
+        mutableStateOf("")
+    }
+    val selectedCameraAbbreviation = rememberSaveable {
+        mutableStateOf("")
+    }
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(title = {
             Column {
@@ -130,6 +163,16 @@ fun MarsGalleryScreen(navController: NavController) {
                 Icon(
                     Icons.Default.Info,
                     contentDescription = null
+                )
+            }
+            IconButton(onClick = {
+                isFilterBtmSheetExpanded.value = true
+                coroutineScope.launch {
+                    filterBtmSheetState.show()
+                }
+            }) {
+                Icon(
+                    Icons.Default.Tune, contentDescription = null
                 )
             }
             IconButton(onClick = {
@@ -207,17 +250,6 @@ fun MarsGalleryScreen(navController: NavController) {
                     }
                     Spacer(Modifier.height(200.dp))
                 }
-            }
-            FilledTonalIconButton(
-                onClick = {
-
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(start = 15.dp, bottom = 25.dp)
-                    .size(45.dp)
-            ) {
-                Icon(Icons.Default.ChevronRight, null)
             }
             if (isDropDownForRoverSelectionExpanded.value) {
                 Column(
@@ -334,5 +366,171 @@ fun MarsGalleryScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+    val solTextFieldValue = rememberSaveable {
+        mutableStateOf("")
+    }
+    if (isFilterBtmSheetExpanded.value) {
+        ModalBottomSheet(
+            sheetState = filterBtmSheetState, onDismissRequest = {
+                coroutineScope.launch {
+                    filterBtmSheetState.hide()
+                }.invokeOnCompletion {
+                    isFilterBtmSheetExpanded.value = isFilterBtmSheetExpanded.value.not()
+                }
+            }, properties = ModalBottomSheetProperties(shouldDismissOnBackPress = false)
+        ) {
+            if (latestImagesState.value.data.latestImages.isEmpty()) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                return@ModalBottomSheet
+            }
+            LabelValueCard(
+                title = "", value = latestImagesState.value.data.latestImages.first().rover.name
+            )
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp)
+            )
+            LabelValueCard(
+                title = "Max Sol",
+                value = latestImagesState.value.data.latestImages.first().rover.maxSol.toString(),
+                outerPaddingValues = PaddingValues(start = 15.dp, bottom = 15.dp)
+            )
+            TextField(textStyle = Typography.titleSmall, keyboardActions = KeyboardActions(onGo = {
+
+                coroutineScope.launch {
+                    filterBtmSheetState.hide()
+                }.invokeOnCompletion {
+                    isFilterBtmSheetExpanded.value = isFilterBtmSheetExpanded.value.not()
+                }
+            }), keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number, imeAction = if (try {
+                        solTextFieldValue.value.toLong() < latestImagesState.value.data.latestImages.first().rover.maxSol
+                    } catch (_: Exception) {
+                        false
+                    }
+                ) ImeAction.Go else ImeAction.None
+            ), label = {
+                Text(text = "Sol", style = MaterialTheme.typography.titleSmall)
+            }, value = solTextFieldValue.value, onValueChange = {
+                solTextFieldValue.value =
+                    it.replace(",", "").replace(".", "").replace("-", "").replace(" ", "")
+                        .replace("\n", "")
+            }, isError = try {
+                solTextFieldValue.value.toLong() > latestImagesState.value.data.latestImages.first().rover.maxSol
+            } catch (_: Exception) {
+                true
+            }, modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp)
+            )
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp)
+            )
+            Text(
+                text = "Selected Camera",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(start = 15.dp)
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp, top = 10.dp)
+            ) {
+                FilledTonalButton(modifier = Modifier.fillMaxWidth(0.8f), onClick = {
+                    isCameraSelectionDialogBoxVisible.value =
+                        isCameraSelectionDialogBoxVisible.value.not()
+                }) {
+                    Text(
+                        text = selectedCameraFullName.value.ifBlank { latestImagesState.value.data.latestImages.first().rover.cameras.first().fullName },
+                        style = MaterialTheme.typography.titleSmall,
+                        fontSize = 18.sp,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                Spacer(modifier = Modifier.width(5.dp))
+                FilledTonalIconButton(onClick = {
+                    isCameraSelectionDialogBoxVisible.value =
+                        isCameraSelectionDialogBoxVisible.value.not()
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.CameraFront, contentDescription = null
+                    )
+                }
+            }
+            Button(modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    top = 5.dp, start = 15.dp, end = 15.dp
+                ), onClick = {
+
+            }) {
+                Text("Apply Filters", style = MaterialTheme.typography.titleSmall)
+            }
+            Spacer(
+                Modifier.height(
+                    if (WindowInsets.isImeVisible) WindowInsets.ime.asPaddingValues()
+                        .calculateBottomPadding() else 0.dp
+                )
+            )
+        }
+    }
+    val tempSelectedCameraFullName = rememberSaveable {
+        mutableStateOf(selectedCameraFullName.value)
+    }
+    val tempSelectedCameraAbbreviation = rememberSaveable {
+        mutableStateOf(selectedCameraFullName.value)
+    }
+    if (isCameraSelectionDialogBoxVisible.value) {
+        AlertDialog(onDismissRequest = {
+            isCameraSelectionDialogBoxVisible.value = isCameraSelectionDialogBoxVisible.value.not()
+        }, confirmButton = {
+            Button(modifier = Modifier.fillMaxWidth(), onClick = {
+                selectedCameraAbbreviation.value = tempSelectedCameraAbbreviation.value
+                selectedCameraFullName.value = tempSelectedCameraFullName.value
+                isCameraSelectionDialogBoxVisible.value = false
+            }) {
+                Text("Apply the camera filter", style = MaterialTheme.typography.titleSmall)
+            }
+        }, dismissButton = {
+            OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = {
+                isCameraSelectionDialogBoxVisible.value = false
+            }) {
+                Text("Cancel", style = MaterialTheme.typography.titleSmall)
+            }
+        }, title = {
+            LabelValueCard(
+                title = latestImagesState.value.data.latestImages.first().rover.name,
+                value = "Select any Camera",
+                outerPaddingValues = PaddingValues(start = 0.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }, text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                latestImagesState.value.data.latestImages.first().rover.cameras.forEach {
+                    Row(modifier = Modifier
+                        .clickable {
+                            tempSelectedCameraFullName.value = it.fullName
+                            tempSelectedCameraAbbreviation.value = it.name
+                        }
+                        .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(Modifier.height(15.dp))
+                        RadioButton(selected = it.fullName == tempSelectedCameraFullName.value,
+                            onClick = {
+                                tempSelectedCameraFullName.value = it.fullName
+                                tempSelectedCameraAbbreviation.value = it.name
+                            })
+                        Text(text = it.fullName, style = MaterialTheme.typography.titleSmall)
+                    }
+                }
+            }
+        })
     }
 }
