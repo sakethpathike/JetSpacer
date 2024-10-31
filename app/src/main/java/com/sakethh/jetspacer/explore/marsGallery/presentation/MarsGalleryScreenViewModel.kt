@@ -4,11 +4,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.network.NetworkState
+import com.sakethh.jetspacer.common.utils.jetSpacerLog
+import com.sakethh.jetspacer.explore.marsGallery.domain.model.CameraAndSolSpecificDTO
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.RoverLatestImagesDTO
 import com.sakethh.jetspacer.explore.marsGallery.domain.useCase.MarsGalleryUseCase
-import com.sakethh.jetspacer.explore.marsGallery.presentation.state.latest.MarsGalleryLatestImagesState
+import com.sakethh.jetspacer.explore.marsGallery.presentation.state.MarsGalleryCameraSpecificState
+import com.sakethh.jetspacer.explore.marsGallery.presentation.state.MarsGalleryLatestImagesState
 import com.sakethh.jetspacer.explore.marsGallery.presentation.utils.Rover
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -22,13 +27,22 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
         )
     )
 
+    val cameraAndSolSpecificState = mutableStateOf(
+        MarsGalleryCameraSpecificState(
+            isLoading = true, error = false, data = CameraAndSolSpecificDTO(
+                photos = listOf()
+            )
+        )
+    )
+
     init {
         loadLatestImagesFromRover(Rover.Curiosity.name.lowercase())
     }
 
     fun loadLatestImagesFromRover(roverName: String) {
+        cameraAndSolSpecificState.value = cameraAndSolSpecificState.value.copy(isLoading = false)
         viewModelScope.launch {
-            marsGalleryUseCase(roverName.lowercase()).collectLatest {
+            marsGalleryUseCase.getLatestImagesFromTheRover(roverName.lowercase()).collectLatest {
                 when (val latestImagesData = it) {
                     is NetworkState.Failure -> {
                         latestImagesState.value =
@@ -71,5 +85,36 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
                 }
             }
         }
+    }
+
+    fun loadImagesBasedOnTheFilter(roverName: String, cameraName: String, sol: Int, page: Int) {
+        latestImagesState.value = latestImagesState.value.copy(isLoading = false)
+        marsGalleryUseCase.getImagesBasedOnTheFilter(roverName, cameraName, sol, page).onEach {
+            when (val imagesBasedOnFiltersData = it) {
+                is NetworkState.Failure -> {
+                    cameraAndSolSpecificState.value = cameraAndSolSpecificState.value.copy(
+                        isLoading = false,
+                        error = true
+                    )
+                }
+
+                is NetworkState.Loading -> {
+                    cameraAndSolSpecificState.value = cameraAndSolSpecificState.value.copy(
+                        isLoading = true,
+                        error = false,
+                        data = CameraAndSolSpecificDTO(emptyList())
+                    )
+                }
+
+                is NetworkState.Success -> {
+                    jetSpacerLog(imagesBasedOnFiltersData.data.toString())
+                    cameraAndSolSpecificState.value = cameraAndSolSpecificState.value.copy(
+                        isLoading = false,
+                        error = false,
+                        data = imagesBasedOnFiltersData.data
+                    )
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 }

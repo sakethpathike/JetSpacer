@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.explore.marsGallery.presentation.state.latest
+package com.sakethh.jetspacer.explore.marsGallery.presentation.state
 
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.RoverLatestImagesDTO
 import kotlinx.serialization.Serializable

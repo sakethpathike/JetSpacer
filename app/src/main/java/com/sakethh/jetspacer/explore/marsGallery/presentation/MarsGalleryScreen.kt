@@ -35,12 +35,14 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.CameraFront
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -91,7 +93,8 @@ import java.util.Locale
 @Composable
 fun MarsGalleryScreen(navController: NavController) {
     val marsGalleryScreenViewModel: MarsGalleryScreenViewModel = viewModel()
-    val latestImagesState = marsGalleryScreenViewModel.latestImagesState
+    val latestImagesDataState = marsGalleryScreenViewModel.latestImagesState
+    val cameraAndSolSpecificDataState = marsGalleryScreenViewModel.cameraAndSolSpecificState
     val context = LocalContext.current
     val isRoverImageDetailsBtmSheetVisible = rememberSaveable {
         mutableStateOf(false)
@@ -140,12 +143,18 @@ fun MarsGalleryScreen(navController: NavController) {
     val selectedCameraAbbreviation = rememberSaveable {
         mutableStateOf("")
     }
+    val isDataSwitchedToCameraSpecific = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val dataBasedOnTheCamera = rememberSaveable {
+        mutableStateOf("")
+    }
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(title = {
             Column {
                 Text("Mars Gallery", style = MaterialTheme.typography.titleSmall)
                 Text(
-                    text = latestImagesState.value.roverName,
+                    text = latestImagesDataState.value.roverName,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 18.sp
                 )
@@ -185,6 +194,25 @@ fun MarsGalleryScreen(navController: NavController) {
                 )
             }
         })
+    }, floatingActionButton = {
+        if (isDataSwitchedToCameraSpecific.value && cameraAndSolSpecificDataState.value.isLoading.not()) {
+            FloatingActionButton(onClick = {
+                isDataSwitchedToCameraSpecific.value = false
+                marsGalleryScreenViewModel.loadLatestImagesFromRover(latestImagesDataState.value.roverName)
+            }) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(15.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
+                    Spacer(Modifier.width(5.dp))
+                    Text(
+                        text = "Switch back to Latest images",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
+            }
+        }
     }) {
         Box(
             modifier = Modifier
@@ -196,18 +224,18 @@ fun MarsGalleryScreen(navController: NavController) {
             ) {
                 item(span = StaggeredGridItemSpan.FullLine) {
                     Text(
-                        text = "Latest",
+                        text = if (isDataSwitchedToCameraSpecific.value.not()) "Latest" else dataBasedOnTheCamera.value,
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(15.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-                if (latestImagesState.value.isLoading) {
+                if (latestImagesDataState.value.isLoading || cameraAndSolSpecificDataState.value.isLoading) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                     }
                 }
-                items(latestImagesState.value.data.latestImages) { latestImage ->
+                items(if (isDataSwitchedToCameraSpecific.value.not()) latestImagesDataState.value.data.latestImages else cameraAndSolSpecificDataState.value.data.photos) { latestImage ->
                     AsyncImage(
                         model = ImageRequest.Builder(context).data(latestImage.imgSrc)
                             .crossfade(true).build(),
@@ -231,7 +259,7 @@ fun MarsGalleryScreen(navController: NavController) {
                     )
                 }
                 item(span = StaggeredGridItemSpan.FullLine) {
-                    if (latestImagesState.value.isLoading.not() && latestImagesState.value.error.not()) {
+                    if (latestImagesDataState.value.isLoading.not() && latestImagesDataState.value.error.not() && cameraAndSolSpecificDataState.value.isLoading.not()) {
                         Column {
                             HorizontalDivider(
                                 modifier = Modifier
@@ -239,7 +267,7 @@ fun MarsGalleryScreen(navController: NavController) {
                                     .padding(15.dp)
                             )
                             Text(
-                                "That's all the data found.",
+                                if ((isDataSwitchedToCameraSpecific.value && cameraAndSolSpecificDataState.value.data.photos.isNotEmpty()) || (isDataSwitchedToCameraSpecific.value.not() && latestImagesDataState.value.data.latestImages.isNotEmpty())) "That's all the data found." else "Found nothing, change the filters and try again.",
                                 style = MaterialTheme.typography.titleSmall,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
@@ -274,7 +302,7 @@ fun MarsGalleryScreen(navController: NavController) {
                         fontSize = 12.sp
                     )
                     com.sakethh.jetspacer.explore.marsGallery.presentation.utils.Rover.entries.forEach { rover ->
-                        if (rover.name == latestImagesState.value.roverName) {
+                        if (rover.name == latestImagesDataState.value.roverName) {
                             return@forEach
                         }
                         Box(
@@ -311,60 +339,60 @@ fun MarsGalleryScreen(navController: NavController) {
                 isInfoForRoverBtmSheetVisible.value = false
             }
         }, sheetState = btmSheetStateForRoverInfo) {
-            if (latestImagesState.value.data.latestImages.isEmpty()) {
+            if (latestImagesDataState.value.data.latestImages.isEmpty()) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 return@ModalBottomSheet
             }
-            LabelValueCard(
-                title = "",
-                value = latestImagesState.value.data.latestImages.first().rover.name
-            )
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-            )
-            Row {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 LabelValueCard(
-                    title = "Launch Date",
-                    value = latestImagesState.value.data.latestImages.first().rover.launchDate,
-                    outerPaddingValues = PaddingValues(start = 15.dp)
+                    title = "",
+                    value = latestImagesDataState.value.data.latestImages.first().rover.name
                 )
-                LabelValueCard(
-                    title = "Landing Date",
-                    value = latestImagesState.value.data.latestImages.first().rover.landingDate
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp)
                 )
-            }
-            Row(Modifier.padding(top = 15.dp)) {
-                LabelValueCard(
-                    title = "Max Sol",
-                    value = latestImagesState.value.data.latestImages.first().rover.maxSol.toString(),
-                    outerPaddingValues = PaddingValues(start = 15.dp)
-                )
-                LabelValueCard(
-                    title = "Max Date",
-                    value = latestImagesState.value.data.latestImages.first().rover.maxDate
-                )
-            }
-            Spacer(Modifier.height(15.dp))
-            LabelValueCard(
-                title = "Status",
-                value = latestImagesState.value.data.latestImages.first().rover.status.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(
-                        Locale.getDefault()
-                    ) else it.toString()
+                Row {
+                    LabelValueCard(
+                        title = "Launch Date",
+                        value = latestImagesDataState.value.data.latestImages.first().rover.launchDate,
+                        outerPaddingValues = PaddingValues(start = 15.dp)
+                    )
+                    LabelValueCard(
+                        title = "Landing Date",
+                        value = latestImagesDataState.value.data.latestImages.first().rover.landingDate
+                    )
                 }
-            )
-            Spacer(Modifier.height(15.dp))
-            LabelValueCard(
-                title = "Cameras",
-                value = latestImagesState.value.data.latestImages.first().rover.cameras.joinToString(
-                    separator = "\n"
-                ) {
-                    "• ${it.fullName}"
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+                Row(Modifier.padding(top = 15.dp)) {
+                    LabelValueCard(
+                        title = "Max Sol",
+                        value = latestImagesDataState.value.data.latestImages.first().rover.maxSol.toString(),
+                        outerPaddingValues = PaddingValues(start = 15.dp)
+                    )
+                    LabelValueCard(
+                        title = "Max Date",
+                        value = latestImagesDataState.value.data.latestImages.first().rover.maxDate
+                    )
+                }
+                Spacer(Modifier.height(15.dp))
+                LabelValueCard(title = "Status",
+                    value = latestImagesDataState.value.data.latestImages.first().rover.status.replaceFirstChar {
+                        if (it.isLowerCase()) it.titlecase(
+                            Locale.getDefault()
+                        ) else it.toString()
+                    })
+                Spacer(Modifier.height(15.dp))
+                LabelValueCard(
+                    title = "Cameras",
+                    value = latestImagesDataState.value.data.latestImages.first().rover.cameras.joinToString(
+                        separator = "\n"
+                    ) {
+                        "• ${it.fullName}"
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
     val solTextFieldValue = rememberSaveable {
@@ -380,106 +408,142 @@ fun MarsGalleryScreen(navController: NavController) {
                 }
             }, properties = ModalBottomSheetProperties(shouldDismissOnBackPress = false)
         ) {
-            if (latestImagesState.value.data.latestImages.isEmpty()) {
+            if (latestImagesDataState.value.data.latestImages.isEmpty()) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 return@ModalBottomSheet
             }
-            LabelValueCard(
-                title = "", value = latestImagesState.value.data.latestImages.first().rover.name
-            )
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-            )
-            LabelValueCard(
-                title = "Max Sol",
-                value = latestImagesState.value.data.latestImages.first().rover.maxSol.toString(),
-                outerPaddingValues = PaddingValues(start = 15.dp, bottom = 15.dp)
-            )
-            TextField(textStyle = Typography.titleSmall, keyboardActions = KeyboardActions(onGo = {
-
-                coroutineScope.launch {
-                    filterBtmSheetState.hide()
-                }.invokeOnCompletion {
-                    isFilterBtmSheetExpanded.value = isFilterBtmSheetExpanded.value.not()
-                }
-            }), keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number, imeAction = if (try {
-                        solTextFieldValue.value.toLong() < latestImagesState.value.data.latestImages.first().rover.maxSol
-                    } catch (_: Exception) {
-                        false
-                    }
-                ) ImeAction.Go else ImeAction.None
-            ), label = {
-                Text(text = "Sol", style = MaterialTheme.typography.titleSmall)
-            }, value = solTextFieldValue.value, onValueChange = {
-                solTextFieldValue.value =
-                    it.replace(",", "").replace(".", "").replace("-", "").replace(" ", "")
-                        .replace("\n", "")
-            }, isError = try {
-                solTextFieldValue.value.toLong() > latestImagesState.value.data.latestImages.first().rover.maxSol
-            } catch (_: Exception) {
-                true
-            }, modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 15.dp, end = 15.dp)
-            )
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-            )
-            Text(
-                text = "Selected Camera",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(start = 15.dp)
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp, top = 10.dp)
-            ) {
-                FilledTonalButton(modifier = Modifier.fillMaxWidth(0.8f), onClick = {
-                    isCameraSelectionDialogBoxVisible.value =
-                        isCameraSelectionDialogBoxVisible.value.not()
-                }) {
-                    Text(
-                        text = selectedCameraFullName.value.ifBlank { latestImagesState.value.data.latestImages.first().rover.cameras.first().fullName },
-                        style = MaterialTheme.typography.titleSmall,
-                        fontSize = 18.sp,
-                        maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                    )
-                }
-                Spacer(modifier = Modifier.width(5.dp))
-                FilledTonalIconButton(onClick = {
-                    isCameraSelectionDialogBoxVisible.value =
-                        isCameraSelectionDialogBoxVisible.value.not()
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.CameraFront, contentDescription = null
-                    )
-                }
-            }
-            Button(modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    top = 5.dp, start = 15.dp, end = 15.dp
-                ), onClick = {
-
-            }) {
-                Text("Apply Filters", style = MaterialTheme.typography.titleSmall)
-            }
-            Spacer(
-                Modifier.height(
-                    if (WindowInsets.isImeVisible) WindowInsets.ime.asPaddingValues()
-                        .calculateBottomPadding() else 0.dp
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                LabelValueCard(
+                    title = "",
+                    value = latestImagesDataState.value.data.latestImages.first().rover.name
                 )
-            )
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp)
+                )
+                LabelValueCard(
+                    title = "Max Sol",
+                    value = latestImagesDataState.value.data.latestImages.first().rover.maxSol.toString(),
+                    outerPaddingValues = PaddingValues(start = 15.dp, bottom = 15.dp)
+                )
+                TextField(
+                    textStyle = Typography.titleSmall,
+                    keyboardActions = KeyboardActions(onGo = {
+
+                        coroutineScope.launch {
+                            filterBtmSheetState.hide()
+                        }.invokeOnCompletion {
+                            isFilterBtmSheetExpanded.value = isFilterBtmSheetExpanded.value.not()
+                        }
+                    }),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number, imeAction = if (try {
+                                solTextFieldValue.value.toLong() < latestImagesDataState.value.data.latestImages.first().rover.maxSol
+                            } catch (_: Exception) {
+                                false
+                            }
+                        ) ImeAction.Go else ImeAction.None
+                    ),
+                    label = {
+                        Text(text = "Sol", style = MaterialTheme.typography.titleSmall)
+                    },
+                    value = solTextFieldValue.value,
+                    onValueChange = {
+                        solTextFieldValue.value =
+                            it.replace(",", "").replace(".", "").replace("-", "").replace(" ", "")
+                                .replace("\n", "")
+                    },
+                    isError = try {
+                        solTextFieldValue.value.toLong() > latestImagesDataState.value.data.latestImages.first().rover.maxSol
+                    } catch (_: Exception) {
+                        true
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 15.dp, end = 15.dp)
+                )
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp)
+                )
+                Text(
+                    text = "Selected Camera",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(start = 15.dp)
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 15.dp, end = 15.dp, top = 10.dp)
+                ) {
+                    FilledTonalButton(modifier = Modifier.fillMaxWidth(0.8f), onClick = {
+                        isCameraSelectionDialogBoxVisible.value =
+                            isCameraSelectionDialogBoxVisible.value.not()
+                    }) {
+                        Text(
+                            text = selectedCameraFullName.value.ifBlank { latestImagesDataState.value.data.latestImages.first().rover.cameras.first().fullName },
+                            style = MaterialTheme.typography.titleSmall,
+                            fontSize = 18.sp,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(5.dp))
+                    FilledTonalIconButton(onClick = {
+                        isCameraSelectionDialogBoxVisible.value =
+                            isCameraSelectionDialogBoxVisible.value.not()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.CameraFront, contentDescription = null
+                        )
+                    }
+                }
+                Button(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = 5.dp, start = 15.dp, end = 15.dp
+                    ), onClick = {
+                    if (try {
+                            solTextFieldValue.value.toLong() < latestImagesDataState.value.data.latestImages.first().rover.maxSol
+                        } catch (_: Exception) {
+                            false
+                        }
+                    ) {
+                        selectedCameraFullName.value = selectedCameraFullName.value.ifBlank {
+                            latestImagesDataState.value.data.latestImages.first().rover.cameras.first().fullName
+                        }
+                        dataBasedOnTheCamera.value = selectedCameraFullName.value
+                        isDataSwitchedToCameraSpecific.value = true
+                        isCameraSelectionDialogBoxVisible.value = false
+                        marsGalleryScreenViewModel.loadImagesBasedOnTheFilter(
+                            cameraName = selectedCameraAbbreviation.value.ifBlank { latestImagesDataState.value.data.latestImages.first().rover.cameras.first().name },
+                            roverName = latestImagesDataState.value.roverName,
+                            sol = solTextFieldValue.value.toInt(),
+                            page = 0
+                        )
+                        coroutineScope.launch {
+                            filterBtmSheetState.hide()
+                        }.invokeOnCompletion {
+                            isFilterBtmSheetExpanded.value = false
+                        }
+                    } else {
+
+                    }
+                }) {
+                    Text("Apply Filters", style = MaterialTheme.typography.titleSmall)
+                }
+                Spacer(
+                    Modifier.height(
+                        if (WindowInsets.isImeVisible) WindowInsets.ime.asPaddingValues()
+                            .calculateBottomPadding() else 0.dp
+                    )
+                )
+            }
         }
     }
     val tempSelectedCameraFullName = rememberSaveable {
@@ -507,14 +571,14 @@ fun MarsGalleryScreen(navController: NavController) {
             }
         }, title = {
             LabelValueCard(
-                title = latestImagesState.value.data.latestImages.first().rover.name,
+                title = latestImagesDataState.value.data.latestImages.first().rover.name,
                 value = "Select any Camera",
                 outerPaddingValues = PaddingValues(start = 0.dp),
                 modifier = Modifier.fillMaxWidth()
             )
         }, text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                latestImagesState.value.data.latestImages.first().rover.cameras.forEach {
+                latestImagesDataState.value.data.latestImages.first().rover.cameras.forEach {
                     Row(modifier = Modifier
                         .clickable {
                             tempSelectedCameraFullName.value = it.fullName
