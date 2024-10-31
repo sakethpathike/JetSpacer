@@ -4,5 +4,5 @@ import com.sakethh.jetspacer.news.domain.model.NewsDTO
 
 
 interface NewsDataRepository {
-    suspend fun getTopHeadLines(): NewsDTO
+    suspend fun getTopHeadLines(pageSize: Int, page: Int): NewsDTO
 }

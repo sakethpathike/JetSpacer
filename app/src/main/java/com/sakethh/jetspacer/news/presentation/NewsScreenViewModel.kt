@@ -9,23 +9,34 @@ import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.news.domain.model.NewsDTO
 import com.sakethh.jetspacer.news.domain.useCase.TopHeadlinesUseCase
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class NewsScreenViewModel(private val topHeadlinesUseCase: TopHeadlinesUseCase = TopHeadlinesUseCase()) :
     ViewModel() {
     val topHeadLinesState =
-        mutableStateOf(NewsScreenState(isLoading = true, data = NewsDTO(), error = false))
+        mutableStateOf(
+            NewsScreenState(
+                isLoading = true,
+                data = NewsDTO(),
+                error = false,
+                reachedMaxHeadlines = false
+            )
+        )
 
+    private var currentPage = 0
+    private var newsAPIJob: Job? = null
     init {
-        retrieveTopHeadLines()
+        retrievePaginatedTopHeadlines()
     }
 
-    private fun retrieveTopHeadLines() {
-        topHeadlinesUseCase().onEach {
+    fun retrievePaginatedTopHeadlines() {
+        newsAPIJob?.cancel()
+        newsAPIJob = topHeadlinesUseCase(10, ++currentPage).cancellable().onEach {
             when (val topHeadLinesData = it) {
                 is NetworkState.Failure -> {
-                    jetSpacerLog("failed")
                     topHeadLinesState.value =
                         topHeadLinesState.value.copy(isLoading = false, error = true)
                     UiChannel.pushUiEvent(
@@ -35,18 +46,24 @@ class NewsScreenViewModel(private val topHeadlinesUseCase: TopHeadlinesUseCase =
                 }
 
                 is NetworkState.Loading -> {
-                    jetSpacerLog("loading")
                     topHeadLinesState.value =
                         topHeadLinesState.value.copy(isLoading = true, error = false)
                 }
 
                 is NetworkState.Success -> {
-                    jetSpacerLog("sucess")
                     topHeadLinesState.value = topHeadLinesState.value.copy(
                         isLoading = false,
-                        data = topHeadLinesData.data,
-                        error = false
+                        data = topHeadLinesState.value.data.copy(
+                            articles = topHeadLinesState.value.data.articles + topHeadLinesData.data.articles,
+                            status = topHeadLinesData.data.status,
+                            totalResults = topHeadLinesState.value.data.totalResults + topHeadLinesData.data.totalResults
+                        ),
+                        error = false,
+                        reachedMaxHeadlines = topHeadLinesData.data.articles.isEmpty()
                     )
+                    if (topHeadLinesData.data.articles.isEmpty()) {
+                        jetSpacerLog("found max")
+                    }
                 }
             }
         }.launchIn(viewModelScope)

@@ -12,12 +12,12 @@ import java.util.Locale
 class TopHeadlinesUseCase(
     private val newsDataRepository: NewsDataRepository = NewsDataImplementation()
 ) {
-    operator fun invoke(): Flow<NetworkState<NewsDTO>> = flow {
+    operator fun invoke(pageSize: Int, page: Int): Flow<NetworkState<NewsDTO>> = flow {
         try {
             val dateFormatInput = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
             val dateFormatOutput = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
             emit(NetworkState.Loading("loading"))
-            val topHeadlines = newsDataRepository.getTopHeadLines()
+            val topHeadlines = newsDataRepository.getTopHeadLines(pageSize, page)
             emit(NetworkState.Success(NewsDTO(articles = topHeadlines.articles.map {
                 it.copy(
                     publishedAt = dateFormatOutput.format(dateFormatInput.parse(it.publishedAt))
