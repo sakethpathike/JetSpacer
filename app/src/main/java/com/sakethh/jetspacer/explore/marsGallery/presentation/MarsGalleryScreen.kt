@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -60,6 +61,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -79,6 +81,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.common.presentation.components.LabelValueCard
 import com.sakethh.jetspacer.common.presentation.utils.customMutableRememberSavable
+import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
+import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.common.theme.Typography
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.Camera
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.LatestPhoto
@@ -148,6 +152,7 @@ fun MarsGalleryScreen(navController: NavController) {
     val dataBasedOnTheCamera = rememberSaveable {
         mutableStateOf("")
     }
+    val lazyStaggeredGridState = rememberLazyStaggeredGridState()
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(title = {
             Column {
@@ -219,7 +224,8 @@ fun MarsGalleryScreen(navController: NavController) {
                 .padding(it)
         ) {
             LazyVerticalStaggeredGrid(
-                modifier = Modifier.fillMaxWidth(), columns = StaggeredGridCells.Adaptive(150.dp)
+                modifier = Modifier.fillMaxWidth(), columns = StaggeredGridCells.Adaptive(150.dp),
+                state = lazyStaggeredGridState
             ) {
                 item(span = StaggeredGridItemSpan.FullLine) {
                     Text(
@@ -228,11 +234,6 @@ fun MarsGalleryScreen(navController: NavController) {
                         modifier = Modifier.padding(15.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
-                }
-                if (latestImagesDataState.value.isLoading || cameraAndSolSpecificDataState.value.isLoading) {
-                    item(span = StaggeredGridItemSpan.FullLine) {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    }
                 }
                 items(if (isDataSwitchedToCameraSpecific.value.not()) latestImagesDataState.value.data.latestImages else cameraAndSolSpecificDataState.value.data.photos) { latestImage ->
                     AsyncImage(
@@ -256,6 +257,11 @@ fun MarsGalleryScreen(navController: NavController) {
                             },
                         contentDescription = null
                     )
+                }
+                if (latestImagesDataState.value.isLoading || cameraAndSolSpecificDataState.value.isLoading) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
                 }
                 item(span = StaggeredGridItemSpan.FullLine) {
                     if (latestImagesDataState.value.isLoading.not() && latestImagesDataState.value.error.not() && cameraAndSolSpecificDataState.value.isLoading.not()) {
@@ -311,6 +317,7 @@ fun MarsGalleryScreen(navController: NavController) {
                                     isDropDownForRoverSelectionExpanded.value =
                                         !isDropDownForRoverSelectionExpanded.value
                                     isDataSwitchedToCameraSpecific.value = false
+                                    selectedCameraFullName.value = ""
                                     marsGalleryScreenViewModel.loadLatestImagesFromRover(rover.name.lowercase())
                                 }) {
                             Text(
@@ -520,11 +527,14 @@ fun MarsGalleryScreen(navController: NavController) {
                         dataBasedOnTheCamera.value = selectedCameraFullName.value
                         isDataSwitchedToCameraSpecific.value = true
                         isCameraSelectionDialogBoxVisible.value = false
+                        marsGalleryScreenViewModel.resetCameraAndSolSpecificState()
+                        marsGalleryScreenViewModel.currentCameraAndSolSpecificPaginatedPage = 1
                         marsGalleryScreenViewModel.loadImagesBasedOnTheFilter(
                             cameraName = selectedCameraAbbreviation.value.ifBlank { latestImagesDataState.value.data.latestImages.first().rover.cameras.first().name },
                             roverName = latestImagesDataState.value.roverName,
                             sol = solTextFieldValue.value.toInt(),
-                            page = 0
+                            page = marsGalleryScreenViewModel.currentCameraAndSolSpecificPaginatedPage,
+                            clearData = true
                         )
                         coroutineScope.launch {
                             filterBtmSheetState.hide()
@@ -532,7 +542,10 @@ fun MarsGalleryScreen(navController: NavController) {
                             isFilterBtmSheetExpanded.value = false
                         }
                     } else {
-
+                        UiChannel.pushUiEvent(
+                            UIEvent.ShowSnackbar(errorMessage = "sol value cannot be greater than ${latestImagesDataState.value.data.latestImages.first().rover.maxSol}"),
+                            coroutineScope
+                        )
                     }
                 }) {
                     Text("Apply Filters", style = MaterialTheme.typography.titleSmall)
@@ -596,5 +609,17 @@ fun MarsGalleryScreen(navController: NavController) {
                 }
             }
         })
+    }
+    LaunchedEffect(
+        lazyStaggeredGridState.canScrollForward
+    ) {
+        if (lazyStaggeredGridState.canScrollForward.not() && isDataSwitchedToCameraSpecific.value && cameraAndSolSpecificDataState.value.isLoading.not() && cameraAndSolSpecificDataState.value.error.not() && cameraAndSolSpecificDataState.value.reachedMaxPages.not()) {
+            marsGalleryScreenViewModel.loadImagesBasedOnTheFilter(
+                cameraName = selectedCameraAbbreviation.value.ifBlank { latestImagesDataState.value.data.latestImages.first().rover.cameras.first().name },
+                roverName = latestImagesDataState.value.roverName,
+                sol = solTextFieldValue.value.toInt(),
+                page = ++marsGalleryScreenViewModel.currentCameraAndSolSpecificPaginatedPage
+            )
+        }
     }
 }

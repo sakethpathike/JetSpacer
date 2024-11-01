@@ -5,5 +5,6 @@ import com.sakethh.jetspacer.explore.marsGallery.domain.model.CameraAndSolSpecif
 data class MarsGalleryCameraSpecificState(
     val isLoading: Boolean,
     val error: Boolean,
-    val data: CameraAndSolSpecificDTO
+    val data: CameraAndSolSpecificDTO,
+    val reachedMaxPages: Boolean
 )

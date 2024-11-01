@@ -32,9 +32,17 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
         MarsGalleryCameraSpecificState(
             isLoading = true, error = false, data = CameraAndSolSpecificDTO(
                 photos = listOf()
-            )
+            ), reachedMaxPages = false
         )
     )
+
+    fun resetCameraAndSolSpecificState() {
+        cameraAndSolSpecificState.value = MarsGalleryCameraSpecificState(
+            isLoading = true, error = false, data = CameraAndSolSpecificDTO(
+                photos = listOf()
+            ), reachedMaxPages = false
+        )
+    }
 
     init {
         loadLatestImagesFromRover(Rover.Curiosity.name.lowercase())
@@ -91,8 +99,14 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
             }
         }
     }
-
-    fun loadImagesBasedOnTheFilter(roverName: String, cameraName: String, sol: Int, page: Int) {
+    var currentCameraAndSolSpecificPaginatedPage = 0
+    fun loadImagesBasedOnTheFilter(
+        roverName: String,
+        cameraName: String,
+        sol: Int,
+        page: Int,
+        clearData: Boolean = false
+    ) {
         latestImagesState.value = latestImagesState.value.copy(isLoading = false)
         marsGalleryUseCase.getImagesBasedOnTheFilter(roverName, cameraName, sol, page).onEach {
             when (val imagesBasedOnFiltersData = it) {
@@ -110,8 +124,7 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
                 is NetworkState.Loading -> {
                     cameraAndSolSpecificState.value = cameraAndSolSpecificState.value.copy(
                         isLoading = true,
-                        error = false,
-                        data = CameraAndSolSpecificDTO(emptyList())
+                        error = false
                     )
                 }
 
@@ -119,7 +132,14 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
                     cameraAndSolSpecificState.value = cameraAndSolSpecificState.value.copy(
                         isLoading = false,
                         error = false,
-                        data = imagesBasedOnFiltersData.data
+                        data = cameraAndSolSpecificState.value.data.copy(
+                            photos = if (clearData) {
+                                emptyList()
+                            } else {
+                                cameraAndSolSpecificState.value.data.photos
+                            } + imagesBasedOnFiltersData.data.photos
+                        ),
+                        reachedMaxPages = imagesBasedOnFiltersData.data.photos.isEmpty()
                     )
                 }
             }
