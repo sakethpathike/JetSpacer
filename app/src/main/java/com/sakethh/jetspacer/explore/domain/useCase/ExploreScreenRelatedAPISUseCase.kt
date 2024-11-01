@@ -8,6 +8,7 @@ import com.sakethh.jetspacer.explore.domain.model.api.nasa.NASAImageLibrarySearc
 import com.sakethh.jetspacer.explore.domain.model.local.NASAImageLibrarySearchModifiedDTO
 import com.sakethh.jetspacer.explore.domain.repository.ExploreScreenRelatedAPIsRepository
 import io.ktor.client.call.body
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.Date
@@ -23,6 +24,16 @@ class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsReposi
                 query,
                 page
             )
+            if (httpResponse.status.isSuccess().not()) {
+                emit(
+                    NetworkState.Failure(
+                        exceptionMessage = "",
+                        statusCode = httpResponse.status.value,
+                        statusDescription = httpResponse.status.description
+                    )
+                )
+                return@flow
+            }
             try {
                 emit(NetworkState.Loading(""))
                 val retrievedCollectionData =
@@ -61,6 +72,13 @@ class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsReposi
 
     suspend fun issLocation(): NetworkState<ISSLocationModifiedDTO> {
         val httpResponse = exploreScreenRelatedAPIsRepository.getISSLocation()
+        if (httpResponse.status.isSuccess().not()) {
+            return NetworkState.Failure(
+                exceptionMessage = "",
+                statusCode = httpResponse.status.value,
+                statusDescription = httpResponse.status.description
+            )
+        }
         return try {
             val originalData = httpResponse.body<ISSLocationDTO>()
             val modifiedData = ISSLocationModifiedDTO(

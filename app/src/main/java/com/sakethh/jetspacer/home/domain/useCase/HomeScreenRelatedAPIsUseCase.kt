@@ -9,6 +9,7 @@ import com.sakethh.jetspacer.home.domain.model.epic.specific.EPICSpecificDTO
 import com.sakethh.jetspacer.home.domain.repository.HomeScreenRelatedAPIsRepository
 import com.sakethh.jetspacer.home.presentation.state.epic.EpicStateItem
 import io.ktor.client.call.body
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -19,6 +20,16 @@ class HomeScreenRelatedAPIsUseCase(private val homeScreenRelatedAPIsRepository: 
     fun apodData(): Flow<NetworkState<APODDTO>> {
         return flow {
             val httpResponse = homeScreenRelatedAPIsRepository.getAPODDataFromTheAPI()
+            if (httpResponse.status.isSuccess().not()) {
+                emit(
+                    NetworkState.Failure(
+                        exceptionMessage = "",
+                        statusCode = httpResponse.status.value,
+                        statusDescription = httpResponse.status.description
+                    )
+                )
+                return@flow
+            }
             try {
                 emit(NetworkState.Loading(""))
                 emit(NetworkState.Success(httpResponse.body()))

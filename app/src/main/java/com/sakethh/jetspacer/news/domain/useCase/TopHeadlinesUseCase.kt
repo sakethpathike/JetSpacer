@@ -5,6 +5,7 @@ import com.sakethh.jetspacer.news.data.repository.NewsDataImplementation
 import com.sakethh.jetspacer.news.domain.model.NewsDTO
 import com.sakethh.jetspacer.news.domain.repository.NewsDataRepository
 import io.ktor.client.call.body
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.text.SimpleDateFormat
@@ -15,6 +16,16 @@ class TopHeadlinesUseCase(
 ) {
     operator fun invoke(pageSize: Int, page: Int): Flow<NetworkState<NewsDTO>> = flow {
         val httpResponse = newsDataRepository.getTopHeadLines(pageSize, page)
+        if (httpResponse.status.isSuccess().not()) {
+            emit(
+                NetworkState.Failure(
+                    exceptionMessage = "",
+                    statusCode = httpResponse.status.value,
+                    statusDescription = httpResponse.status.description
+                )
+            )
+            return@flow
+        }
         try {
             val dateFormatInput = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
             val dateFormatOutput = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
