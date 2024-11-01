@@ -170,6 +170,9 @@ fun MarsGalleryScreen(navController: NavController) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
             }
         }, actions = {
+            if (latestImagesDataState.value.error || cameraAndSolSpecificDataState.value.error)
+                return@TopAppBar
+
             IconButton(onClick = {
                 isInfoForRoverBtmSheetVisible.value = true
             }) {
@@ -261,6 +264,17 @@ fun MarsGalleryScreen(navController: NavController) {
                 if (latestImagesDataState.value.isLoading || cameraAndSolSpecificDataState.value.isLoading) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
+                }
+                if (latestImagesDataState.value.error || cameraAndSolSpecificDataState.value.error) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Text(
+                            text = if (latestImagesDataState.value.error) "${latestImagesDataState.value.statusCode}\n${latestImagesDataState.value.statusDescription}" else "${cameraAndSolSpecificDataState.value.statusCode}\n${cameraAndSolSpecificDataState.value.statusDescription}",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 15.dp)
+                        )
                     }
                 }
                 item(span = StaggeredGridItemSpan.FullLine) {

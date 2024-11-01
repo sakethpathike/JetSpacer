@@ -14,11 +14,12 @@ class MarsGalleryUseCase(private val marsGalleryRepository: MarsGalleryRepositor
 
     fun getLatestImagesFromTheRover(roverName: String): Flow<NetworkState<RoverLatestImagesDTO>> =
         flow {
+            emit(NetworkState.Loading())
             val httpResponse = marsGalleryRepository.getLatestImagesFromTheRover(roverName)
             if (httpResponse.status.isSuccess().not()) {
                 emit(
                     NetworkState.Failure(
-                        exceptionMessage = "",
+                        exceptionMessage = "Network request failed.",
                         statusCode = httpResponse.status.value,
                         statusDescription = httpResponse.status.description
                     )
@@ -26,7 +27,6 @@ class MarsGalleryUseCase(private val marsGalleryRepository: MarsGalleryRepositor
                 return@flow
             }
             try {
-            emit(NetworkState.Loading())
             emit(NetworkState.Success(httpResponse.body()))
         } catch (e: Exception) {
             e.printStackTrace()
@@ -46,6 +46,7 @@ class MarsGalleryUseCase(private val marsGalleryRepository: MarsGalleryRepositor
         sol: Int,
         page: Int
     ): Flow<NetworkState<CameraAndSolSpecificDTO>> = flow {
+        emit(NetworkState.Loading())
         val httpResponse = marsGalleryRepository.getImagesBasedOnTheFilter(
             roverName,
             cameraName,
@@ -63,7 +64,6 @@ class MarsGalleryUseCase(private val marsGalleryRepository: MarsGalleryRepositor
             return@flow
         }
         try {
-            emit(NetworkState.Loading())
             emit(
                 NetworkState.Success(
                     httpResponse.body()

@@ -85,6 +85,9 @@ class ExploreScreenViewModel(private val exploreScreenRelatedAPISUseCase: Explor
     private fun loadSearchResults(querySearchSnapShotFlow: Flow<String>) {
         job = viewModelScope.launch {
             querySearchSnapShotFlow.cancellable().collectLatest {
+                if (it.isBlank()) {
+                    return@collectLatest
+                }
                 exploreScreenRelatedAPISUseCase.nasaImageLibrarySearch(it, 1).onEach {
                     when (val nasaSearchData = it) {
                         is NetworkState.Failure -> {

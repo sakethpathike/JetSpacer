@@ -40,7 +40,7 @@ fun TopHeadlinesScreen(navController: NavController) {
     val systemUiController = rememberSystemUiController()
     systemUiController.setNavigationBarColor(TopAppBarDefaults.topAppBarColors().containerColor)
     val newsScreenViewModel = viewModel<NewsScreenViewModel>()
-    val topHeadlines = newsScreenViewModel.topHeadLinesState
+    val topHeadlinesState = newsScreenViewModel.topHeadLinesState
     val lazyColumnState = rememberLazyListState()
     Scaffold(topBar = {
         Column {
@@ -63,7 +63,7 @@ fun TopHeadlinesScreen(navController: NavController) {
                 .padding(it),
             state = lazyColumnState
         ) {
-            items(items = topHeadlines.value.data.articles) { article ->
+            items(items = topHeadlinesState.value.data.articles) { article ->
                 HeadlineComponent(
                     article = article,
                     onImgClick = {
@@ -79,14 +79,23 @@ fun TopHeadlinesScreen(navController: NavController) {
                     },
                 )
             }
-            if (topHeadlines.value.isLoading && topHeadlines.value.reachedMaxHeadlines.not() && topHeadlines.value.error.not()) {
+            if (topHeadlinesState.value.isLoading && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.error.not()) {
                 item {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
                         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                     }
                 }
             }
-            if (topHeadlines.value.reachedMaxHeadlines) {
+            if (topHeadlinesState.value.error) {
+                item {
+                    Text(
+                        text = "${topHeadlinesState.value.statusCode}\n${topHeadlinesState.value.statusDescription}",
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(15.dp)
+                    )
+                }
+            }
+            if (topHeadlinesState.value.reachedMaxHeadlines) {
                 item {
                     Text(
                         text = "That's all the data found.",
@@ -103,7 +112,7 @@ fun TopHeadlinesScreen(navController: NavController) {
             }
         }
         LaunchedEffect(lazyColumnState.canScrollForward) {
-            if (lazyColumnState.canScrollForward.not() && topHeadlines.value.reachedMaxHeadlines.not() && topHeadlines.value.isLoading.not() && topHeadlines.value.error.not()) {
+            if (lazyColumnState.canScrollForward.not() && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.isLoading.not() && topHeadlinesState.value.error.not()) {
                 newsScreenViewModel.retrievePaginatedTopHeadlines()
             }
         }

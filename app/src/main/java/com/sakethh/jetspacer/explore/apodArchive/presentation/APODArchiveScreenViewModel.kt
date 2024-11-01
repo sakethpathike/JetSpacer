@@ -42,6 +42,12 @@ class APODArchiveScreenViewModel(
         homeScreenRelatedAPIsUseCase.apodData().onEach {
             when (val apodData = it) {
                 is NetworkState.Failure -> {
+                    apodArchiveState.value = apodArchiveState.value.copy(
+                        isLoading = false,
+                        error = true,
+                        statusCode = apodData.statusCode,
+                        statusDescription = apodData.statusDescription
+                    )
                     UiChannel.pushUiEvent(
                         uiEvent = UIEvent.ShowSnackbar(apodData.exceptionMessage),
                         coroutineScope = this.viewModelScope
@@ -49,7 +55,7 @@ class APODArchiveScreenViewModel(
                 }
 
                 is NetworkState.Loading -> {
-
+                    apodArchiveState.value = apodArchiveState.value.copy(isLoading = true)
                 }
 
                 is NetworkState.Success -> {
@@ -98,7 +104,6 @@ class APODArchiveScreenViewModel(
                 is NetworkState.Loading -> {
                     apodArchiveState.value =
                         apodArchiveState.value.copy(isLoading = true, error = false)
-                    jetSpacerLog("loading")
                 }
 
                 is NetworkState.Success -> {

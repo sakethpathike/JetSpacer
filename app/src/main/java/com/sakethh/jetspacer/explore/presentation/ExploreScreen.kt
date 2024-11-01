@@ -125,6 +125,27 @@ fun ExploreScreen(navController: NavController) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
             LazyVerticalStaggeredGrid(columns = StaggeredGridCells.Adaptive(150.dp)) {
+                if (searchResultsState.value.error) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Box(
+                            modifier = Modifier.padding(top = 75.dp, start = 15.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Column {
+                                Text(
+                                    text = "${searchResultsState.value.statusCode}\n${searchResultsState.value.statusDescription}",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 32.sp,
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier
+                                        .padding(end = 50.dp)
+                                )
+                            }
+                        }
+                    }
+                    return@LazyVerticalStaggeredGrid
+                }
                 if (searchResultsState.value.data.isEmpty() && !searchResultsState.value.isLoading && exploreScreenViewModel.querySearch.value.isNotBlank()) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Box(

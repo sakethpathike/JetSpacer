@@ -20,6 +20,7 @@ class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsReposi
         page: Int
     ): Flow<NetworkState<List<NASAImageLibrarySearchModifiedDTO>>> {
         return flow {
+            emit(NetworkState.Loading())
             val httpResponse = exploreScreenRelatedAPIsRepository.getResultsFromNASAImageLibrary(
                 query,
                 page
@@ -27,7 +28,7 @@ class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsReposi
             if (httpResponse.status.isSuccess().not()) {
                 emit(
                     NetworkState.Failure(
-                        exceptionMessage = "",
+                        exceptionMessage = "Network request failed.",
                         statusCode = httpResponse.status.value,
                         statusDescription = httpResponse.status.description
                     )
@@ -35,7 +36,6 @@ class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsReposi
                 return@flow
             }
             try {
-                emit(NetworkState.Loading(""))
                 val retrievedCollectionData =
                     httpResponse.body<NASAImageLibrarySearchDTO>().collection
                 val modifiedCollectionData =

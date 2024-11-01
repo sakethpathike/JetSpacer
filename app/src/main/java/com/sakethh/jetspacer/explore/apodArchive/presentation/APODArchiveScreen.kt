@@ -109,6 +109,9 @@ fun APODArchiveScreen(navController: NavController) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
                 }
             }, actions = {
+                if (apodArchiveState.error)
+                    return@MediumTopAppBar
+
                 IconButton(onClick = {
                     isDateRangePickerDialogVisible.value = true
                 }) {
@@ -123,7 +126,7 @@ fun APODArchiveScreen(navController: NavController) {
                 .padding(it)
                 .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
         ) {
-            if (apodArchiveState.isLoading.not()) {
+            if (apodArchiveState.isLoading.not() || apodArchiveState.error) {
                 item(span = StaggeredGridItemSpan.FullLine) {
                     Spacer(Modifier.height(10.dp))
                 }
@@ -154,6 +157,17 @@ fun APODArchiveScreen(navController: NavController) {
             if (apodArchiveState.isLoading) {
                 item(span = StaggeredGridItemSpan.FullLine) {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+            }
+            if (apodArchiveState.error) {
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Text(
+                        text = "${apodArchiveState.statusCode}\n${apodArchiveState.statusDescription}",
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 15.dp)
+                    )
                 }
             }
             if (isDataBasedOnCustomRangeSelector.value && apodArchiveState.isLoading.not()) {

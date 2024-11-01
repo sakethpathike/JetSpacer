@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,7 +78,7 @@ fun HomeScreen() {
         }
 
         item {
-            if (apodDataState.value.isLoading) {
+            if (apodDataState.value.isLoading || apodDataState.value.error) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -86,7 +87,15 @@ fun HomeScreen() {
                         .background(MaterialTheme.colorScheme.primary.copy(0.25f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    if (apodDataState.value.isLoading) {
+                        CircularProgressIndicator()
+                    } else {
+                        Text(
+                            text = "${apodDataState.value.statusCode}\n${apodDataState.value.statusDescription}",
+                            style = MaterialTheme.typography.titleSmall,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             } else {
                 AsyncImage(
@@ -205,7 +214,7 @@ fun HomeScreen() {
             Spacer(Modifier.height(15.dp))
         }
         item {
-            if (epicDataState.value.data.isEmpty() && epicDataState.value.isLoading) {
+            if (epicDataState.value.isLoading || epicDataState.value.error) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -214,7 +223,15 @@ fun HomeScreen() {
                         .background(MaterialTheme.colorScheme.primary.copy(0.25f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    if (epicDataState.value.error) {
+                        Text(
+                            text = "${epicDataState.value.statusCode}\n${epicDataState.value.statusDescription}",
+                            style = MaterialTheme.typography.titleSmall,
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
+                        CircularProgressIndicator()
+                    }
                 }
             }
         }

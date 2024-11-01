@@ -12,11 +12,12 @@ import kotlinx.coroutines.flow.flow
 class APODArchiveUseCase(private val apodArchiveRepository: APODArchiveRepository = APODArchiveImplementation()) {
     operator fun invoke(startDate: String, endDate: String): Flow<NetworkState<List<APODDTO>>> =
         flow {
+            emit(NetworkState.Loading())
             val httpResponse = apodArchiveRepository.getAPODArchiveData(startDate, endDate)
             if (httpResponse.status.isSuccess().not()) {
                 emit(
                     NetworkState.Failure(
-                        exceptionMessage = "",
+                        exceptionMessage = "Network request failed.",
                         statusCode = httpResponse.status.value,
                         statusDescription = httpResponse.status.description
                     )
@@ -24,7 +25,6 @@ class APODArchiveUseCase(private val apodArchiveRepository: APODArchiveRepositor
                 return@flow
             }
             try {
-                emit(NetworkState.Loading(""))
                 val apodArchiveData =
                     httpResponse.body<List<APODDTO>>().filter {
                         it.mediaType == "image"

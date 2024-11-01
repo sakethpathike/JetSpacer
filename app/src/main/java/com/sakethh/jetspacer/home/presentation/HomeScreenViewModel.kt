@@ -79,7 +79,7 @@ class HomeScreenViewModel(homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUse
             }
         }.launchIn(viewModelScope)
 
-        homeScreenRelatedAPIsUseCase.epicData(viewModelScope).onEach {
+        homeScreenRelatedAPIsUseCase.epicData().onEach {
             when (val epicData = it) {
                 is NetworkState.Failure -> {
                     epicState.value = epicState.value.copy(

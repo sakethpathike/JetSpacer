@@ -15,11 +15,12 @@ class TopHeadlinesUseCase(
     private val newsDataRepository: NewsDataRepository = NewsDataImplementation()
 ) {
     operator fun invoke(pageSize: Int, page: Int): Flow<NetworkState<NewsDTO>> = flow {
+        emit(NetworkState.Loading())
         val httpResponse = newsDataRepository.getTopHeadLines(pageSize, page)
         if (httpResponse.status.isSuccess().not()) {
             emit(
                 NetworkState.Failure(
-                    exceptionMessage = "",
+                    exceptionMessage = "Network request failed.",
                     statusCode = httpResponse.status.value,
                     statusDescription = httpResponse.status.description
                 )
@@ -29,7 +30,6 @@ class TopHeadlinesUseCase(
         try {
             val dateFormatInput = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
             val dateFormatOutput = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
-            emit(NetworkState.Loading("loading"))
             val topHeadlines = httpResponse.body<NewsDTO>()
             emit(NetworkState.Success(NewsDTO(articles = topHeadlines.articles.map {
                 it.copy(
