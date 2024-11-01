@@ -24,7 +24,8 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
         MarsGalleryLatestImagesState(
             data = RoverLatestImagesDTO(
                 latestImages = listOf()
-            ), isLoading = true, error = false, roverName = Rover.Curiosity.name
+            ), isLoading = true, error = false, roverName = Rover.Curiosity.name,
+            statusCode = 0, statusDescription = ""
         )
     )
 
@@ -32,7 +33,9 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
         MarsGalleryCameraSpecificState(
             isLoading = true, error = false, data = CameraAndSolSpecificDTO(
                 photos = listOf()
-            ), reachedMaxPages = false
+            ), reachedMaxPages = false,
+            statusCode = 0,
+            statusDescription = ""
         )
     )
 
@@ -40,7 +43,8 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
         cameraAndSolSpecificState.value = MarsGalleryCameraSpecificState(
             isLoading = true, error = false, data = CameraAndSolSpecificDTO(
                 photos = listOf()
-            ), reachedMaxPages = false
+            ), reachedMaxPages = false,
+            statusCode = 0, statusDescription = ""
         )
     }
 
@@ -61,10 +65,12 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
                                     if (it.isLowerCase()) it.titlecase(
                                         Locale.getDefault()
                                     ) else it.toString()
-                                }
+                                },
+                                statusCode = latestImagesData.statusCode,
+                                statusDescription = latestImagesData.statusDescription
                             )
                         UiChannel.pushUiEvent(
-                            uiEvent = UIEvent.ShowSnackbar(latestImagesData.msg),
+                            uiEvent = UIEvent.ShowSnackbar(latestImagesData.exceptionMessage),
                             coroutineScope = this
                         )
                     }
@@ -113,10 +119,12 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
                 is NetworkState.Failure -> {
                     cameraAndSolSpecificState.value = cameraAndSolSpecificState.value.copy(
                         isLoading = false,
-                        error = true
+                        error = true,
+                        statusDescription = imagesBasedOnFiltersData.statusDescription,
+                        statusCode = imagesBasedOnFiltersData.statusCode
                     )
                     UiChannel.pushUiEvent(
-                        uiEvent = UIEvent.ShowSnackbar(imagesBasedOnFiltersData.msg),
+                        uiEvent = UIEvent.ShowSnackbar(imagesBasedOnFiltersData.exceptionMessage),
                         coroutineScope = this.viewModelScope
                     )
                 }

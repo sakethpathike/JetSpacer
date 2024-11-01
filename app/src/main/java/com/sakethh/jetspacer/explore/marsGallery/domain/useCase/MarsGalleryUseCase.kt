@@ -5,6 +5,7 @@ import com.sakethh.jetspacer.explore.marsGallery.data.repository.MarsGalleryImpl
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.CameraAndSolSpecificDTO
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.RoverLatestImagesDTO
 import com.sakethh.jetspacer.explore.marsGallery.domain.repository.MarsGalleryRepository
+import io.ktor.client.call.body
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -12,12 +13,19 @@ class MarsGalleryUseCase(private val marsGalleryRepository: MarsGalleryRepositor
 
     fun getLatestImagesFromTheRover(roverName: String): Flow<NetworkState<RoverLatestImagesDTO>> =
         flow {
+            val httpResponse = marsGalleryRepository.getLatestImagesFromTheRover(roverName)
         try {
             emit(NetworkState.Loading())
-            emit(NetworkState.Success(marsGalleryRepository.getLatestImagesFromTheRover(roverName)))
+            emit(NetworkState.Success(httpResponse.body()))
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(NetworkState.Failure(e.message.toString()))
+            emit(
+                NetworkState.Failure(
+                    exceptionMessage = e.message.toString(),
+                    statusCode = httpResponse.status.value,
+                    statusDescription = httpResponse.status.description
+                )
+            )
         }
     }
 
@@ -27,21 +35,28 @@ class MarsGalleryUseCase(private val marsGalleryRepository: MarsGalleryRepositor
         sol: Int,
         page: Int
     ): Flow<NetworkState<CameraAndSolSpecificDTO>> = flow {
+        val httpResponse = marsGalleryRepository.getImagesBasedOnTheFilter(
+            roverName,
+            cameraName,
+            sol,
+            page
+        )
         try {
             emit(NetworkState.Loading())
             emit(
                 NetworkState.Success(
-                    marsGalleryRepository.getImagesBasedOnTheFilter(
-                        roverName,
-                        cameraName,
-                        sol,
-                        page
-                    )
+                    httpResponse.body()
                 )
             )
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(NetworkState.Failure(e.message.toString()))
+            emit(
+                NetworkState.Failure(
+                    exceptionMessage = e.message.toString(),
+                    statusCode = httpResponse.status.value,
+                    statusDescription = httpResponse.status.description
+                )
+            )
         }
     }
 }

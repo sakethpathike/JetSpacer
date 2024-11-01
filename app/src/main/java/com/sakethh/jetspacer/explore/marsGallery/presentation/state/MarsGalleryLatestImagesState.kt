@@ -8,5 +8,7 @@ data class MarsGalleryLatestImagesState(
     val data: RoverLatestImagesDTO,
     val isLoading: Boolean,
     val error: Boolean,
-    val roverName: String
+    val roverName: String,
+    val statusCode: Int,
+    val statusDescription: String
 )

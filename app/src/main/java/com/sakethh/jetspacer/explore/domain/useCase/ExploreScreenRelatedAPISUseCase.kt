@@ -3,8 +3,11 @@ package com.sakethh.jetspacer.explore.domain.useCase
 import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.explore.data.repository.ExploreScreenRelatedAPIsImplementation
 import com.sakethh.jetspacer.explore.domain.model.api.iss.modified.ISSLocationModifiedDTO
+import com.sakethh.jetspacer.explore.domain.model.api.iss.source.ISSLocationDTO
+import com.sakethh.jetspacer.explore.domain.model.api.nasa.NASAImageLibrarySearchDTO
 import com.sakethh.jetspacer.explore.domain.model.local.NASAImageLibrarySearchModifiedDTO
 import com.sakethh.jetspacer.explore.domain.repository.ExploreScreenRelatedAPIsRepository
+import io.ktor.client.call.body
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.Date
@@ -16,13 +19,14 @@ class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsReposi
         page: Int
     ): Flow<NetworkState<List<NASAImageLibrarySearchModifiedDTO>>> {
         return flow {
+            val httpResponse = exploreScreenRelatedAPIsRepository.getResultsFromNASAImageLibrary(
+                query,
+                page
+            )
             try {
                 emit(NetworkState.Loading(""))
                 val retrievedCollectionData =
-                    exploreScreenRelatedAPIsRepository.getResultsFromNASAImageLibrary(
-                        query,
-                        page
-                    ).collection
+                    httpResponse.body<NASAImageLibrarySearchDTO>().collection
                 val modifiedCollectionData =
                     retrievedCollectionData.copy(items = retrievedCollectionData.items.filter { it.data.any { it.media_type == "image" } })
                 emit(
@@ -44,14 +48,21 @@ class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsReposi
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
-                emit(NetworkState.Failure(e.message.toString()))
+                emit(
+                    NetworkState.Failure(
+                        exceptionMessage = e.message.toString(),
+                        statusCode = httpResponse.status.value,
+                        statusDescription = httpResponse.status.description
+                    )
+                )
             }
         }
     }
 
     suspend fun issLocation(): NetworkState<ISSLocationModifiedDTO> {
+        val httpResponse = exploreScreenRelatedAPIsRepository.getISSLocation()
         return try {
-            val originalData = exploreScreenRelatedAPIsRepository.getISSLocation()
+            val originalData = httpResponse.body<ISSLocationDTO>()
             val modifiedData = ISSLocationModifiedDTO(
                 latitude = originalData.issPosition.latitude,
                 longitude = originalData.issPosition.longitude,
@@ -61,7 +72,11 @@ class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsReposi
             NetworkState.Success(modifiedData)
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkState.Failure(e.message.toString())
+            NetworkState.Failure(
+                exceptionMessage = e.message.toString(),
+                statusCode = httpResponse.status.value,
+                statusDescription = httpResponse.status.description
+            )
         }
     }
 }

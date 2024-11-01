@@ -25,21 +25,34 @@ class HomeScreenViewModel(homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUse
                 mediaType = "",
                 title = "",
                 url = ""
-            )
+            ),
+            statusCode = 0,
+            statusDescription = ""
         )
     )
 
     val epicState = mutableStateOf(
-        EPICState(data = listOf(), isLoading = false, error = false)
+        EPICState(
+            data = listOf(),
+            isLoading = false,
+            error = false,
+            statusCode = 0,
+            statusDescription = ""
+        )
     )
 
     init {
         homeScreenRelatedAPIsUseCase.apodData().onEach {
             when (val apodData = it) {
                 is NetworkState.Failure -> {
-                    apodState.value = apodState.value.copy(isLoading = false, error = true)
+                    apodState.value = apodState.value.copy(
+                        isLoading = false,
+                        error = true,
+                        statusCode = apodData.statusCode,
+                        statusDescription = apodData.statusDescription
+                    )
                     UiChannel.pushUiEvent(
-                        uiEvent = UIEvent.ShowSnackbar(apodData.msg),
+                        uiEvent = UIEvent.ShowSnackbar(apodData.exceptionMessage),
                         coroutineScope = this.viewModelScope
                     )
                 }
@@ -69,8 +82,14 @@ class HomeScreenViewModel(homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUse
         homeScreenRelatedAPIsUseCase.epicData(viewModelScope).onEach {
             when (val epicData = it) {
                 is NetworkState.Failure -> {
+                    epicState.value = epicState.value.copy(
+                        isLoading = false,
+                        error = true,
+                        statusCode = epicData.statusCode,
+                        statusDescription = epicData.statusDescription
+                    )
                     UiChannel.pushUiEvent(
-                        uiEvent = UIEvent.ShowSnackbar(epicData.msg),
+                        uiEvent = UIEvent.ShowSnackbar(epicData.exceptionMessage),
                         coroutineScope = this.viewModelScope
                     )
                 }

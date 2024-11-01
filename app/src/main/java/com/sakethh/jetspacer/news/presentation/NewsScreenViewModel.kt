@@ -22,7 +22,7 @@ class NewsScreenViewModel(private val topHeadlinesUseCase: TopHeadlinesUseCase =
                 isLoading = true,
                 data = NewsDTO(),
                 error = false,
-                reachedMaxHeadlines = false
+                reachedMaxHeadlines = false, statusCode = 0, statusDescription = ""
             )
         )
 
@@ -38,9 +38,14 @@ class NewsScreenViewModel(private val topHeadlinesUseCase: TopHeadlinesUseCase =
             when (val topHeadLinesData = it) {
                 is NetworkState.Failure -> {
                     topHeadLinesState.value =
-                        topHeadLinesState.value.copy(isLoading = false, error = true)
+                        topHeadLinesState.value.copy(
+                            isLoading = false,
+                            error = true,
+                            statusCode = topHeadLinesData.statusCode,
+                            statusDescription = topHeadLinesData.statusDescription
+                        )
                     UiChannel.pushUiEvent(
-                        uiEvent = UIEvent.ShowSnackbar(topHeadLinesData.msg),
+                        uiEvent = UIEvent.ShowSnackbar(topHeadLinesData.exceptionMessage),
                         coroutineScope = viewModelScope
                     )
                 }

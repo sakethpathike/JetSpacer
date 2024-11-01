@@ -1,15 +1,14 @@
 package com.sakethh.jetspacer.explore.domain.repository
 
-import com.sakethh.jetspacer.explore.domain.model.api.iss.source.ISSLocationDTO
-import com.sakethh.jetspacer.explore.domain.model.api.nasa.NASAImageLibrarySearchDTO
+import io.ktor.client.statement.HttpResponse
 
 interface ExploreScreenRelatedAPIsRepository {
     suspend fun getResultsFromNASAImageLibrary(
         query: String,
         page: Int
-    ): NASAImageLibrarySearchDTO
+    ): HttpResponse
 
-    suspend fun getImagesFromImageLibraryWithNasaId(id: String): List<String>
+    suspend fun getImagesFromImageLibraryWithNasaId(id: String): HttpResponse
 
-    suspend fun getISSLocation(): ISSLocationDTO
+    suspend fun getISSLocation(): HttpResponse
 }

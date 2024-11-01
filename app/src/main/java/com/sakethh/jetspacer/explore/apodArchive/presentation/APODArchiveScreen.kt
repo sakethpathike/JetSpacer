@@ -58,7 +58,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.common.presentation.utils.customMutableRememberSavable
-import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -288,7 +287,6 @@ fun APODArchiveScreen(navController: NavController) {
     }
     LaunchedEffect(lazyVerticalStaggeredGridState.canScrollForward) {
         if (isDataBasedOnCustomRangeSelector.value.not() && lazyVerticalStaggeredGridState.canScrollForward.not() && apodArchiveState.data.isNotEmpty() && !apodArchiveState.isLoading) {
-            jetSpacerLog("triggering from launched effect")
             apodArchiveScreenViewModel.retrieveNextBatchOfAPODArchive()
         }
     }

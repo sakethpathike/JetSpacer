@@ -27,9 +27,9 @@ class ExploreScreenViewModel(private val exploreScreenRelatedAPISUseCase: Explor
 
     val searchResultsState = mutableStateOf(
         SearchResultState(
-            emptyList(),
+            data = emptyList(),
             isLoading = false,
-            error = false
+            error = false, statusCode = 0, statusDescription = "",
         )
     )
 
@@ -89,9 +89,14 @@ class ExploreScreenViewModel(private val exploreScreenRelatedAPISUseCase: Explor
                     when (val nasaSearchData = it) {
                         is NetworkState.Failure -> {
                             searchResultsState.value =
-                                searchResultsState.value.copy(isLoading = false, error = true)
+                                searchResultsState.value.copy(
+                                    isLoading = false,
+                                    error = true,
+                                    statusCode = nasaSearchData.statusCode,
+                                    statusDescription = nasaSearchData.statusDescription
+                                )
                             UiChannel.pushUiEvent(
-                                uiEvent = UIEvent.ShowSnackbar(nasaSearchData.msg),
+                                uiEvent = UIEvent.ShowSnackbar(nasaSearchData.exceptionMessage),
                                 coroutineScope = this
                             )
                         }

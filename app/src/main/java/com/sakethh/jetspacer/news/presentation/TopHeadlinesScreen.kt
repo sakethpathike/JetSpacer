@@ -29,7 +29,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.common.presentation.navigation.TopHeadlineDetailScreenRoute
-import com.sakethh.jetspacer.common.utils.jetSpacerLog
 import com.sakethh.jetspacer.news.presentation.components.HeadlineComponent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -105,7 +104,6 @@ fun TopHeadlinesScreen(navController: NavController) {
         }
         LaunchedEffect(lazyColumnState.canScrollForward) {
             if (lazyColumnState.canScrollForward.not() && topHeadlines.value.reachedMaxHeadlines.not() && topHeadlines.value.isLoading.not() && topHeadlines.value.error.not()) {
-                jetSpacerLog("triggering from launched effect")
                 newsScreenViewModel.retrievePaginatedTopHeadlines()
             }
         }
