@@ -17,12 +17,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Copyright
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,12 +42,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.sakethh.jetspacer.common.presentation.navigation.SettingsScreenRoute
 import com.sakethh.jetspacer.news.presentation.HeadlineDetailComponent
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val apodDataState = homeScreenViewModel.apodState
@@ -56,8 +61,14 @@ fun HomeScreen() {
             .animateContentSize()
     ) {
         item {
-            repeat(2) {
-                Spacer(Modifier.windowInsetsPadding(WindowInsets.statusBars))
+            Spacer(Modifier.windowInsetsPadding(WindowInsets.statusBars))
+            Spacer(Modifier.height(15.dp))
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                FilledTonalIconButton(onClick = {
+                    navController.navigate(SettingsScreenRoute)
+                }) {
+                    Icon(Icons.Default.Settings, null)
+                }
             }
             Text(
                 "APOD",

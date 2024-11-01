@@ -11,6 +11,7 @@ import com.sakethh.jetspacer.explore.marsGallery.presentation.MarsGalleryScreen
 import com.sakethh.jetspacer.explore.presentation.ExploreScreen
 import com.sakethh.jetspacer.explore.presentation.search.SearchResultScreen
 import com.sakethh.jetspacer.home.presentation.HomeScreen
+import com.sakethh.jetspacer.home.settings.presentation.SettingsScreen
 import com.sakethh.jetspacer.news.presentation.TopHeadlineDetailScreen
 import com.sakethh.jetspacer.news.presentation.TopHeadlinesScreen
 import kotlinx.serialization.Serializable
@@ -22,7 +23,7 @@ fun MainNavigation(navController: NavHostController) {
         startDestination = HomeScreenRoute
     ) {
         composable<HomeScreenRoute> {
-            HomeScreen()
+            HomeScreen(navController)
         }
         composable<TopHeadlinesScreenRoute> {
             TopHeadlinesScreen(navController)
@@ -48,6 +49,9 @@ fun MainNavigation(navController: NavHostController) {
         }
         composable<MarsGalleryRoute> {
             MarsGalleryScreen(navController)
+        }
+        composable<SettingsScreenRoute> {
+            SettingsScreen(navController)
         }
     }
 }
@@ -79,3 +83,6 @@ data object ImageViewerScreen
 
 @Serializable
 data object MarsGalleryRoute
+
+@Serializable
+data object SettingsScreenRoute

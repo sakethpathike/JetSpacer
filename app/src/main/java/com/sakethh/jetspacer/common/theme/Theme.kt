@@ -1,10 +1,15 @@
 package com.sakethh.jetspacer.common.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import com.sakethh.jetspacer.home.settings.presentation.utils.GlobalSettings
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -194,14 +199,29 @@ private val highContrastDarkColorScheme = darkColorScheme(
 
 @Composable
 fun JetSpacerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    useDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable() () -> Unit
 ) {
+    val context = LocalContext.current
     val colorScheme = when {
-        darkTheme -> darkScheme
-        else -> lightScheme
-    }
+        GlobalSettings.isDynamicThemingEnabled.value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (GlobalSettings.isThemingSetToDefault.value) {
+                if (useDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(
+                    context
+                )
+            } else {
+                if (GlobalSettings.isDarkModeEnabled.value) dynamicDarkColorScheme(
+                    context
+                ) else dynamicLightColorScheme(context)
+            }
+        }
 
+        else -> if (GlobalSettings.isThemingSetToDefault.value) {
+            if (useDarkTheme) darkScheme else lightScheme
+        } else {
+            if (GlobalSettings.isDarkModeEnabled.value) darkScheme else lightScheme
+        }
+    }
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
