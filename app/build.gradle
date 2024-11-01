@@ -93,10 +93,7 @@ dependencies {
     implementation "io.ktor:ktor-client-content-negotiation:$ktor_version"
     implementation "io.ktor:ktor-serialization-kotlinx-json:$ktor_version"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3"
-    implementation 'com.google.accompanist:accompanist-webview:0.26.5-rc'
-    implementation "com.google.accompanist:accompanist-pager:0.25.0" // Pager
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.25.0" // Pager Indicators
-    implementation 'androidx.datastore:datastore-preferences:1.0.0-alpha01'
+    implementation 'androidx.datastore:datastore-preferences:1.1.1'
     def room_version = "2.5.1"
 
     implementation "androidx.room:room-runtime:$room_version"
