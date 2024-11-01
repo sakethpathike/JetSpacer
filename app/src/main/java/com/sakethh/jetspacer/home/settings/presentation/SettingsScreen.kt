@@ -21,13 +21,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
+import com.sakethh.jetspacer.common.utils.Constants
+import com.sakethh.jetspacer.home.settings.domain.SettingType
+import com.sakethh.jetspacer.home.settings.presentation.SettingsScreenViewModel.dataStore
 import com.sakethh.jetspacer.home.settings.presentation.components.SettingsCredentialsItem
 import com.sakethh.jetspacer.home.settings.presentation.components.SettingsItem
 import com.sakethh.jetspacer.home.settings.presentation.components.SettingsSwitchItem
@@ -38,6 +44,7 @@ import com.sakethh.jetspacer.home.settings.presentation.utils.GlobalSettings
 fun SettingsScreen(navController: NavController) {
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         MediumTopAppBar(scrollBehavior = topAppBarScrollBehavior, title = {
             Column {
@@ -73,6 +80,11 @@ fun SettingsScreen(navController: NavController) {
                         isEnabled = GlobalSettings.isThemingSetToDefault.value,
                         onClick = {
                             GlobalSettings.isThemingSetToDefault.value = it
+                            SettingsScreenViewModel.changeSettingValue(
+                                preferenceKey = booleanPreferencesKey(SettingType.SYSTEM_THEME.name),
+                                dataStore = context.dataStore,
+                                newValue = GlobalSettings.isThemingSetToDefault.value
+                            )
                         })
                 }
             }
@@ -82,15 +94,26 @@ fun SettingsScreen(navController: NavController) {
                         isEnabled = GlobalSettings.isDarkModeEnabled.value,
                         onClick = {
                             GlobalSettings.isDarkModeEnabled.value = it
+                            SettingsScreenViewModel.changeSettingValue(
+                                preferenceKey = booleanPreferencesKey(SettingType.DARK_THEME.name),
+                                dataStore = context.dataStore,
+                                newValue = GlobalSettings.isDarkModeEnabled.value
+                            )
                         })
                 }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 item {
-                    SettingsSwitchItem("Use dynamic theming",
+                    SettingsSwitchItem(
+                        "Use Dynamic Theming",
                         isEnabled = GlobalSettings.isDynamicThemingEnabled.value,
                         onClick = {
                             GlobalSettings.isDynamicThemingEnabled.value = it
+                            SettingsScreenViewModel.changeSettingValue(
+                                preferenceKey = booleanPreferencesKey(SettingType.DYNAMIC_THEME.name),
+                                dataStore = context.dataStore,
+                                newValue = GlobalSettings.isDynamicThemingEnabled.value
+                            )
                         })
                 }
             }
@@ -106,13 +129,41 @@ fun SettingsScreen(navController: NavController) {
                 SettingsCredentialsItem(
                     domain = "api.nasa.gov",
                     value = GlobalSettings.nasaAPIKey.value,
-                    onResetDefault = {}) { }
+                    onResetDefault = {
+                        GlobalSettings.nasaAPIKey.value = Constants.NASA_API_KEY
+                        SettingsScreenViewModel.changeSettingValue(
+                            preferenceKey = stringPreferencesKey(SettingType.NASA_API_KEY.name),
+                            dataStore = context.dataStore,
+                            newValue = GlobalSettings.nasaAPIKey.value
+                        )
+                    }, onSaveClick = {
+                        GlobalSettings.nasaAPIKey.value = it
+                        SettingsScreenViewModel.changeSettingValue(
+                            preferenceKey = stringPreferencesKey(SettingType.NASA_API_KEY.name),
+                            dataStore = context.dataStore,
+                            newValue = GlobalSettings.nasaAPIKey.value
+                        )
+                    })
             }
             item {
                 SettingsCredentialsItem(
                     domain = "newsapi.org",
                     value = GlobalSettings.newsApiAPIKey.value,
-                    onResetDefault = {}) { }
+                    onResetDefault = {
+                        GlobalSettings.newsApiAPIKey.value = Constants.NEWS_API_KEY
+                        SettingsScreenViewModel.changeSettingValue(
+                            preferenceKey = stringPreferencesKey(SettingType.NEWS_API_KEY.name),
+                            dataStore = context.dataStore,
+                            newValue = GlobalSettings.newsApiAPIKey.value
+                        )
+                    }, onSaveClick = {
+                        GlobalSettings.newsApiAPIKey.value = it
+                        SettingsScreenViewModel.changeSettingValue(
+                            preferenceKey = stringPreferencesKey(SettingType.NEWS_API_KEY.name),
+                            dataStore = context.dataStore,
+                            newValue = GlobalSettings.newsApiAPIKey.value
+                        )
+                    })
             }
             item {
                 Text(

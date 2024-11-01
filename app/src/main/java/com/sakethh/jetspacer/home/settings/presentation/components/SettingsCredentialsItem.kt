@@ -84,7 +84,7 @@ fun SettingsCredentialsItem(
         TextField(
             label = {
                 Text(
-                    text = "",
+                    text = "API Key",
                     style = MaterialTheme.typography.titleSmall,
                     textAlign = TextAlign.Start,
                     fontSize = 12.sp

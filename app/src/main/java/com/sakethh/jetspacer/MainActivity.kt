@@ -13,18 +13,24 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.sakethh.jetspacer.common.presentation.navigation.BottomNavigationBar
 import com.sakethh.jetspacer.common.presentation.navigation.MainNavigation
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.common.theme.JetSpacerTheme
+import com.sakethh.jetspacer.home.settings.presentation.SettingsScreenViewModel.readAllSettingsValues
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycleScope.launch {
+            readAllSettingsValues()
+        }
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
