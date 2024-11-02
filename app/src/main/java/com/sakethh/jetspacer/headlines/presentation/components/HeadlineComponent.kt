@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.news.presentation.components
+package com.sakethh.jetspacer.headlines.presentation.components
 
 import android.content.Intent
 import androidx.compose.foundation.background
@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.sakethh.jetspacer.news.domain.model.Article
+import com.sakethh.jetspacer.headlines.domain.model.Article
 
 @Composable
 fun HeadlineComponent(

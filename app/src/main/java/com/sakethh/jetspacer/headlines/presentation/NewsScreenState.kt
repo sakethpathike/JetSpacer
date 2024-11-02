@@ -1,6 +1,6 @@
-package com.sakethh.jetspacer.news.presentation
+package com.sakethh.jetspacer.headlines.presentation
 
-import com.sakethh.jetspacer.news.domain.model.NewsDTO
+import com.sakethh.jetspacer.headlines.domain.model.NewsDTO
 
 data class NewsScreenState(
     val isLoading: Boolean,

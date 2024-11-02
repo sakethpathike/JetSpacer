@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.news.presentation
+package com.sakethh.jetspacer.headlines.presentation
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -7,14 +7,14 @@ import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.common.utils.jetSpacerLog
-import com.sakethh.jetspacer.news.domain.model.NewsDTO
-import com.sakethh.jetspacer.news.domain.useCase.TopHeadlinesUseCase
+import com.sakethh.jetspacer.headlines.domain.model.NewsDTO
+import com.sakethh.jetspacer.headlines.domain.useCase.FetchTopHeadlinesUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-class NewsScreenViewModel(private val topHeadlinesUseCase: TopHeadlinesUseCase = TopHeadlinesUseCase()) :
+class TopHeadlinesScreenViewModel(private val fetchTopHeadlinesUseCase: FetchTopHeadlinesUseCase = FetchTopHeadlinesUseCase()) :
     ViewModel() {
     val topHeadLinesState =
         mutableStateOf(
@@ -34,7 +34,7 @@ class NewsScreenViewModel(private val topHeadlinesUseCase: TopHeadlinesUseCase =
 
     fun retrievePaginatedTopHeadlines() {
         newsAPIJob?.cancel()
-        newsAPIJob = topHeadlinesUseCase(10, ++currentPage).cancellable().onEach {
+        newsAPIJob = fetchTopHeadlinesUseCase(10, ++currentPage).cancellable().onEach {
             when (val topHeadLinesData = it) {
                 is NetworkState.Failure -> {
                     topHeadLinesState.value =

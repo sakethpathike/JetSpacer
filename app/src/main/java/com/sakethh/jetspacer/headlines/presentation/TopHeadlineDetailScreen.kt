@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.news.presentation
+package com.sakethh.jetspacer.headlines.presentation
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -53,7 +53,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.common.presentation.utils.customRememberSavable
-import com.sakethh.jetspacer.news.domain.model.Article
+import com.sakethh.jetspacer.headlines.domain.model.Article
 import kotlinx.serialization.json.Json
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.news.presentation
+package com.sakethh.jetspacer.headlines.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.common.presentation.navigation.TopHeadlineDetailScreenRoute
-import com.sakethh.jetspacer.news.presentation.components.HeadlineComponent
+import com.sakethh.jetspacer.headlines.presentation.components.HeadlineComponent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -39,8 +39,8 @@ import kotlinx.serialization.json.Json
 fun TopHeadlinesScreen(navController: NavController) {
     val systemUiController = rememberSystemUiController()
     systemUiController.setNavigationBarColor(TopAppBarDefaults.topAppBarColors().containerColor)
-    val newsScreenViewModel = viewModel<NewsScreenViewModel>()
-    val topHeadlinesState = newsScreenViewModel.topHeadLinesState
+    val topHeadlinesScreenViewModel = viewModel<TopHeadlinesScreenViewModel>()
+    val topHeadlinesState = topHeadlinesScreenViewModel.topHeadLinesState
     val lazyColumnState = rememberLazyListState()
     Scaffold(topBar = {
         Column {
@@ -113,7 +113,7 @@ fun TopHeadlinesScreen(navController: NavController) {
         }
         LaunchedEffect(lazyColumnState.canScrollForward) {
             if (lazyColumnState.canScrollForward.not() && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.isLoading.not() && topHeadlinesState.value.error.not()) {
-                newsScreenViewModel.retrievePaginatedTopHeadlines()
+                topHeadlinesScreenViewModel.retrievePaginatedTopHeadlines()
             }
         }
     }

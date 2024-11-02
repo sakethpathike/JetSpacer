@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.news.presentation.components
+package com.sakethh.jetspacer.headlines.presentation.components
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi

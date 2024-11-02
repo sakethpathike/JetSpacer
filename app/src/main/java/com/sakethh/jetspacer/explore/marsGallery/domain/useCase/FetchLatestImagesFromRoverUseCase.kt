@@ -1,19 +1,19 @@
-package com.sakethh.jetspacer.explore.apodArchive.domain.useCase
+package com.sakethh.jetspacer.explore.marsGallery.domain.useCase
 
 import com.sakethh.jetspacer.common.network.NetworkState
-import com.sakethh.jetspacer.explore.apodArchive.data.repository.APODArchiveImplementation
-import com.sakethh.jetspacer.explore.apodArchive.domain.repository.APODArchiveRepository
-import com.sakethh.jetspacer.home.domain.model.APODDTO
+import com.sakethh.jetspacer.explore.marsGallery.data.repository.MarsGalleryImplementation
+import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.RoverLatestImagesDTO
+import com.sakethh.jetspacer.explore.marsGallery.domain.repository.MarsGalleryRepository
 import io.ktor.client.call.body
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class APODArchiveUseCase(private val apodArchiveRepository: APODArchiveRepository = APODArchiveImplementation()) {
-    operator fun invoke(startDate: String, endDate: String): Flow<NetworkState<List<APODDTO>>> =
+class FetchLatestImagesFromRoverUseCase(private val marsGalleryRepository: MarsGalleryRepository = MarsGalleryImplementation()) {
+    operator fun invoke(roverName: String): Flow<NetworkState<RoverLatestImagesDTO>> =
         flow {
             emit(NetworkState.Loading())
-            val httpResponse = apodArchiveRepository.getAPODArchiveData(startDate, endDate)
+            val httpResponse = marsGalleryRepository.getLatestImagesFromTheRover(roverName)
             if (httpResponse.status.isSuccess().not()) {
                 emit(
                     NetworkState.Failure(
@@ -25,11 +25,7 @@ class APODArchiveUseCase(private val apodArchiveRepository: APODArchiveRepositor
                 return@flow
             }
             try {
-                val apodArchiveData =
-                    httpResponse.body<List<APODDTO>>().filter {
-                        it.mediaType == "image"
-                    }.asReversed()
-                emit(NetworkState.Success(apodArchiveData))
+                emit(NetworkState.Success(httpResponse.body()))
             } catch (e: Exception) {
                 e.printStackTrace()
                 emit(

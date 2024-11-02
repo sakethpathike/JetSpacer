@@ -8,7 +8,8 @@ import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.CameraAndSolSpecificDTO
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.RoverLatestImagesDTO
-import com.sakethh.jetspacer.explore.marsGallery.domain.useCase.MarsGalleryUseCase
+import com.sakethh.jetspacer.explore.marsGallery.domain.useCase.FetchImagesBasedOnTheFilterUseCase
+import com.sakethh.jetspacer.explore.marsGallery.domain.useCase.FetchLatestImagesFromRoverUseCase
 import com.sakethh.jetspacer.explore.marsGallery.presentation.state.MarsGalleryCameraSpecificState
 import com.sakethh.jetspacer.explore.marsGallery.presentation.state.MarsGalleryLatestImagesState
 import com.sakethh.jetspacer.explore.marsGallery.presentation.utils.Rover
@@ -18,7 +19,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseCase = MarsGalleryUseCase()) :
+class MarsGalleryScreenViewModel(
+    private val fetchLatestImagesFromRoverUseCase: FetchLatestImagesFromRoverUseCase = FetchLatestImagesFromRoverUseCase(),
+    private val fetchImagesBasedOnTheFilterUseCase: FetchImagesBasedOnTheFilterUseCase = FetchImagesBasedOnTheFilterUseCase()
+) :
     ViewModel() {
     val latestImagesState = mutableStateOf(
         MarsGalleryLatestImagesState(
@@ -55,7 +59,7 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
     fun loadLatestImagesFromRover(roverName: String) {
         cameraAndSolSpecificState.value = cameraAndSolSpecificState.value.copy(isLoading = false)
         viewModelScope.launch {
-            marsGalleryUseCase.getLatestImagesFromTheRover(roverName.lowercase()).collectLatest {
+            fetchLatestImagesFromRoverUseCase(roverName.lowercase()).collectLatest {
                 when (val latestImagesData = it) {
                     is NetworkState.Failure -> {
                         latestImagesState.value =
@@ -114,7 +118,7 @@ class MarsGalleryScreenViewModel(private val marsGalleryUseCase: MarsGalleryUseC
         clearData: Boolean = false
     ) {
         latestImagesState.value = latestImagesState.value.copy(isLoading = false)
-        marsGalleryUseCase.getImagesBasedOnTheFilter(roverName, cameraName, sol, page).onEach {
+        fetchImagesBasedOnTheFilterUseCase(roverName, cameraName, sol, page).onEach {
             when (val imagesBasedOnFiltersData = it) {
                 is NetworkState.Failure -> {
                     cameraAndSolSpecificState.value = cameraAndSolSpecificState.value.copy(

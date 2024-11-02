@@ -2,8 +2,6 @@ package com.sakethh.jetspacer.explore.domain.useCase
 
 import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.explore.data.repository.ExploreScreenRelatedAPIsImplementation
-import com.sakethh.jetspacer.explore.domain.model.api.iss.modified.ISSLocationModifiedDTO
-import com.sakethh.jetspacer.explore.domain.model.api.iss.source.ISSLocationDTO
 import com.sakethh.jetspacer.explore.domain.model.api.nasa.NASAImageLibrarySearchDTO
 import com.sakethh.jetspacer.explore.domain.model.local.NASAImageLibrarySearchModifiedDTO
 import com.sakethh.jetspacer.explore.domain.repository.ExploreScreenRelatedAPIsRepository
@@ -11,11 +9,9 @@ import io.ktor.client.call.body
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import java.util.Date
 
-class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsRepository: ExploreScreenRelatedAPIsRepository = ExploreScreenRelatedAPIsImplementation()) {
-
-    fun nasaImageLibrarySearch(
+class FetchImagesFromNasaImageLibraryUseCase(private val exploreScreenRelatedAPIsRepository: ExploreScreenRelatedAPIsRepository = ExploreScreenRelatedAPIsImplementation()) {
+    operator fun invoke(
         query: String,
         page: Int
     ): Flow<NetworkState<List<NASAImageLibrarySearchModifiedDTO>>> {
@@ -67,34 +63,6 @@ class ExploreScreenRelatedAPISUseCase(private val exploreScreenRelatedAPIsReposi
                     )
                 )
             }
-        }
-    }
-
-    suspend fun issLocation(): NetworkState<ISSLocationModifiedDTO> {
-        val httpResponse = exploreScreenRelatedAPIsRepository.getISSLocation()
-        if (httpResponse.status.isSuccess().not()) {
-            return NetworkState.Failure(
-                exceptionMessage = "",
-                statusCode = httpResponse.status.value,
-                statusDescription = httpResponse.status.description
-            )
-        }
-        return try {
-            val originalData = httpResponse.body<ISSLocationDTO>()
-            val modifiedData = ISSLocationModifiedDTO(
-                latitude = originalData.issPosition.latitude,
-                longitude = originalData.issPosition.longitude,
-                message = originalData.message,
-                timestamp = Date(originalData.timestamp.toLong() * 1000).toString()
-            )
-            NetworkState.Success(modifiedData)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            NetworkState.Failure(
-                exceptionMessage = e.message.toString(),
-                statusCode = httpResponse.status.value,
-                statusDescription = httpResponse.status.description
-            )
         }
     }
 }

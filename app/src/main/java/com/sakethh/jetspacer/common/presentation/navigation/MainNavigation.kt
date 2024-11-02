@@ -12,8 +12,8 @@ import com.sakethh.jetspacer.explore.presentation.ExploreScreen
 import com.sakethh.jetspacer.explore.presentation.search.SearchResultScreen
 import com.sakethh.jetspacer.home.presentation.HomeScreen
 import com.sakethh.jetspacer.home.settings.presentation.SettingsScreen
-import com.sakethh.jetspacer.news.presentation.TopHeadlineDetailScreen
-import com.sakethh.jetspacer.news.presentation.TopHeadlinesScreen
+import com.sakethh.jetspacer.headlines.presentation.TopHeadlineDetailScreen
+import com.sakethh.jetspacer.headlines.presentation.TopHeadlinesScreen
 import kotlinx.serialization.Serializable
 
 @Composable

@@ -7,8 +7,8 @@ import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.common.utils.jetSpacerLog
-import com.sakethh.jetspacer.explore.apodArchive.domain.useCase.APODArchiveUseCase
-import com.sakethh.jetspacer.home.domain.useCase.HomeScreenRelatedAPIsUseCase
+import com.sakethh.jetspacer.explore.apodArchive.domain.useCase.FetchAPODArchiveDataUseCase
+import com.sakethh.jetspacer.home.domain.useCase.FetchCurrentAPODUseCase
 import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.launchIn
@@ -17,8 +17,8 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 class APODArchiveScreenViewModel(
-    private val apodArchiveUseCase: APODArchiveUseCase = APODArchiveUseCase(),
-    private val homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUseCase = HomeScreenRelatedAPIsUseCase()
+    private val fetchApodArchiveDataUseCase: FetchAPODArchiveDataUseCase = FetchAPODArchiveDataUseCase(),
+    fetchCurrentAPODUseCase: FetchCurrentAPODUseCase = FetchCurrentAPODUseCase()
 ) :
     ViewModel() {
     val apodArchiveState = mutableStateOf(
@@ -39,7 +39,7 @@ class APODArchiveScreenViewModel(
     var apodStartDate = ""
 
     init {
-        homeScreenRelatedAPIsUseCase.apodData().onEach {
+        fetchCurrentAPODUseCase().onEach {
             when (val apodData = it) {
                 is NetworkState.Failure -> {
                     apodArchiveState.value = apodArchiveState.value.copy(
@@ -85,7 +85,7 @@ class APODArchiveScreenViewModel(
             apodArchiveState.value = apodArchiveState.value.copy(data = emptyList())
         }
 
-        apodArchiveUseCase(apodStartDate, apodEndDate).cancellable().onEach {
+        fetchApodArchiveDataUseCase(apodStartDate, apodEndDate).cancellable().onEach {
             when (val apodData = it) {
                 is NetworkState.Failure -> {
                     apodArchiveState.value =

@@ -6,14 +6,18 @@ import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
-import com.sakethh.jetspacer.home.domain.useCase.HomeScreenRelatedAPIsUseCase
+import com.sakethh.jetspacer.home.domain.useCase.FetchCurrentAPODUseCase
+import com.sakethh.jetspacer.home.domain.useCase.FetchCurrentEPICDataUseCase
 import com.sakethh.jetspacer.home.presentation.state.apod.APODState
 import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.home.presentation.state.epic.EPICState
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-class HomeScreenViewModel(homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUseCase = HomeScreenRelatedAPIsUseCase()) :
+class HomeScreenViewModel(
+    fetchCurrentAPODUseCase: FetchCurrentAPODUseCase = FetchCurrentAPODUseCase(),
+    fetchCurrentEPICDataUseCase: FetchCurrentEPICDataUseCase = FetchCurrentEPICDataUseCase()
+) :
     ViewModel() {
     val apodState = mutableStateOf(
         APODState(
@@ -42,7 +46,7 @@ class HomeScreenViewModel(homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUse
     )
 
     init {
-        homeScreenRelatedAPIsUseCase.apodData().onEach {
+        fetchCurrentAPODUseCase().onEach {
             when (val apodData = it) {
                 is NetworkState.Failure -> {
                     apodState.value = apodState.value.copy(
@@ -79,7 +83,7 @@ class HomeScreenViewModel(homeScreenRelatedAPIsUseCase: HomeScreenRelatedAPIsUse
             }
         }.launchIn(viewModelScope)
 
-        homeScreenRelatedAPIsUseCase.epicData().onEach {
+        fetchCurrentEPICDataUseCase().onEach {
             when (val epicData = it) {
                 is NetworkState.Failure -> {
                     epicState.value = epicState.value.copy(

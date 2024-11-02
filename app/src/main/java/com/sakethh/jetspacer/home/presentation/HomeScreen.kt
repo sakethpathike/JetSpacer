@@ -46,7 +46,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.common.presentation.navigation.SettingsScreenRoute
-import com.sakethh.jetspacer.news.presentation.HeadlineDetailComponent
+import com.sakethh.jetspacer.headlines.presentation.HeadlineDetailComponent
 
 @Composable
 fun HomeScreen(navController: NavController) {

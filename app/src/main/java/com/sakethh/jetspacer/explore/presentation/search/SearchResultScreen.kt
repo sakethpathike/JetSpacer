@@ -50,7 +50,7 @@ import coil.request.ImageRequest
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.common.presentation.utils.customRememberSavable
 import com.sakethh.jetspacer.explore.domain.model.local.NASAImageLibrarySearchModifiedDTO
-import com.sakethh.jetspacer.news.presentation.HeadlineDetailComponent
+import com.sakethh.jetspacer.headlines.presentation.HeadlineDetailComponent
 import kotlinx.serialization.json.Json
 
 @Composable

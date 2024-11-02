@@ -65,7 +65,7 @@ import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
-import com.sakethh.jetspacer.news.presentation.HeadlineDetailComponent
+import com.sakethh.jetspacer.headlines.presentation.HeadlineDetailComponent
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

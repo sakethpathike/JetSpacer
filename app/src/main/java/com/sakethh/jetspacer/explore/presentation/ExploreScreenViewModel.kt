@@ -8,7 +8,8 @@ import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.explore.domain.model.api.iss.modified.ISSLocationModifiedDTO
-import com.sakethh.jetspacer.explore.domain.useCase.ExploreScreenRelatedAPISUseCase
+import com.sakethh.jetspacer.explore.domain.useCase.FetchISSLocationUseCase
+import com.sakethh.jetspacer.explore.domain.useCase.FetchImagesFromNasaImageLibraryUseCase
 import com.sakethh.jetspacer.explore.presentation.state.SearchResultState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -22,7 +23,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 @Suppress("OPT_IN_USAGE")
-class ExploreScreenViewModel(private val exploreScreenRelatedAPISUseCase: ExploreScreenRelatedAPISUseCase = ExploreScreenRelatedAPISUseCase()) :
+class ExploreScreenViewModel(
+    private val fetchImagesFromNasaImageLibraryUseCase: FetchImagesFromNasaImageLibraryUseCase = FetchImagesFromNasaImageLibraryUseCase(),
+    private val fetchISSLocationUseCase: FetchISSLocationUseCase = FetchISSLocationUseCase()
+) :
     ViewModel() {
 
     val searchResultsState = mutableStateOf(
@@ -63,7 +67,7 @@ class ExploreScreenViewModel(private val exploreScreenRelatedAPISUseCase: Explor
 
         viewModelScope.launch {
             while (true) {
-                when (val issLocationData = exploreScreenRelatedAPISUseCase.issLocation()) {
+                when (val issLocationData = fetchISSLocationUseCase()) {
                     is NetworkState.Success -> {
                         issLocationState.value = issLocationData.data
                     }
@@ -88,7 +92,7 @@ class ExploreScreenViewModel(private val exploreScreenRelatedAPISUseCase: Explor
                 if (it.isBlank()) {
                     return@collectLatest
                 }
-                exploreScreenRelatedAPISUseCase.nasaImageLibrarySearch(it, 1).onEach {
+                fetchImagesFromNasaImageLibraryUseCase(it, 1).onEach {
                     when (val nasaSearchData = it) {
                         is NetworkState.Failure -> {
                             searchResultsState.value =

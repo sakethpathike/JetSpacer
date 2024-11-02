@@ -1,8 +1,8 @@
-package com.sakethh.jetspacer.news.data.repository
+package com.sakethh.jetspacer.headlines.data.repository
 
 import com.sakethh.jetspacer.common.network.HTTPClient
 import com.sakethh.jetspacer.home.settings.presentation.utils.GlobalSettings
-import com.sakethh.jetspacer.news.domain.repository.NewsDataRepository
+import com.sakethh.jetspacer.headlines.domain.repository.NewsDataRepository
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 

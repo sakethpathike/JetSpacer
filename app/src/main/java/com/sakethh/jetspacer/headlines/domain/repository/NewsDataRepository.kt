@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.news.domain.repository
+package com.sakethh.jetspacer.headlines.domain.repository
 
 import io.ktor.client.statement.HttpResponse
 

@@ -1,9 +1,9 @@
-package com.sakethh.jetspacer.news.domain.useCase
+package com.sakethh.jetspacer.headlines.domain.useCase
 
 import com.sakethh.jetspacer.common.network.NetworkState
-import com.sakethh.jetspacer.news.data.repository.NewsDataImplementation
-import com.sakethh.jetspacer.news.domain.model.NewsDTO
-import com.sakethh.jetspacer.news.domain.repository.NewsDataRepository
+import com.sakethh.jetspacer.headlines.data.repository.NewsDataImplementation
+import com.sakethh.jetspacer.headlines.domain.model.NewsDTO
+import com.sakethh.jetspacer.headlines.domain.repository.NewsDataRepository
 import io.ktor.client.call.body
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.flow
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class TopHeadlinesUseCase(
+class FetchTopHeadlinesUseCase(
     private val newsDataRepository: NewsDataRepository = NewsDataImplementation()
 ) {
     operator fun invoke(pageSize: Int, page: Int): Flow<NetworkState<NewsDTO>> = flow {

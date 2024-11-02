@@ -62,7 +62,7 @@ import coil.request.ImageRequest
 import com.sakethh.jetspacer.common.presentation.navigation.APODArchiveScreen
 import com.sakethh.jetspacer.common.presentation.navigation.MarsGalleryRoute
 import com.sakethh.jetspacer.common.presentation.navigation.SearchResultScreenRoute
-import com.sakethh.jetspacer.news.presentation.HeadlineDetailComponent
+import com.sakethh.jetspacer.headlines.presentation.HeadlineDetailComponent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 

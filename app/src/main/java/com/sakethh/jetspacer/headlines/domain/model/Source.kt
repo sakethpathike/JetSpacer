@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.news.domain.model
+package com.sakethh.jetspacer.headlines.domain.model
 
 import kotlinx.serialization.Serializable
 
