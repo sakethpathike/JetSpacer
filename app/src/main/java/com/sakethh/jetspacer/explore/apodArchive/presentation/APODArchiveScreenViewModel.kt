@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
-import com.sakethh.jetspacer.common.utils.jetSpacerLog
+import com.sakethh.jetspacer.common.utils.logger
 import com.sakethh.jetspacer.explore.apodArchive.domain.useCase.FetchAPODArchiveDataUseCase
 import com.sakethh.jetspacer.home.domain.useCase.FetchCurrentAPODUseCase
 import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
@@ -128,13 +128,13 @@ class APODArchiveScreenViewModel(
 
     fun retrieveNextBatchOfAPODArchive() {
 
-        jetSpacerLog("start date : $startDate")
+        logger("start date : $startDate")
 
         endDate.time = dateFormat.parse(startDate)
         endDate.add(Calendar.DAY_OF_YEAR, -30)
         val modifiedEndDate = dateFormat.format(endDate.time)
 
-        jetSpacerLog("end date : $modifiedEndDate")
+        logger("end date : $modifiedEndDate")
 
         retrieveAPODDataBetweenSpecificDates(startDate, modifiedEndDate)
 

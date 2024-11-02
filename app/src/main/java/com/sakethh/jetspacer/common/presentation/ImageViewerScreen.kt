@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.sakethh.jetspacer.common.utils.jetSpacerLog
+import com.sakethh.jetspacer.common.utils.logger
 import kotlin.math.roundToInt
 
 @Composable
@@ -66,7 +66,7 @@ fun ImageViewerScreen() {
                         change.consume()
                         if (scaleX.floatValue > 1f) {
                             offSetX.floatValue += (dragAmount * 3f)
-                            jetSpacerLog("offSetX : " + offSetX.floatValue)
+                            logger("offSetX : " + offSetX.floatValue)
                         }
                     }
                 }
@@ -75,7 +75,7 @@ fun ImageViewerScreen() {
                         change.consume()
                         if (scaleX.floatValue > 1f) {
                             offSetY.floatValue += (dragAmount * 3f)
-                            jetSpacerLog("offSetY : " + offSetY.floatValue)
+                            logger("offSetY : " + offSetY.floatValue)
                         }
                     }
                 }, contentDescription = null

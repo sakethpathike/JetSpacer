@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
-import com.sakethh.jetspacer.common.utils.jetSpacerLog
+import com.sakethh.jetspacer.common.utils.logger
 import com.sakethh.jetspacer.headlines.domain.model.NewsDTO
 import com.sakethh.jetspacer.headlines.domain.useCase.FetchTopHeadlinesUseCase
 import kotlinx.coroutines.Job
@@ -67,7 +67,7 @@ class TopHeadlinesScreenViewModel(private val fetchTopHeadlinesUseCase: FetchTop
                         reachedMaxHeadlines = topHeadLinesData.data.articles.isEmpty()
                     )
                     if (topHeadLinesData.data.articles.isEmpty()) {
-                        jetSpacerLog("found max")
+                        logger("found max")
                     }
                 }
             }
