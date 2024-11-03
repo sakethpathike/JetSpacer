@@ -1,7 +1,6 @@
 package com.sakethh.jetspacer.home.domain.useCase
 
 import com.sakethh.jetspacer.common.network.NetworkState
-import com.sakethh.jetspacer.common.utils.logger
 import com.sakethh.jetspacer.home.data.repository.HomeScreenRelatedAPIsRelatedAPIsImplementation
 import com.sakethh.jetspacer.home.domain.model.epic.all.AllEPICDTOItem
 import com.sakethh.jetspacer.home.domain.model.epic.specific.EPICSpecificDTO
@@ -23,13 +22,6 @@ class FetchCurrentEPICDataUseCase (private val homeScreenRelatedAPIsRepository: 
                         homeScreenRelatedAPIsRepository.getAllEpicDataDates()
                             .body<List<AllEPICDTOItem>>().first().date
                     ).body<List<EPICSpecificDTO>>().map {
-                        logger(
-                            sqrt(
-                                (it.positionOfTheSunInSpace.x * it.positionOfTheSunInSpace.x)
-                                        + (it.positionOfTheSunInSpace.y * it.positionOfTheSunInSpace.y)
-                                        + (it.positionOfTheSunInSpace.z * it.positionOfTheSunInSpace.z)
-                            ).toLong().toString()
-                        )
                         EpicStateItem(
                             imageURL = "https://epic.gsfc.nasa.gov/archive/natural/${
                                 it.date.substringBefore(" ").replace("-", "/")

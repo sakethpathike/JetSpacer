@@ -15,5 +15,6 @@ data class Headline(
     val title: String,
     val url: String,
     val imageUrl: String,
-    val isBookmarked: Boolean
+    val isBookmarked: Boolean,
+    val page: Int
 )

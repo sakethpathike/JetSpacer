@@ -14,5 +14,6 @@ data class APOD(
     val mediaType: String,
     val title: String,
     val url: String,
+    val isCurrentAPOD: Boolean,
     val isBookmarked: Boolean
 )
