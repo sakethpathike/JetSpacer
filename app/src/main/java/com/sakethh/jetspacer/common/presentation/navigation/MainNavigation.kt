@@ -5,15 +5,16 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.sakethh.jetspacer.collection.presentation.CollectionsScreen
 import com.sakethh.jetspacer.common.presentation.ImageViewerScreen
 import com.sakethh.jetspacer.explore.apodArchive.presentation.APODArchiveScreen
 import com.sakethh.jetspacer.explore.marsGallery.presentation.MarsGalleryScreen
 import com.sakethh.jetspacer.explore.presentation.ExploreScreen
 import com.sakethh.jetspacer.explore.presentation.search.SearchResultScreen
-import com.sakethh.jetspacer.home.presentation.HomeScreen
-import com.sakethh.jetspacer.home.settings.presentation.SettingsScreen
 import com.sakethh.jetspacer.headlines.presentation.TopHeadlineDetailScreen
 import com.sakethh.jetspacer.headlines.presentation.TopHeadlinesScreen
+import com.sakethh.jetspacer.home.presentation.HomeScreen
+import com.sakethh.jetspacer.home.settings.presentation.SettingsScreen
 import kotlinx.serialization.Serializable
 
 @Composable
@@ -53,6 +54,9 @@ fun MainNavigation(navController: NavHostController) {
         composable<SettingsScreenRoute> {
             SettingsScreen(navController)
         }
+        composable<CollectionsScreen> {
+            CollectionsScreen(navController)
+        }
     }
 }
 
@@ -86,3 +90,6 @@ data object MarsGalleryRoute
 
 @Serializable
 data object SettingsScreenRoute
+
+@Serializable
+data object CollectionsScreen

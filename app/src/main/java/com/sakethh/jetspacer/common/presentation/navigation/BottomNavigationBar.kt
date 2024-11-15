@@ -81,7 +81,7 @@ private val navItems = listOf(
     ),
     BottomNavigationItem(
         name = "Collection",
-        route = TopHeadlinesScreenRoute,
+        route = CollectionsScreen,
         selectedIcon = Icons.Filled.Collections,
         nonSelectedIcon = Icons.Outlined.Collections
     ),

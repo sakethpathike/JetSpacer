@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
+import com.sakethh.jetspacer.common.utils.logger
 import com.sakethh.jetspacer.explore.domain.model.api.iss.modified.ISSLocationModifiedDTO
 import com.sakethh.jetspacer.explore.domain.useCase.FetchISSLocationUseCase
 import com.sakethh.jetspacer.explore.domain.useCase.FetchImagesFromNasaImageLibraryUseCase
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @Suppress("OPT_IN_USAGE")
@@ -46,11 +48,12 @@ class ExploreScreenViewModel(
     }
 
     val querySearch = mutableStateOf("")
-    private var job: Job? = null
+    private var searchResultsJob: Job? = null
+    private var issLocationJob: Job? = null
 
     init {
         snapshotFlow { querySearch.value }.onEach { query ->
-            job?.cancel()
+            searchResultsJob?.cancel()
             if (query.isBlank()) {
                 searchResultsState.value = searchResultsState.value.copy(
                     isLoading = false,
@@ -65,8 +68,9 @@ class ExploreScreenViewModel(
             loadSearchResults(flowOf(query))
         }.launchIn(viewModelScope)
 
-        viewModelScope.launch {
-            while (true) {
+        issLocationJob = viewModelScope.launch {
+            while (isActive) {
+                logger("retrieving issLocation")
                 when (val issLocationData = fetchISSLocationUseCase()) {
                     is NetworkState.Success -> {
                         issLocationState.value = issLocationData.data
@@ -86,8 +90,12 @@ class ExploreScreenViewModel(
         }
     }
 
+    fun stopIssLocationRetrieval() {
+        issLocationJob?.cancel()
+    }
+
     private fun loadSearchResults(querySearchSnapShotFlow: Flow<String>) {
-        job = viewModelScope.launch {
+        searchResultsJob = viewModelScope.launch {
             querySearchSnapShotFlow.cancellable().collectLatest {
                 if (it.isBlank()) {
                     return@collectLatest
