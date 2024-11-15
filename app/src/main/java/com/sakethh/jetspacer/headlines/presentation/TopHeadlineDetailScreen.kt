@@ -22,7 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.BookmarkAdded
+import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.outlined.BookmarkAdd
@@ -166,7 +166,7 @@ fun TopHeadlineDetailScreen(encodedString: String) {
                     }
                 }) {
                     Icon(
-                        if (isBookmarked.value) Icons.Default.BookmarkAdded else Icons.Outlined.BookmarkAdd,
+                        if (isBookmarked.value) Icons.Filled.BookmarkRemove else Icons.Outlined.BookmarkAdd,
                         null
                     )
                 }

@@ -11,7 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BookmarkAdded
+import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -70,7 +70,7 @@ fun TopHeadlinesScreen(navController: NavController) {
         ) {
             items(items = topHeadlinesState.value.data) { headline ->
                 val icon =
-                    if (headline.isBookmarked) Icons.Filled.BookmarkAdded else Icons.Outlined.BookmarkAdd
+                    if (headline.isBookmarked) Icons.Filled.BookmarkRemove else Icons.Outlined.BookmarkAdd
                 TopHeadlineComponent(
                     article = Article(
                         author = headline.author,

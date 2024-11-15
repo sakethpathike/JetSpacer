@@ -9,7 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BookmarkAdded
+import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,15 +28,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sakethh.jetspacer.collection.domain.CollectionType
+import com.sakethh.jetspacer.common.presentation.navigation.TopHeadlineDetailScreenRoute
 import com.sakethh.jetspacer.headlines.domain.model.Article
 import com.sakethh.jetspacer.headlines.domain.model.Source
+import com.sakethh.jetspacer.headlines.presentation.TopHeadlineDetailScreenViewmodel
 import com.sakethh.jetspacer.headlines.presentation.components.TopHeadlineComponent
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CollectionsScreen(navController: NavController) {
     val collectionsScreenViewModel: CollectionsScreenViewModel = viewModel()
+    val topHeadlinesScreenViewModel: TopHeadlineDetailScreenViewmodel = viewModel()
     val bookMarkedTopHeadlines =
         collectionsScreenViewModel.bookMarkedTopHeadlinesData.collectAsStateWithLifecycle()
     val scrollableTabData = collectionsScreenViewModel.collectionTabData
@@ -83,7 +88,7 @@ fun CollectionsScreen(navController: NavController) {
                 }
             }
             HorizontalPager(state = pagerState) { page ->
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
                     when (scrollableTabData[page].type) {
                         CollectionType.APOD_Archive -> {
 
@@ -113,12 +118,20 @@ fun CollectionsScreen(navController: NavController) {
 
                                     },
                                     onItemClick = {
-
+                                        navController.navigate(
+                                            TopHeadlineDetailScreenRoute(
+                                                encodedString = Json.encodeToString(
+                                                    headline
+                                                )
+                                            )
+                                        )
                                     },
                                     onBookMarkClick = {
-
+                                        topHeadlinesScreenViewModel.deleteAnExistingHeadlineBookmark(
+                                            headline.id
+                                        )
                                     },
-                                    bookMarkIcon = Icons.Filled.BookmarkAdded
+                                    bookMarkIcon = Icons.Filled.BookmarkRemove,
                                 )
                             }
                         }
