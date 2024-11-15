@@ -14,8 +14,7 @@ interface TopHeadlinesDataRepository {
 
     suspend fun isLocalDataEmpty(): Boolean
 
-    suspend fun getTopHeadlinesOfThisPageFromLocalDB(pageNo: Int): List<Headline>
-    fun getTopHeadlinesOfThisPageFromLocalDBAsFlow(pageNo: Int): Flow<List<Headline>>
+    fun getTopHeadlinesUntilPageFromLocalDBAsFlow(pageNo: Int): Flow<List<Headline>>
     suspend fun isPageCached(pageNo: Int): Boolean
     suspend fun addNewHeadlines(headlines: List<Headline>)
 

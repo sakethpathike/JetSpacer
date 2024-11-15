@@ -1,32 +1,24 @@
 package com.sakethh.jetspacer.headlines.presentation
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
-import com.sakethh.jetspacer.common.utils.logger
-import com.sakethh.jetspacer.headlines.data.repository.TopHeadlinesDataImplementation
-import com.sakethh.jetspacer.headlines.domain.model.NewsDTO
-import com.sakethh.jetspacer.headlines.domain.repository.TopHeadlinesDataRepository
 import com.sakethh.jetspacer.headlines.domain.useCase.FetchRemoteTopHeadlinesUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 class TopHeadlinesScreenViewModel(
     private val fetchRemoteTopHeadlinesUseCase: FetchRemoteTopHeadlinesUseCase = FetchRemoteTopHeadlinesUseCase(),
-    private val topHeadlinesDataRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation()
-) :
-    ViewModel() {
+) : TopHeadlineDetailScreenViewmodel() {
     val topHeadLinesState =
         mutableStateOf(
             NewsScreenState(
                 isLoading = true,
-                data = NewsDTO(),
+                data = emptyList(),
                 error = false,
                 reachedMaxHeadlines = false, statusCode = 0, statusDescription = ""
             )
@@ -64,31 +56,14 @@ class TopHeadlinesScreenViewModel(
                 is NetworkState.Success -> {
                     topHeadLinesState.value = topHeadLinesState.value.copy(
                         isLoading = false,
-                        data = topHeadLinesState.value.data.copy(
-                            articles = topHeadLinesState.value.data.articles + topHeadLinesData.data.articles,
-                            status = topHeadLinesData.data.status,
-                            totalResults = topHeadLinesState.value.data.totalResults + topHeadLinesData.data.totalResults
-                        ),
+                        data = topHeadLinesData.data.dropLastWhile {
+                            it.id == (-1).toLong()
+                        },
                         error = false,
-                        reachedMaxHeadlines = topHeadLinesData.data.articles.isEmpty()
+                        reachedMaxHeadlines = topHeadLinesData.data.last().id == (-1).toLong()
                     )
-                    if (topHeadLinesData.data.articles.isEmpty()) {
-                        logger("found max")
-                    }
                 }
             }
         }.launchIn(viewModelScope)
-    }
-
-    fun bookmarkANewHeadline(id: Long) {
-        viewModelScope.launch {
-            topHeadlinesDataRepository.addANewHeadline(id)
-        }
-    }
-
-    fun deleteAnExistingHeadlineBookmark(id: Long) {
-        viewModelScope.launch {
-            topHeadlinesDataRepository.deleteAHeadline(id)
-        }
     }
 }

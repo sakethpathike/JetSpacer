@@ -93,7 +93,7 @@ fun CollectionsScreen(navController: NavController) {
 
                         }
 
-                        CollectionType.News -> {
+                        CollectionType.Headlines -> {
                             items(bookMarkedTopHeadlines.value) { headline ->
                                 TopHeadlineComponent(
                                     article = Article(

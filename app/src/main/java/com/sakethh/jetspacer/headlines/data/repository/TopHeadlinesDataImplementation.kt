@@ -44,15 +44,9 @@ class TopHeadlinesDataImplementation : TopHeadlinesDataRepository {
         return JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.isPageCached(pageNo) ?: false
     }
 
-    override suspend fun getTopHeadlinesOfThisPageFromLocalDB(pageNo: Int): List<Headline> {
-        return JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.getTopHeadlinesOfThisPage(pageNo)
-            ?: emptyList()
-    }
-
-    override fun getTopHeadlinesOfThisPageFromLocalDBAsFlow(pageNo: Int): Flow<List<Headline>> {
-        return JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.getTopHeadlinesOfThisPageAsFlow(
+    override fun getTopHeadlinesUntilPageFromLocalDBAsFlow(pageNo: Int): Flow<List<Headline>> {
+        return JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.getTopHeadlinesUntilThisPageAsFlow(
             pageNo
-        )
-            ?: emptyFlow()
+        ) ?: emptyFlow()
     }
 }

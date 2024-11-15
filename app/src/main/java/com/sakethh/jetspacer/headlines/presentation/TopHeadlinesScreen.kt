@@ -23,8 +23,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -34,6 +32,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.common.presentation.navigation.TopHeadlineDetailScreenRoute
+import com.sakethh.jetspacer.headlines.domain.model.Article
+import com.sakethh.jetspacer.headlines.domain.model.Source
 import com.sakethh.jetspacer.headlines.presentation.components.TopHeadlineComponent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -68,12 +68,20 @@ fun TopHeadlinesScreen(navController: NavController) {
                 .padding(it),
             state = lazyColumnState
         ) {
-            items(items = topHeadlinesState.value.data.articles) { article ->
-                val isBookMarked = rememberSaveable(article.isBookMarked) {
-                    mutableStateOf(article.isBookMarked)
-                }
+            items(items = topHeadlinesState.value.data) { headline ->
+                val icon =
+                    if (headline.isBookmarked) Icons.Filled.BookmarkAdded else Icons.Outlined.BookmarkAdd
                 TopHeadlineComponent(
-                    article = article,
+                    article = Article(
+                        author = headline.author,
+                        content = headline.content,
+                        description = headline.description,
+                        publishedAt = headline.publishedAt,
+                        source = Source(id = "", name = headline.sourceName),
+                        title = headline.title,
+                        url = headline.url,
+                        urlToImage = headline.imageUrl
+                    ),
                     onImgClick = {
 
                     },
@@ -81,23 +89,19 @@ fun TopHeadlinesScreen(navController: NavController) {
                         navController.navigate(
                             TopHeadlineDetailScreenRoute(
                                 encodedString = Json.encodeToString(
-                                    article
+                                    headline
                                 )
                             )
                         )
                     },
                     onBookMarkClick = {
-                        if (isBookMarked.value) {
-                            topHeadlinesScreenViewModel.deleteAnExistingHeadlineBookmark(article.id)
-                            article.isBookMarked = false
-                            isBookMarked.value = false
+                        if (headline.isBookmarked) {
+                            topHeadlinesScreenViewModel.deleteAnExistingHeadlineBookmark(headline.id)
                         } else {
-                            topHeadlinesScreenViewModel.bookmarkANewHeadline(article.id)
-                            isBookMarked.value = true
-                            article.isBookMarked = true
+                            topHeadlinesScreenViewModel.bookmarkANewHeadline(headline.id)
                         }
                     },
-                    bookMarkIcon = if (isBookMarked.value) Icons.Filled.BookmarkAdded else Icons.Outlined.BookmarkAdd
+                    bookMarkIcon = icon
                 )
             }
             if (topHeadlinesState.value.isLoading && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.error.not()) {

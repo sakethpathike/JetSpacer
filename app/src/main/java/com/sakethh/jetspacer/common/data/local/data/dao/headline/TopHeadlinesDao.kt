@@ -30,9 +30,6 @@ interface TopHeadlinesDao {
     @Query("SELECT EXISTS(SELECT 1 FROM headline WHERE page = :pageNo)")
     suspend fun isPageCached(pageNo: Int): Boolean
 
-    @Query("SELECT * FROM headline WHERE page = :pageNo")
-    suspend fun getTopHeadlinesOfThisPage(pageNo: Int): List<Headline>
-
-    @Query("SELECT * FROM headline WHERE page = :pageNo")
-    fun getTopHeadlinesOfThisPageAsFlow(pageNo: Int): Flow<List<Headline>>
+    @Query("SELECT * FROM headline WHERE page BETWEEN 0 AND :pageNo")
+    fun getTopHeadlinesUntilThisPageAsFlow(pageNo: Int): Flow<List<Headline>>
 }

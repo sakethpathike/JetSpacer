@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.BookmarkAdded
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.outlined.BookmarkAdd
@@ -36,6 +36,8 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,25 +45,28 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.sakethh.jetspacer.R
+import com.sakethh.jetspacer.common.data.local.domain.model.Headline
 import com.sakethh.jetspacer.common.presentation.utils.customRememberSavable
-import com.sakethh.jetspacer.headlines.domain.model.Article
 import kotlinx.serialization.json.Json
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun TopHeadlineDetailScreen(encodedString: String) {
-    val article = customRememberSavable {
-        Json.decodeFromString<Article>(encodedString)
+    val headline = customRememberSavable {
+        Json.decodeFromString<Headline>(encodedString)
     }
+    val isBookmarked = rememberSaveable {
+        mutableStateOf(headline.isBookmarked)
+    }
+    val topHeadlineDetailScreenViewmodel: TopHeadlineDetailScreenViewmodel = viewModel()
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
     val localClipboardManager = LocalClipboardManager.current
@@ -78,7 +83,7 @@ fun TopHeadlineDetailScreen(encodedString: String) {
             Spacer(Modifier.height(50.dp))
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(article.urlToImage)
+                    .data(headline.imageUrl)
                     .crossfade(true).build(),
                 modifier = Modifier
                     .wrapContentHeight()
@@ -89,35 +94,35 @@ fun TopHeadlineDetailScreen(encodedString: String) {
                     ), contentDescription = null
             )
             Text(
-                text = article.title,
+                text = headline.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 16.sp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = if (article.author.isNotBlank()) 15.dp else 0.dp)
+                    .padding(bottom = if (headline.author.isNotBlank()) 15.dp else 0.dp)
             )
-            if (article.author.isNotBlank()) {
+            if (headline.author.isNotBlank()) {
                 HeadlineDetailComponent(
-                    string = article.author, imageVector = Icons.Default.PersonOutline
+                    string = headline.author, imageVector = Icons.Default.PersonOutline
                 )
             }
-            if (article.source.name.isNotBlank()) {
-                Spacer(Modifier.height(if (article.author.isNotBlank()) 5.dp else 15.dp))
+            if (headline.sourceName.isNotBlank()) {
+                Spacer(Modifier.height(if (headline.author.isNotBlank()) 5.dp else 15.dp))
                 HeadlineDetailComponent(
-                    string = article.source.name, imageVector = Icons.Default.Public
+                    string = headline.sourceName, imageVector = Icons.Default.Public
                 )
             }
-            if (article.publishedAt.isNotBlank()) {
-                Spacer(Modifier.height(if (article.source.name.isNotBlank()) 5.dp else 15.dp))
+            if (headline.publishedAt.isNotBlank()) {
+                Spacer(Modifier.height(if (headline.sourceName.isNotBlank()) 5.dp else 15.dp))
                 HeadlineDetailComponent(
-                    string = article.publishedAt, imageVector = Icons.Default.AccessTime
+                    string = headline.publishedAt, imageVector = Icons.Default.AccessTime
                 )
             }
             Spacer(Modifier.height(15.dp))
             HorizontalDivider(modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(15.dp))
             Text(
-                text = article.description,
+                text = headline.description,
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -126,22 +131,24 @@ fun TopHeadlineDetailScreen(encodedString: String) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
             ) {
                 FilledTonalButton(onClick = {
-                    localUriHandler.openUri(article.url)
+                    localUriHandler.openUri(headline.url)
                 }) {
                     Icon(Icons.Outlined.OpenInBrowser, null)
                 }
                 FilledTonalButton(onClick = {
-                    localClipboardManager.setText(AnnotatedString(article.url))
+                    localClipboardManager.setText(AnnotatedString(headline.url))
                 }) {
                     Icon(Icons.Outlined.ContentCopy, null)
                 }
                 FilledTonalButton(onClick = {
                     val intent = Intent().apply {
                         action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, article.url)
+                        putExtra(Intent.EXTRA_TEXT, headline.url)
                         type = "text/plain"
                     }
                     val shareIntent = Intent.createChooser(intent, null)
@@ -149,24 +156,34 @@ fun TopHeadlineDetailScreen(encodedString: String) {
                 }) {
                     Icon(Icons.Outlined.Share, null)
                 }
-                FilledTonalButton(onClick = {}) {
-                    Icon(Icons.Outlined.BookmarkAdd, null)
+                FilledTonalButton(onClick = {
+                    if (isBookmarked.value) {
+                        topHeadlineDetailScreenViewmodel.deleteAnExistingHeadlineBookmark(headline.id)
+                        isBookmarked.value = false
+                    } else {
+                        topHeadlineDetailScreenViewmodel.bookmarkANewHeadline(headline.id)
+                        isBookmarked.value = true
+                    }
+                }) {
+                    Icon(
+                        if (isBookmarked.value) Icons.Default.BookmarkAdded else Icons.Outlined.BookmarkAdd,
+                        null
+                    )
                 }
             }
-            Spacer(Modifier.height(5.dp))
-            FilledTonalButton(
-                onClick = {}, modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-            ) {
-                Icon(
-                    painterResource(if (isSystemInDarkTheme()) R.drawable.instagram_white else R.drawable.instagram_black),
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.width(5.dp))
-                Text("Share via Instagram Stories", style = MaterialTheme.typography.titleSmall)
-            }
+            /* FilledTonalButton(
+                 onClick = {}, modifier = Modifier
+                     .fillMaxWidth()
+                     .navigationBarsPadding()
+             ) {
+                 Icon(
+                     painterResource(if (isSystemInDarkTheme()) R.drawable.instagram_white else R.drawable.instagram_black),
+                     contentDescription = null,
+                     modifier = Modifier.size(16.dp)
+                 )
+                 Spacer(Modifier.width(5.dp))
+                 Text("Share via Instagram Stories", style = MaterialTheme.typography.titleSmall)
+             }*/
         }
     }
 }
