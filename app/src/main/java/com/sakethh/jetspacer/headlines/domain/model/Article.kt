@@ -12,4 +12,7 @@ data class Article(
     val title: String = "",
     val url: String = "",
     val urlToImage: String = ""
-)
+) {
+    var isBookMarked = false
+    var id: Long = -1
+}

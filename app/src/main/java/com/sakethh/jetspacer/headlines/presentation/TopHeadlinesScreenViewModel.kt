@@ -7,14 +7,20 @@ import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
 import com.sakethh.jetspacer.common.utils.logger
+import com.sakethh.jetspacer.headlines.data.repository.TopHeadlinesDataImplementation
 import com.sakethh.jetspacer.headlines.domain.model.NewsDTO
-import com.sakethh.jetspacer.headlines.domain.useCase.FetchTopHeadlinesUseCase
+import com.sakethh.jetspacer.headlines.domain.repository.TopHeadlinesDataRepository
+import com.sakethh.jetspacer.headlines.domain.useCase.FetchRemoteTopHeadlinesUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
-class TopHeadlinesScreenViewModel(private val fetchTopHeadlinesUseCase: FetchTopHeadlinesUseCase = FetchTopHeadlinesUseCase()) :
+class TopHeadlinesScreenViewModel(
+    private val fetchRemoteTopHeadlinesUseCase: FetchRemoteTopHeadlinesUseCase = FetchRemoteTopHeadlinesUseCase(),
+    private val topHeadlinesDataRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation()
+) :
     ViewModel() {
     val topHeadLinesState =
         mutableStateOf(
@@ -34,7 +40,7 @@ class TopHeadlinesScreenViewModel(private val fetchTopHeadlinesUseCase: FetchTop
 
     fun retrievePaginatedTopHeadlines() {
         newsAPIJob?.cancel()
-        newsAPIJob = fetchTopHeadlinesUseCase(10, ++currentPage).cancellable().onEach {
+        newsAPIJob = fetchRemoteTopHeadlinesUseCase(10, ++currentPage).cancellable().onEach {
             when (val topHeadLinesData = it) {
                 is NetworkState.Failure -> {
                     topHeadLinesState.value =
@@ -72,5 +78,17 @@ class TopHeadlinesScreenViewModel(private val fetchTopHeadlinesUseCase: FetchTop
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun bookmarkANewHeadline(id: Long) {
+        viewModelScope.launch {
+            topHeadlinesDataRepository.addANewHeadline(id)
+        }
+    }
+
+    fun deleteAnExistingHeadlineBookmark(id: Long) {
+        viewModelScope.launch {
+            topHeadlinesDataRepository.deleteAHeadline(id)
+        }
     }
 }

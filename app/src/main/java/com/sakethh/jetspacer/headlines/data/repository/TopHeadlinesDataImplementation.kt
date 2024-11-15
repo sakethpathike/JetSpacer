@@ -7,6 +7,8 @@ import com.sakethh.jetspacer.headlines.domain.repository.TopHeadlinesDataReposit
 import com.sakethh.jetspacer.home.settings.presentation.utils.GlobalSettings
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 class TopHeadlinesDataImplementation : TopHeadlinesDataRepository {
     override suspend fun getTopHeadLinesFromRemoteAPI(pageSize: Int, page: Int): HttpResponse {
@@ -15,6 +17,19 @@ class TopHeadlinesDataImplementation : TopHeadlinesDataRepository {
 
     override suspend fun addNewHeadlines(headlines: List<Headline>) {
         JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.addNewHeadlines(headlines)
+    }
+
+    override suspend fun addANewHeadline(id: Long) {
+        JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.addANewHeadline(id)
+    }
+
+    override suspend fun deleteAHeadline(id: Long) {
+        JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.deleteAHeadline(id)
+    }
+
+    override fun getBookmarkedHeadlines(): Flow<List<Headline>> {
+        return JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.getBookmarkedHeadlines()
+            ?: emptyFlow()
     }
 
     override suspend fun getTopHeadlinesFromLocalDB(): List<Headline> {
@@ -32,5 +47,12 @@ class TopHeadlinesDataImplementation : TopHeadlinesDataRepository {
     override suspend fun getTopHeadlinesOfThisPageFromLocalDB(pageNo: Int): List<Headline> {
         return JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.getTopHeadlinesOfThisPage(pageNo)
             ?: emptyList()
+    }
+
+    override fun getTopHeadlinesOfThisPageFromLocalDBAsFlow(pageNo: Int): Flow<List<Headline>> {
+        return JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.getTopHeadlinesOfThisPageAsFlow(
+            pageNo
+        )
+            ?: emptyFlow()
     }
 }

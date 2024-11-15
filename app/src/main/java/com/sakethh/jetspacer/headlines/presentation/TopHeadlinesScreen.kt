@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BookmarkAdded
+import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
@@ -20,6 +23,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -29,7 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.common.presentation.navigation.TopHeadlineDetailScreenRoute
-import com.sakethh.jetspacer.headlines.presentation.components.HeadlineComponent
+import com.sakethh.jetspacer.headlines.presentation.components.TopHeadlineComponent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -64,9 +69,13 @@ fun TopHeadlinesScreen(navController: NavController) {
             state = lazyColumnState
         ) {
             items(items = topHeadlinesState.value.data.articles) { article ->
-                HeadlineComponent(
+                val isBookMarked = rememberSaveable(article.isBookMarked) {
+                    mutableStateOf(article.isBookMarked)
+                }
+                TopHeadlineComponent(
                     article = article,
                     onImgClick = {
+
                     },
                     onItemClick = {
                         navController.navigate(
@@ -77,6 +86,18 @@ fun TopHeadlinesScreen(navController: NavController) {
                             )
                         )
                     },
+                    onBookMarkClick = {
+                        if (isBookMarked.value) {
+                            topHeadlinesScreenViewModel.deleteAnExistingHeadlineBookmark(article.id)
+                            article.isBookMarked = false
+                            isBookMarked.value = false
+                        } else {
+                            topHeadlinesScreenViewModel.bookmarkANewHeadline(article.id)
+                            isBookMarked.value = true
+                            article.isBookMarked = true
+                        }
+                    },
+                    bookMarkIcon = if (isBookMarked.value) Icons.Filled.BookmarkAdded else Icons.Outlined.BookmarkAdd
                 )
             }
             if (topHeadlinesState.value.isLoading && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.error.not()) {

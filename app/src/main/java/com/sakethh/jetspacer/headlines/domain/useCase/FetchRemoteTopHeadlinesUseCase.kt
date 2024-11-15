@@ -11,29 +11,28 @@ import com.sakethh.jetspacer.headlines.domain.model.Article
 import com.sakethh.jetspacer.headlines.domain.model.NewsDTO
 import com.sakethh.jetspacer.headlines.domain.model.Source
 import com.sakethh.jetspacer.headlines.domain.repository.TopHeadlinesDataRepository
-import com.sakethh.jetspacer.home.settings.domain.useCase.SettingsDataUseCases
 import io.ktor.client.call.body
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class FetchTopHeadlinesUseCase(
+class FetchRemoteTopHeadlinesUseCase(
     private val topHeadlinesRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation(),
-    private val settingsDataUseCases: SettingsDataUseCases = SettingsDataUseCases(),
     private val topHeadlinesCacheRepository: TopHeadlinesCacheRepository = TopHeadlineCacheImplementation()
 ) {
-    operator fun invoke(pageSize: Int, pageNo: Int): Flow<NetworkState<NewsDTO>> = flow {
-        emit(NetworkState.Loading())
+    operator fun invoke(pageSize: Int, pageNo: Int): Flow<NetworkState<NewsDTO>> = channelFlow {
+        send(NetworkState.Loading())
         if (topHeadlinesRepository.isPageCached(pageNo)) {
             logger("cache exists")
-            emit(
-                NetworkState.Success(
-                    NewsDTO(articles = topHeadlinesRepository.getTopHeadlinesOfThisPageFromLocalDB(
-                        pageNo = pageNo
-                    )
-                        .map {
+            topHeadlinesRepository.getTopHeadlinesOfThisPageFromLocalDB(
+                pageNo = pageNo
+            ).let {
+                send(
+                    NetworkState.Success(
+                        NewsDTO(
+                            articles = it.map {
                             Article(
                                 author = it.author,
                                 content = it.content,
@@ -45,25 +44,29 @@ class FetchTopHeadlinesUseCase(
                                 title = it.title,
                                 url = it.url,
                                 urlToImage = it.imageUrl
-                            )
+                            ).also { article ->
+                                article.isBookMarked = it.isBookmarked
+                                article.id = it.id
+                            }
                         })
                 )
-            )
-            return@flow
+                )
+            }
+            return@channelFlow
         }
 
         if (topHeadlinesCacheRepository.isEndReached().not()) {
             logger("making request as cache doesn't exist")
             val httpResponse = topHeadlinesRepository.getTopHeadLinesFromRemoteAPI(pageSize, pageNo)
             if (httpResponse.status.isSuccess().not()) {
-                emit(
+                send(
                     NetworkState.Failure(
                         exceptionMessage = "Network request failed.",
                         statusCode = httpResponse.status.value,
                         statusDescription = httpResponse.status.description
                     )
                 )
-                return@flow
+                return@channelFlow
             }
             try {
                 val dateFormatInput = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
@@ -98,7 +101,7 @@ class FetchTopHeadlinesUseCase(
                         )
                     })
                 }
-                emit(
+                send(
                     NetworkState.Success(
                         NewsDTO(
                             articles = topHeadlinesRepository.getTopHeadlinesOfThisPageFromLocalDB(
@@ -116,7 +119,10 @@ class FetchTopHeadlinesUseCase(
                                         title = it.title,
                                         url = it.url,
                                         urlToImage = it.imageUrl
-                                    )
+                                    ).also { article ->
+                                        article.isBookMarked = it.isBookmarked
+                                        article.id = it.id
+                                    }
                                 },
                             status = topHeadlines.status,
                             totalResults = topHeadlines.totalResults
@@ -125,7 +131,7 @@ class FetchTopHeadlinesUseCase(
                 )
                 logger("returned local db data")
             } catch (e: Exception) {
-                emit(
+                send(
                     NetworkState.Failure(
                         exceptionMessage = e.message.toString(),
                         statusCode = httpResponse.status.value,
@@ -134,7 +140,7 @@ class FetchTopHeadlinesUseCase(
                 )
             }
         } else {
-            emit(NetworkState.Success(NewsDTO(emptyList())))
+            send(NetworkState.Success(NewsDTO(emptyList())))
             logger("end has been reached making no request")
         }
     }

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material.icons.outlined.Share
@@ -31,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -45,10 +45,12 @@ import coil.request.ImageRequest
 import com.sakethh.jetspacer.headlines.domain.model.Article
 
 @Composable
-fun HeadlineComponent(
+fun TopHeadlineComponent(
     article: Article,
     onImgClick: () -> Unit,
-    onItemClick: () -> Unit
+    onItemClick: () -> Unit,
+    bookMarkIcon: ImageVector,
+    onBookMarkClick: () -> Unit
 ) {
     val context = LocalContext.current
     val localClipboardManager = LocalClipboardManager.current
@@ -187,10 +189,10 @@ fun HeadlineComponent(
                         Icon(imageVector = Icons.Outlined.Share, contentDescription = null)
                     }
                     IconButton(onClick = {
-
+                        onBookMarkClick()
                     }) {
                         Icon(
-                            imageVector = Icons.Outlined.BookmarkAdd,
+                            imageVector = bookMarkIcon,
                             contentDescription = null
                         )
                     }

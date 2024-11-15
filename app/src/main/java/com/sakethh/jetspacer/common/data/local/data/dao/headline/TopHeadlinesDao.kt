@@ -9,13 +9,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TopHeadlinesDao {
 
-    @Insert
-    suspend fun addANewHeadline(headline: Headline)
+    @Query("UPDATE headline SET isBookmarked = 1 WHERE id = :id")
+    suspend fun addANewHeadline(id: Long)
 
     @Insert
     suspend fun addNewHeadlines(headlines: List<Headline>)
 
-    @Query("DELETE FROM headline WHERE id = :id")
+    @Query("UPDATE headline SET isBookmarked = 0 WHERE id = :id")
     suspend fun deleteAHeadline(id: Long)
 
     @Query("SELECT * FROM headline")
@@ -32,4 +32,7 @@ interface TopHeadlinesDao {
 
     @Query("SELECT * FROM headline WHERE page = :pageNo")
     suspend fun getTopHeadlinesOfThisPage(pageNo: Int): List<Headline>
+
+    @Query("SELECT * FROM headline WHERE page = :pageNo")
+    fun getTopHeadlinesOfThisPageAsFlow(pageNo: Int): Flow<List<Headline>>
 }
