@@ -21,16 +21,18 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Copyright
-import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,14 +48,22 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.common.presentation.navigation.SettingsScreenRoute
+import com.sakethh.jetspacer.explore.apodArchive.presentation.apodBtmSheet.APODBtmSheet
 import com.sakethh.jetspacer.headlines.presentation.HeadlineDetailComponent
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
     val homeScreenViewModel: HomeScreenViewModel = viewModel()
     val apodDataState = homeScreenViewModel.apodState
     val epicDataState = homeScreenViewModel.epicState
+    val isAPODBtmSheetVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val apodBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val coroutineScope = rememberCoroutineScope()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -122,7 +132,10 @@ fun HomeScreen(navController: NavController) {
                             RoundedCornerShape(15.dp)
                         )
                         .clickable {
-
+                            isAPODBtmSheetVisible.value = true
+                            coroutineScope.launch {
+                                apodBtmSheetState.show()
+                            }
                         },
                     contentScale = ContentScale.Crop
                 )
@@ -272,13 +285,13 @@ fun HomeScreen(navController: NavController) {
                     fontSize = 14.sp,
                     iconSize = 20.dp
                 )
-                Spacer(Modifier.height(5.dp))
+                /*Spacer(Modifier.height(5.dp))
                 HeadlineDetailComponent(
                     string = epicItem.distanceBetweenSunAndEarth.toString(),
                     imageVector = Icons.Outlined.NearMe,
                     fontSize = 14.sp,
                     iconSize = 20.dp
-                )
+                )*/
                 if (index != epicDataState.value.data.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier
@@ -292,4 +305,9 @@ fun HomeScreen(navController: NavController) {
             Spacer(Modifier.height(150.dp))
         }
     }
+    APODBtmSheet(
+        modifiedAPODDTO = apodDataState.value.apod,
+        visible = isAPODBtmSheetVisible,
+        btmSheetState = apodBtmSheetState
+    )
 }
