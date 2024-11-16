@@ -2,7 +2,6 @@ package com.sakethh.jetspacer.explore.presentation.search
 
 import android.content.Intent
 import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,18 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.FolderZip
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material.icons.outlined.Share
@@ -41,13 +36,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.common.presentation.utils.customRememberSavable
 import com.sakethh.jetspacer.explore.domain.model.local.NASAImageLibrarySearchModifiedDTO
 import com.sakethh.jetspacer.headlines.presentation.HeadlineDetailComponent
@@ -127,7 +120,9 @@ fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
             ) {
                 FilledTonalButton(onClick = {
                     localUriHandler.openUri("https://images.nasa.gov/details/${searchResult.nasaId}")
@@ -153,11 +148,8 @@ fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
                 }) {
                     Icon(Icons.Outlined.Share, null)
                 }
-                FilledTonalButton(onClick = {}) {
-                    Icon(Icons.Outlined.BookmarkAdd, null)
-                }
             }
-            Spacer(Modifier.height(5.dp))
+            /*Spacer(Modifier.height(5.dp))
             FilledTonalButton(
                 onClick = {}, modifier = Modifier
                     .fillMaxWidth()
@@ -169,8 +161,8 @@ fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
                 )
                 Spacer(Modifier.width(5.dp))
                 Text("Share via Instagram Stories", style = MaterialTheme.typography.titleSmall)
-            }
-            FilledTonalButton(
+            }*/
+            /*FilledTonalButton(
                 onClick = {}, modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
@@ -184,7 +176,7 @@ fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
                     "Download images in all resolutions",
                     style = MaterialTheme.typography.titleSmall
                 )
-            }
+            }*/
         }
     }
 }
