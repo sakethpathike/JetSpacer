@@ -30,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -48,9 +47,7 @@ import com.sakethh.jetspacer.headlines.domain.model.Article
 fun TopHeadlineComponent(
     article: Article,
     onImgClick: () -> Unit,
-    onItemClick: () -> Unit,
-    bookMarkIcon: ImageVector,
-    onBookMarkClick: () -> Unit
+    onItemClick: () -> Unit
 ) {
     val context = LocalContext.current
     val localClipboardManager = LocalClipboardManager.current
@@ -187,14 +184,6 @@ fun TopHeadlineComponent(
                         context.startActivity(shareIntent)
                     }) {
                         Icon(imageVector = Icons.Outlined.Share, contentDescription = null)
-                    }
-                    IconButton(onClick = {
-                        onBookMarkClick()
-                    }) {
-                        Icon(
-                            imageVector = bookMarkIcon,
-                            contentDescription = null
-                        )
                     }
                 }
             }

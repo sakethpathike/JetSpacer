@@ -32,4 +32,7 @@ interface TopHeadlinesDao {
 
     @Query("SELECT * FROM headline WHERE page BETWEEN 0 AND :pageNo")
     fun getTopHeadlinesUntilThisPageAsFlow(pageNo: Int): Flow<List<Headline>>
+
+    @Query("DELETE FROM headline")
+    suspend fun clearCache()
 }

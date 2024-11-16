@@ -12,9 +12,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkRemove
+import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -58,6 +61,12 @@ fun TopHeadlinesScreen(navController: NavController) {
                         .fillMaxWidth()
                         .padding(end = 25.dp)
                 )
+            }, actions = {
+                IconButton(onClick = {
+                    topHeadlinesScreenViewModel.clearCacheAndRefresh()
+                }) {
+                    Icon(imageVector = Icons.Default.ClearAll, contentDescription = null)
+                }
             })
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(0.25f))
         }
@@ -93,15 +102,7 @@ fun TopHeadlinesScreen(navController: NavController) {
                                 )
                             )
                         )
-                    },
-                    onBookMarkClick = {
-                        if (headline.isBookmarked) {
-                            topHeadlinesScreenViewModel.deleteAnExistingHeadlineBookmark(headline.id)
-                        } else {
-                            topHeadlinesScreenViewModel.bookmarkANewHeadline(headline.id)
-                        }
-                    },
-                    bookMarkIcon = icon
+                    }
                 )
             }
             if (topHeadlinesState.value.isLoading && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.error.not()) {

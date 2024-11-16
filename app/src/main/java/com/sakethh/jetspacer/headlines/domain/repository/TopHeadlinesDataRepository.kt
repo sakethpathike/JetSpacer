@@ -24,4 +24,5 @@ interface TopHeadlinesDataRepository {
     suspend fun addANewHeadline(id: Long)
     suspend fun deleteAHeadline(id: Long)
     fun getBookmarkedHeadlines(): Flow<List<Headline>>
+    suspend fun clearCache()
 }

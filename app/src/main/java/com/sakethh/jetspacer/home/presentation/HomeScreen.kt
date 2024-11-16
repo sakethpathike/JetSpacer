@@ -280,7 +280,7 @@ fun HomeScreen(navController: NavController) {
                 )
                 Spacer(Modifier.height(5.dp))
                 HeadlineDetailComponent(
-                    string = epicItem.date.substringAfter(" "),
+                    string = epicItem.timeWhenImageWasCaptured,
                     imageVector = Icons.Outlined.AccessTime,
                     fontSize = 14.sp,
                     iconSize = 20.dp

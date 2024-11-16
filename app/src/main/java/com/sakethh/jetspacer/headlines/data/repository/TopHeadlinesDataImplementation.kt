@@ -49,4 +49,8 @@ class TopHeadlinesDataImplementation : TopHeadlinesDataRepository {
             pageNo
         ) ?: emptyFlow()
     }
+
+    override suspend fun clearCache() {
+        JetSpacerApplication.getLocalDb()?.topHeadlinesDao?.clearCache()
+    }
 }

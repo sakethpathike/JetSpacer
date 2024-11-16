@@ -22,10 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material.icons.outlined.Share
@@ -155,20 +153,6 @@ fun TopHeadlineDetailScreen(encodedString: String) {
                     context.startActivity(shareIntent)
                 }) {
                     Icon(Icons.Outlined.Share, null)
-                }
-                FilledTonalButton(onClick = {
-                    if (isBookmarked.value) {
-                        topHeadlineDetailScreenViewmodel.deleteAnExistingHeadlineBookmark(headline.id)
-                        isBookmarked.value = false
-                    } else {
-                        topHeadlineDetailScreenViewmodel.bookmarkANewHeadline(headline.id)
-                        isBookmarked.value = true
-                    }
-                }) {
-                    Icon(
-                        if (isBookmarked.value) Icons.Filled.BookmarkRemove else Icons.Outlined.BookmarkAdd,
-                        null
-                    )
                 }
             }
             /* FilledTonalButton(

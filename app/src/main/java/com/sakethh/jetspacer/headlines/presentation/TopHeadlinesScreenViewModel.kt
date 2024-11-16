@@ -2,17 +2,24 @@ package com.sakethh.jetspacer.headlines.presentation
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.common.data.local.data.repository.TopHeadlineCacheImplementation
+import com.sakethh.jetspacer.common.data.local.domain.repository.TopHeadlinesCacheRepository
 import com.sakethh.jetspacer.common.network.NetworkState
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
+import com.sakethh.jetspacer.headlines.data.repository.TopHeadlinesDataImplementation
+import com.sakethh.jetspacer.headlines.domain.repository.TopHeadlinesDataRepository
 import com.sakethh.jetspacer.headlines.domain.useCase.FetchRemoteTopHeadlinesUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class TopHeadlinesScreenViewModel(
     private val fetchRemoteTopHeadlinesUseCase: FetchRemoteTopHeadlinesUseCase = FetchRemoteTopHeadlinesUseCase(),
+    private val topHeadlinesDataRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation(),
+    private val topHeadlinesCacheRepository: TopHeadlinesCacheRepository = TopHeadlineCacheImplementation()
 ) : TopHeadlineDetailScreenViewmodel() {
     val topHeadLinesState =
         mutableStateOf(
@@ -60,10 +67,28 @@ class TopHeadlinesScreenViewModel(
                             it.id == (-1).toLong()
                         },
                         error = false,
-                        reachedMaxHeadlines = topHeadLinesData.data.last().id == (-1).toLong()
+                        reachedMaxHeadlines = try {
+                            topHeadLinesData.data.last().id == (-1).toLong()
+                        } catch (_: Exception) {
+                            false
+                        }
                     )
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun clearCacheAndRefresh() {
+        viewModelScope.launch {
+            topHeadLinesState.value = topHeadLinesState.value.copy(
+                reachedMaxHeadlines = false,
+                isLoading = true,
+                statusCode = 0
+            )
+            topHeadlinesDataRepository.clearCache()
+            topHeadlinesCacheRepository.setEndReached(false)
+            currentPage = 0
+            retrievePaginatedTopHeadlines()
+        }
     }
 }

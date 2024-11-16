@@ -36,7 +36,6 @@ class CollectionsScreenViewModel(
     val collectionTabData = listOf(
         CollectionItem(type = CollectionType.APOD_Archive),
         CollectionItem(type = CollectionType.Mars_Gallery),
-        CollectionItem(type = CollectionType.Headlines)
     )
 
     init {
