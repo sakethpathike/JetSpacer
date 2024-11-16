@@ -3,9 +3,9 @@
 An Android client that merges multiple space-related APIs into a single, simple application. Built
 with Jetpack Compose and Kotlin, based on a mixture of Clean Architecture and MVVM.
 
-JetSpacer doesn't strictly follow Clean Architecture. Initially, I wanted to rewrite it using Clean
-Architecture, but it felt over-engineered in a few scenarios, so I've used a typical MVVM style in
-those cases.
+JetSpacer follows Clean Architecture overall, but in some cases, I chose not to implement Use Cases
+due to the simplicity of the logic involved. Instead, I used a more straightforward MVVM approach in
+those situations to avoid _over-engineering_.
 
 Custom pagination implementation is used in the `APOD Archive`, `Mars Gallery`, and `Headlines` to
 prevent pulling everything at once.
