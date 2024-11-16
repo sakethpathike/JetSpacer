@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.common.data.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.sakethh.jetspacer.common.data.local.data.dao.APODDao
 import com.sakethh.jetspacer.common.data.local.data.dao.headline.TopHeadlineCacheDao
 import com.sakethh.jetspacer.common.data.local.data.dao.headline.TopHeadlinesDao
 import com.sakethh.jetspacer.common.data.local.data.typeConverter.CameraXTypeConverter
@@ -21,6 +22,7 @@ abstract class LocalDatabase : RoomDatabase() {
 
     abstract val topHeadlinesDao: TopHeadlinesDao
     abstract val topHeadlineCacheDao: TopHeadlineCacheDao
+    abstract val apodDao: APODDao
 
     companion object {
         const val DATABASE_NAME = "JetSpacerLocalDatabase"

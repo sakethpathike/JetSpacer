@@ -1,4 +1,4 @@
-package com.sakethh.jetspacer.explore.apodArchive.presentation
+package com.sakethh.jetspacer.explore.apodArchive.presentation.apodBtmSheet
 
 import android.content.Intent
 import androidx.compose.animation.animateContentSize
@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.BookmarkAdd
@@ -45,6 +46,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,12 +62,14 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.R
-import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
+import com.sakethh.jetspacer.common.data.local.domain.model.APOD
 import com.sakethh.jetspacer.headlines.presentation.HeadlineDetailComponent
+import com.sakethh.jetspacer.home.presentation.state.apod.ModifiedAPODDTO
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,8 +81,12 @@ fun APODBtmSheet(
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
     val localClipboardManager = LocalClipboardManager.current
+    val apodBtmSheetViewModel: APODBtmSheetViewModel = viewModel()
 
     if (visible.value) {
+        LaunchedEffect(Unit) {
+            apodBtmSheetViewModel.doesAPODExistsInLocalDB(modifiedAPODDTO.date)
+        }
         rememberSystemUiController().setNavigationBarColor(
             MaterialTheme.colorScheme.surfaceColorAtElevation(
                 BottomAppBarDefaults.ContainerElevation
@@ -225,8 +233,29 @@ fun APODBtmSheet(
                             }) {
                                 Icon(Icons.Outlined.Share, null)
                             }
-                            FilledTonalButton(onClick = {}) {
-                                Icon(Icons.Outlined.BookmarkAdd, null)
+                            FilledTonalButton(onClick = {
+                                if (apodBtmSheetViewModel.doesAPODExistsInLocalDB.value) {
+                                    apodBtmSheetViewModel.deleteAnAPOD(modifiedAPODDTO.date)
+                                } else {
+                                    apodBtmSheetViewModel.addANewAPODInLocalDB(
+                                        APOD(
+                                            copyright = modifiedAPODDTO.copyright,
+                                            date = modifiedAPODDTO.date,
+                                            explanation = modifiedAPODDTO.explanation,
+                                            hdUrl = modifiedAPODDTO.hdUrl,
+                                            mediaType = modifiedAPODDTO.mediaType,
+                                            title = modifiedAPODDTO.title,
+                                            url = modifiedAPODDTO.url,
+                                            isCurrentAPOD = false,
+                                            isBookmarked = true
+                                        )
+                                    )
+                                }
+                            }) {
+                                Icon(
+                                    if (apodBtmSheetViewModel.doesAPODExistsInLocalDB.value) Icons.Filled.BookmarkRemove else Icons.Outlined.BookmarkAdd,
+                                    null
+                                )
                             }
                         }
                         if (isBtmColumnExpanded.value.not()) return@Column
@@ -277,6 +306,7 @@ fun APODBtmSheet(
                         }
                     }
                 }
+                return@Box
                 Column(modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .animateContentSize()) {
