@@ -45,6 +45,10 @@ import com.sakethh.jetspacer.collection.domain.CollectionType
 import com.sakethh.jetspacer.common.presentation.navigation.TopHeadlineDetailScreenRoute
 import com.sakethh.jetspacer.common.presentation.utils.customMutableRememberSavable
 import com.sakethh.jetspacer.explore.apodArchive.presentation.apodBtmSheet.APODBtmSheet
+import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.Camera
+import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.LatestPhoto
+import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.Rover
+import com.sakethh.jetspacer.explore.marsGallery.presentation.RoverImageDetailsBtmSheet
 import com.sakethh.jetspacer.headlines.domain.model.Article
 import com.sakethh.jetspacer.headlines.domain.model.Source
 import com.sakethh.jetspacer.headlines.presentation.TopHeadlineDetailScreenViewmodel
@@ -63,6 +67,8 @@ fun CollectionsScreen(navController: NavController) {
         collectionsScreenViewModel.bookMarkedTopHeadlinesData.collectAsStateWithLifecycle()
     val bookMarkedAPOD =
         collectionsScreenViewModel.bookMarkedAPODData.collectAsStateWithLifecycle()
+    val bookMarkedRoverImagesData =
+        collectionsScreenViewModel.bookMarkedRoverImagesData.collectAsStateWithLifecycle()
     val scrollableTabData = collectionsScreenViewModel.collectionTabData
     val pagerState = rememberPagerState(pageCount = { scrollableTabData.size })
     val selectedPageName = rememberSaveable {
@@ -74,6 +80,10 @@ fun CollectionsScreen(navController: NavController) {
         mutableStateOf(false)
     }
     val apodBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isRoverImageBtmSheetVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val roverImageBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val selectedAPODData = customMutableRememberSavable {
         mutableStateOf(
             ModifiedAPODDTO(
@@ -84,6 +94,28 @@ fun CollectionsScreen(navController: NavController) {
                 mediaType = "",
                 title = "",
                 url = ""
+            )
+        )
+    }
+    val selectedRoverImage = customMutableRememberSavable {
+        mutableStateOf(
+            LatestPhoto(
+                camera = Camera(
+                    fullName = "",
+                    id = 0,
+                    name = "",
+                    roverID = 0
+                ), earthDate = "", id = 0, imgSrc = "", rover = Rover(
+                    cameras = listOf(),
+                    id = 0,
+                    landingDate = "",
+                    launchDate = "",
+                    maxDate = "",
+                    maxSol = 0,
+                    name = "",
+                    status = "",
+                    totalImages = 0
+                ), sol = 0
             )
         )
     }
@@ -168,7 +200,56 @@ fun CollectionsScreen(navController: NavController) {
                         }
 
                         CollectionType.Mars_Gallery -> {
-
+                            LazyVerticalStaggeredGrid(
+                                columns = StaggeredGridCells.Adaptive(150.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(bookMarkedRoverImagesData.value) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(context)
+                                            .data(it.imgUrl)
+                                            .crossfade(true).build(),
+                                        modifier = Modifier
+                                            .wrapContentHeight()
+                                            .padding(5.dp)
+                                            .clip(RoundedCornerShape(15.dp))
+                                            .border(
+                                                1.5.dp,
+                                                LocalContentColor.current.copy(0.25f),
+                                                RoundedCornerShape(15.dp)
+                                            )
+                                            .combinedClickable(onClick = {
+                                                selectedRoverImage.value = LatestPhoto(
+                                                    camera = Camera(
+                                                        fullName = it.cameraFullName,
+                                                        id = 0,
+                                                        name = "",
+                                                        roverID = it.roverId.toInt()
+                                                    ),
+                                                    earthDate = it.earthDate,
+                                                    id = it.id.toInt(),
+                                                    imgSrc = it.imgUrl,
+                                                    rover = Rover(
+                                                        cameras = listOf(),
+                                                        id = 0,
+                                                        landingDate = "",
+                                                        launchDate = "",
+                                                        maxDate = "",
+                                                        maxSol = 0,
+                                                        name = it.roverName,
+                                                        status = "",
+                                                        totalImages = 0
+                                                    ),
+                                                    sol = it.sol
+                                                )
+                                                isRoverImageBtmSheetVisible.value = true
+                                                coroutineScope.launch {
+                                                    roverImageBtmSheetState.show()
+                                                }
+                                            }), contentDescription = null
+                                    )
+                                }
+                            }
                         }
 
                         CollectionType.Headlines -> {
@@ -218,6 +299,11 @@ fun CollectionsScreen(navController: NavController) {
         modifiedAPODDTO = selectedAPODData.value,
         visible = isAPODBtmSheetVisible,
         btmSheetState = apodBtmSheetState
+    )
+    RoverImageDetailsBtmSheet(
+        image = selectedRoverImage.value,
+        visible = isRoverImageBtmSheetVisible,
+        btmSheetState = roverImageBtmSheetState
     )
 }
 

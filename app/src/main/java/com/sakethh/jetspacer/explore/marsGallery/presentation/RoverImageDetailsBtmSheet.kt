@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.explore.marsGallery.presentation
 
+import android.content.Intent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,6 +16,9 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BookmarkRemove
+import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
@@ -24,6 +28,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,10 +38,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.sakethh.jetspacer.common.data.local.domain.model.rover.RoverImage
 import com.sakethh.jetspacer.common.presentation.components.LabelValueCard
 import com.sakethh.jetspacer.common.presentation.components.ShareAndDownloadMenu
 import com.sakethh.jetspacer.explore.marsGallery.domain.model.latest.LatestPhoto
@@ -51,8 +59,11 @@ fun RoverImageDetailsBtmSheet(
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
     val localClipboardManager = LocalClipboardManager.current
-
+    val roverImageDetailsBtmSheetViewModel: RoverImageDetailsBtmSheetViewModel = viewModel()
     if (visible.value) {
+        LaunchedEffect(Unit) {
+            roverImageDetailsBtmSheetViewModel.doesThisImageExists(image.imgSrc)
+        }
         rememberSystemUiController().setNavigationBarColor(
             MaterialTheme.colorScheme.surfaceColorAtElevation(
                 BottomAppBarDefaults.ContainerElevation
@@ -118,7 +129,45 @@ fun RoverImageDetailsBtmSheet(
                     )
                     Spacer(Modifier.padding(if (isBtmColumnExpanded.value) 150.dp else 75.dp))
                 }
-                ShareAndDownloadMenu(isBtmColumnExpanded)
+                ShareAndDownloadMenu(
+                    bookMarkIcon =
+                    if (roverImageDetailsBtmSheetViewModel.doesImageExistsInLocalDB.value) Icons.Filled.BookmarkRemove else Icons.Outlined.BookmarkAdd,
+                    isBtmColumnExpanded = isBtmColumnExpanded,
+                    onOpenInBrowserClick = {
+                        localUriHandler.openUri(image.imgSrc)
+                    },
+                    onContentCopyClick = {
+                        localClipboardManager.setText(AnnotatedString(image.imgSrc))
+                    },
+                    onShareClick = {
+                        val intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, image.imgSrc)
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(intent, null)
+                        context.startActivity(shareIntent)
+                    },
+                    onBookMarkClick = {
+                        if (roverImageDetailsBtmSheetViewModel.doesImageExistsInLocalDB.value) {
+                            roverImageDetailsBtmSheetViewModel.deleteAnExistingImageFromLocalDB(
+                                image.imgSrc
+                            )
+                        } else {
+                            roverImageDetailsBtmSheetViewModel.addANewImageInLocalDB(
+                                RoverImage(
+                                    cameraFullName = image.camera.fullName,
+                                    cameraAbbreviation = image.camera.name,
+                                    earthDate = image.earthDate,
+                                    imgUrl = image.imgSrc,
+                                    roverId = image.rover.id.toLong(),
+                                    sol = image.sol,
+                                    isBookmarked = true,
+                                    roverName = image.rover.name
+                                )
+                            )
+                        }
+                    })
             }
         }
     }

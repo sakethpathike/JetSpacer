@@ -10,6 +10,7 @@ data class RoverImage(
     val earthDate: String,
     val imgUrl: String,
     val roverId: Long,
+    val roverName: String,
     val sol: Int,
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
