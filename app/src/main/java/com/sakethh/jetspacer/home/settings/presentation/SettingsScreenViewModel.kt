@@ -8,11 +8,13 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.JetSpacerApplication
 import com.sakethh.jetspacer.MainActivity
 import com.sakethh.jetspacer.common.utils.Constants
 import com.sakethh.jetspacer.home.settings.domain.SettingType
 import com.sakethh.jetspacer.home.settings.domain.useCase.SettingsDataUseCases
 import com.sakethh.jetspacer.home.settings.presentation.utils.GlobalSettings
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -20,6 +22,12 @@ import kotlinx.coroutines.launch
 object SettingsScreenViewModel : ViewModel() {
     private val settingsDataUseCases: SettingsDataUseCases = SettingsDataUseCases()
     val Context.dataStore by preferencesDataStore(Constants.DATA_STORE_NAME)
+
+    fun clearEntireDatabase() {
+        viewModelScope.launch(Dispatchers.IO) {
+            JetSpacerApplication.getLocalDb()?.clearAllTables()
+        }
+    }
 
     fun <T> changeSettingValue(
         preferenceKey: Preferences.Key<T>,

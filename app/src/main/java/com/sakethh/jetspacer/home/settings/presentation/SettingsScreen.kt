@@ -176,8 +176,9 @@ fun SettingsScreen(navController: NavController) {
             item {
                 SettingsItem(
                     icon = Icons.Default.Storage,
-                    title = "Clear local database",
-                    onClick = {})
+                    title = "Clear local database", onClick = {
+                        SettingsScreenViewModel.clearEntireDatabase()
+                    })
             }
             item {
                 SettingsItem(
