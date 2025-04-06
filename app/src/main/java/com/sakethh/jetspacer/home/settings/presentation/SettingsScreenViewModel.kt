@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.home.settings.presentation
 
+import android.app.Application
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -9,7 +10,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.JetSpacerApplication
-import com.sakethh.jetspacer.MainActivity
 import com.sakethh.jetspacer.common.utils.Constants
 import com.sakethh.jetspacer.home.settings.domain.SettingType
 import com.sakethh.jetspacer.home.settings.domain.useCase.SettingsDataUseCases
@@ -39,7 +39,7 @@ object SettingsScreenViewModel : ViewModel() {
         }
     }
 
-    fun MainActivity.readAllSettingsValues() {
+    fun Application.readAllSettingsValues() {
         viewModelScope.launch {
             awaitAll(
                 async {

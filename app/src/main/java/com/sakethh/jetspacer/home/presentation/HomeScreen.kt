@@ -47,7 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.sakethh.jetspacer.common.presentation.navigation.SettingsScreenRoute
+import com.sakethh.jetspacer.common.presentation.navigation.JetSpacerNavigation
 import com.sakethh.jetspacer.explore.apodArchive.presentation.apodBtmSheet.APODBtmSheet
 import com.sakethh.jetspacer.headlines.presentation.HeadlineDetailComponent
 import kotlinx.coroutines.launch
@@ -75,7 +75,7 @@ fun HomeScreen(navController: NavController) {
             Spacer(Modifier.height(15.dp))
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                 FilledTonalIconButton(onClick = {
-                    navController.navigate(SettingsScreenRoute)
+                    navController.navigate(JetSpacerNavigation.Latest.Settings)
                 }) {
                     Icon(Icons.Default.Settings, null)
                 }
@@ -120,16 +120,13 @@ fun HomeScreen(navController: NavController) {
                 }
             } else {
                 AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(apodDataState.value.apod.url.trim())
+                    model = ImageRequest.Builder(context).data(apodDataState.value.apod.url.trim())
                         .crossfade(true).build(),
                     contentDescription = null,
                     modifier = Modifier
                         .clip(RoundedCornerShape(15.dp))
                         .border(
-                            1.5.dp,
-                            LocalContentColor.current.copy(0.25f),
-                            RoundedCornerShape(15.dp)
+                            1.5.dp, LocalContentColor.current.copy(0.25f), RoundedCornerShape(15.dp)
                         )
                         .clickable {
                             isAPODBtmSheetVisible.value = true
@@ -200,8 +197,7 @@ fun HomeScreen(navController: NavController) {
                         maxLines = if (isExplanationExpanded.value) Int.MAX_VALUE else 3,
                         modifier = Modifier.clickable {
                             isExplanationExpanded.value = !isExplanationExpanded.value
-                        }
-                    )
+                        })
                 }
             }
         }
@@ -262,16 +258,13 @@ fun HomeScreen(navController: NavController) {
         if (epicDataState.value.data.isNotEmpty()) {
             itemsIndexed(epicDataState.value.data) { index, epicItem ->
                 AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(epicItem.imageURL)
-                        .crossfade(true).build(),
+                    model = ImageRequest.Builder(context).data(epicItem.imageURL).crossfade(true)
+                        .build(),
                     contentDescription = null,
                     modifier = Modifier
                         .clip(RoundedCornerShape(15.dp))
                         .border(
-                            1.5.dp,
-                            LocalContentColor.current.copy(0.25f),
-                            RoundedCornerShape(15.dp)
+                            1.5.dp, LocalContentColor.current.copy(0.25f), RoundedCornerShape(15.dp)
                         )
                         .clickable {
 
@@ -284,8 +277,7 @@ fun HomeScreen(navController: NavController) {
                     imageVector = Icons.Outlined.AccessTime,
                     fontSize = 14.sp,
                     iconSize = 20.dp
-                )
-                /*Spacer(Modifier.height(5.dp))
+                )/*Spacer(Modifier.height(5.dp))
                 HeadlineDetailComponent(
                     string = epicItem.distanceBetweenSunAndEarth.toString(),
                     imageVector = Icons.Outlined.NearMe,

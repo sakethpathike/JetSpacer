@@ -1,12 +1,11 @@
 package com.sakethh.jetspacer.common.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.sakethh.jetspacer.LocalNavController
 import com.sakethh.jetspacer.collection.presentation.CollectionsScreen
-import com.sakethh.jetspacer.common.presentation.ImageViewerScreen
 import com.sakethh.jetspacer.explore.apodArchive.presentation.APODArchiveScreen
 import com.sakethh.jetspacer.explore.marsGallery.presentation.MarsGalleryScreen
 import com.sakethh.jetspacer.explore.presentation.ExploreScreen
@@ -15,81 +14,43 @@ import com.sakethh.jetspacer.headlines.presentation.TopHeadlineDetailScreen
 import com.sakethh.jetspacer.headlines.presentation.TopHeadlinesScreen
 import com.sakethh.jetspacer.home.presentation.HomeScreen
 import com.sakethh.jetspacer.home.settings.presentation.SettingsScreen
-import kotlinx.serialization.Serializable
 
 @Composable
-fun MainNavigation(navController: NavHostController) {
+fun MainNavigation() {
+    val navController = LocalNavController.current
     NavHost(
-        navController = navController,
-        startDestination = HomeScreenRoute
+        navController = navController, startDestination = JetSpacerNavigation.Root.Latest
     ) {
-        composable<HomeScreenRoute> {
+        composable<JetSpacerNavigation.Root.Latest> {
             HomeScreen(navController)
         }
-        composable<TopHeadlinesScreenRoute> {
+        composable<JetSpacerNavigation.Root.Headlines> {
             TopHeadlinesScreen(navController)
         }
-        composable<TopHeadlineDetailScreenRoute> { navBackStackEntry ->
+        composable<JetSpacerNavigation.Headlines.TopHeadlineDetailScreenRoute> { navBackStackEntry ->
             TopHeadlineDetailScreen(
-                navBackStackEntry.toRoute<TopHeadlineDetailScreenRoute>().encodedString
+                navBackStackEntry.toRoute<JetSpacerNavigation.Headlines.TopHeadlineDetailScreenRoute>().encodedString
             )
         }
-        composable<ExploreScreenRoute> {
+        composable<JetSpacerNavigation.Root.Explore> {
             ExploreScreen(navController)
         }
-        composable<SearchResultScreenRoute> {
+        composable<JetSpacerNavigation.Explore.SearchResultScreenRoute> {
             SearchResultScreen(
-                it.toRoute<SearchResultScreenRoute>().encodedString
+                it.toRoute<JetSpacerNavigation.Explore.SearchResultScreenRoute>().encodedString
             )
         }
-        composable<APODArchiveScreen> {
+        composable<JetSpacerNavigation.Explore.APODArchiveScreen> {
             APODArchiveScreen(navController)
         }
-        composable<ImageViewerScreen> {
-            ImageViewerScreen()
-        }
-        composable<MarsGalleryRoute> {
+        composable<JetSpacerNavigation.Explore.MarsGalleryRoute> {
             MarsGalleryScreen(navController)
         }
-        composable<SettingsScreenRoute> {
+        composable<JetSpacerNavigation.Latest.Settings> {
             SettingsScreen(navController)
         }
-        composable<CollectionsScreen> {
+        composable<JetSpacerNavigation.Root.Collections> {
             CollectionsScreen(navController)
         }
     }
 }
-
-@Serializable
-data object HomeScreenRoute
-
-@Serializable
-data object TopHeadlinesScreenRoute
-
-@Serializable
-data object ExploreScreenRoute
-
-@Serializable
-data class TopHeadlineDetailScreenRoute(
-    val encodedString: String
-)
-
-@Serializable
-data class SearchResultScreenRoute(
-    val encodedString: String
-)
-
-@Serializable
-data object APODArchiveScreen
-
-@Serializable
-data object ImageViewerScreen
-
-@Serializable
-data object MarsGalleryRoute
-
-@Serializable
-data object SettingsScreenRoute
-
-@Serializable
-data object CollectionsScreen

@@ -65,7 +65,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.common.data.local.domain.model.APOD
 import com.sakethh.jetspacer.headlines.presentation.HeadlineDetailComponent
@@ -87,11 +86,6 @@ fun APODBtmSheet(
         LaunchedEffect(Unit) {
             apodBtmSheetViewModel.doesAPODExistsInLocalDB(modifiedAPODDTO.date)
         }
-        rememberSystemUiController().setNavigationBarColor(
-            MaterialTheme.colorScheme.surfaceColorAtElevation(
-                BottomAppBarDefaults.ContainerElevation
-            )
-        )
         ModalBottomSheet(sheetState = btmSheetState, onDismissRequest = {
             coroutineScope.launch {
                 btmSheetState.hide()

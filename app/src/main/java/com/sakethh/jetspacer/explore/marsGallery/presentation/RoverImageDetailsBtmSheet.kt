@@ -19,14 +19,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material.icons.outlined.BookmarkAdd
-import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -43,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sakethh.jetspacer.common.data.local.domain.model.rover.RoverImage
 import com.sakethh.jetspacer.common.presentation.components.LabelValueCard
 import com.sakethh.jetspacer.common.presentation.components.ShareAndDownloadMenu
@@ -64,11 +61,6 @@ fun RoverImageDetailsBtmSheet(
         LaunchedEffect(Unit) {
             roverImageDetailsBtmSheetViewModel.doesThisImageExists(image.imgSrc)
         }
-        rememberSystemUiController().setNavigationBarColor(
-            MaterialTheme.colorScheme.surfaceColorAtElevation(
-                BottomAppBarDefaults.ContainerElevation
-            )
-        )
         ModalBottomSheet(sheetState = btmSheetState, onDismissRequest = {
             coroutineScope.launch {
                 btmSheetState.hide()

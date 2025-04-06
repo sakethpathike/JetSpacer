@@ -60,9 +60,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.sakethh.jetspacer.common.presentation.navigation.APODArchiveScreen
-import com.sakethh.jetspacer.common.presentation.navigation.MarsGalleryRoute
-import com.sakethh.jetspacer.common.presentation.navigation.SearchResultScreenRoute
+import com.sakethh.jetspacer.common.presentation.navigation.JetSpacerNavigation
 import com.sakethh.jetspacer.headlines.presentation.HeadlineDetailComponent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -169,7 +167,11 @@ fun ExploreScreen(navController: NavController) {
                 }
                 items(searchResultsState.value.data) {
                     SearchResultComponent(it, onItemClick = {
-                        navController.navigate(SearchResultScreenRoute(Json.encodeToString(it)))
+                        navController.navigate(
+                            JetSpacerNavigation.Explore.SearchResultScreenRoute(
+                                Json.encodeToString(it)
+                            )
+                        )
                     })
                 }
                 item(span = StaggeredGridItemSpan.FullLine) {
@@ -317,7 +319,7 @@ fun ExploreScreen(navController: NavController) {
                 imgURL = "https://apod.nasa.gov/apod/image/2410/IC63_1024.jpg",
                 itemTitle = "APOD Archive",
                 onClick = {
-                    navController.navigate(APODArchiveScreen)
+                    navController.navigate(JetSpacerNavigation.Explore.APODArchiveScreen)
                 }
             )
             Spacer(Modifier.height(10.dp))
@@ -325,7 +327,7 @@ fun ExploreScreen(navController: NavController) {
                 imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg/435px-Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg",
                 itemTitle = "Mars Gallery",
                 onClick = {
-                    navController.navigate(MarsGalleryRoute)
+                    navController.navigate(JetSpacerNavigation.Explore.MarsGalleryRoute)
                 }
             )
             Spacer(Modifier.height(110.dp))

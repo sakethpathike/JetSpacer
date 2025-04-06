@@ -23,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -33,8 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.sakethh.jetspacer.common.presentation.navigation.TopHeadlineDetailScreenRoute
+import com.sakethh.jetspacer.common.presentation.navigation.JetSpacerNavigation
 import com.sakethh.jetspacer.headlines.domain.model.Article
 import com.sakethh.jetspacer.headlines.domain.model.Source
 import com.sakethh.jetspacer.headlines.presentation.components.TopHeadlineComponent
@@ -45,8 +43,6 @@ import kotlinx.serialization.json.Json
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopHeadlinesScreen(navController: NavController) {
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setNavigationBarColor(TopAppBarDefaults.topAppBarColors().containerColor)
     val topHeadlinesScreenViewModel = viewModel<TopHeadlinesScreenViewModel>()
     val topHeadlinesState = topHeadlinesScreenViewModel.topHeadLinesState
     val lazyColumnState = rememberLazyListState()
@@ -96,7 +92,7 @@ fun TopHeadlinesScreen(navController: NavController) {
                     },
                     onItemClick = {
                         navController.navigate(
-                            TopHeadlineDetailScreenRoute(
+                            JetSpacerNavigation.Headlines.TopHeadlineDetailScreenRoute(
                                 encodedString = Json.encodeToString(
                                     headline
                                 )
