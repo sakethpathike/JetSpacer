@@ -20,12 +20,13 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.sakethh.jetspacer.common.presentation.navigation.BottomNavigationBar
-import com.sakethh.jetspacer.common.presentation.navigation.JetSpacerNavigation
-import com.sakethh.jetspacer.common.presentation.navigation.MainNavigation
-import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UIEvent
-import com.sakethh.jetspacer.common.presentation.utils.uiEvent.UiChannel
-import com.sakethh.jetspacer.common.theme.JetSpacerTheme
+import com.sakethh.jetspacer.ui.LocalNavController
+import com.sakethh.jetspacer.ui.navigation.BottomNavigationBar
+import com.sakethh.jetspacer.ui.navigation.JetSpacerNavigation
+import com.sakethh.jetspacer.ui.navigation.MainNavigation
+import com.sakethh.jetspacer.ui.theme.JetSpacerTheme
+import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
+import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : ComponentActivity() {
