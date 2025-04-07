@@ -1,21 +1,12 @@
-## JetSpacer
+JetSpacer pulls data from multiple NASA APIs and wraps it all in a minimal UI using Kotlin and Jetpack Compose.
 
-An Android client that merges multiple space-related APIs into a single, simple application. Built
-with Jetpack Compose and Kotlin, based on a mixture of Clean Architecture and MVVM.
-
-JetSpacer follows Clean Architecture overall, but in some cases, I chose not to implement Use Cases
-due to the simplicity of the logic involved. Instead, I used a more straightforward MVVM approach in
-those situations to avoid _over-engineering_.
-
-Custom pagination implementation is used in the `APOD Archive`, `Mars Gallery`, and `Headlines` to
-prevent pulling everything at once.
-
-JetSpacer allows you to search through APOD, Mars Rover Photos, EPIC, and the NASA Image Library. By
-default, an API key is provided, but you can use your own, which you can obtain here after signing
-up: https://api.nasa.gov/#signUp.
-
-The bookmarking feature is available for APOD and Mars Rover Photos, and caching is implemented for
-`Headlines`—you can clear the cache and local database at any time.
+### Features
+- Custom pagination for `APOD Archive`, `Mars Gallery`, and `Headlines`.
+- Search APOD, Mars Rover Photos, and NASA Image Library.
+- EPIC shows latest Earth imagery.
+- Bookmarking for APOD and Mars Rover Photos.
+- Caching support for `Headlines` with manual clear option.
+- Default API key included (or use your own: [NASA API Signup](https://api.nasa.gov/#signUp)).
 
 ### Screenshots
 
