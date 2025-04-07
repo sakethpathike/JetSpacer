@@ -5,15 +5,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.sakethh.jetspacer.ui.LocalNavController
-import com.sakethh.jetspacer.ui.collection.CollectionsScreen
-import com.sakethh.jetspacer.ui.explore.ExploreScreen
-import com.sakethh.jetspacer.ui.explore.apodArchive.APODArchiveScreen
-import com.sakethh.jetspacer.ui.explore.marsGallery.MarsGalleryScreen
-import com.sakethh.jetspacer.ui.explore.search.SearchResultScreen
-import com.sakethh.jetspacer.ui.headlines.TopHeadlineDetailScreen
-import com.sakethh.jetspacer.ui.headlines.TopHeadlinesScreen
-import com.sakethh.jetspacer.ui.home.HomeScreen
-import com.sakethh.jetspacer.ui.home.settings.SettingsScreen
+import com.sakethh.jetspacer.ui.screens.collection.CollectionsScreen
+import com.sakethh.jetspacer.ui.screens.explore.ExploreScreen
+import com.sakethh.jetspacer.ui.screens.explore.apodArchive.APODArchiveScreen
+import com.sakethh.jetspacer.ui.screens.explore.marsGallery.MarsGalleryScreen
+import com.sakethh.jetspacer.ui.screens.explore.search.SearchResultScreen
+import com.sakethh.jetspacer.ui.screens.headlines.TopHeadlineDetailScreen
+import com.sakethh.jetspacer.ui.screens.headlines.TopHeadlinesScreen
+import com.sakethh.jetspacer.ui.screens.home.HomeScreen
+import com.sakethh.jetspacer.ui.screens.home.settings.SettingsScreen
 
 @Composable
 fun MainNavigation() {

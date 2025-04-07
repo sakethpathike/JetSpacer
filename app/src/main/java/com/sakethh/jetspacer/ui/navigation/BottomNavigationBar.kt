@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.jetspacer.ui.LocalNavController
-import com.sakethh.jetspacer.ui.explore.ExploreScreenViewModel
+import com.sakethh.jetspacer.ui.screens.explore.ExploreScreenViewModel
 
 @Composable
 fun BottomNavigationBar() {

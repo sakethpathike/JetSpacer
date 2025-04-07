@@ -3,7 +3,7 @@ package com.sakethh.jetspacer
 import android.app.Application
 import androidx.room.Room
 import com.sakethh.jetspacer.data.LocalDatabase
-import com.sakethh.jetspacer.ui.home.settings.SettingsScreenViewModel.readAllSettingsValues
+import com.sakethh.jetspacer.ui.screens.home.settings.SettingsScreenViewModel.readAllSettingsValues
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

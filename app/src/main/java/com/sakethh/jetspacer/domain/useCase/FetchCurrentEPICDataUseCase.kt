@@ -5,7 +5,7 @@ import com.sakethh.jetspacer.domain.Response
 import com.sakethh.jetspacer.domain.model.epic.all.AllEPICDTOItem
 import com.sakethh.jetspacer.domain.model.epic.specific.EPICSpecificDTO
 import com.sakethh.jetspacer.domain.repository.HomeScreenRelatedAPIsRepository
-import com.sakethh.jetspacer.ui.home.state.epic.EpicStateItem
+import com.sakethh.jetspacer.ui.screens.home.state.epic.EpicStateItem
 import io.ktor.client.call.body
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
