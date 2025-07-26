@@ -2,6 +2,14 @@ package com.sakethh.jetspacer.ui.screens.headlines
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -80,16 +88,16 @@ fun TopHeadlineDetailScreen(encodedString: String) {
         ) {
             Spacer(Modifier.height(50.dp))
             AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(headline.imageUrl)
-                    .crossfade(true).build(),
+                model = ImageRequest.Builder(context).data(headline.imageUrl).crossfade(true)
+                    .build(),
                 modifier = Modifier
                     .wrapContentHeight()
                     .padding(top = 15.dp, bottom = 15.dp)
                     .clip(RoundedCornerShape(15.dp))
                     .border(
                         1.5.dp, LocalContentColor.current.copy(0.25f), RoundedCornerShape(15.dp)
-                    ), contentDescription = null
+                    ),
+                contentDescription = null
             )
             Text(
                 text = headline.title,
@@ -154,8 +162,7 @@ fun TopHeadlineDetailScreen(encodedString: String) {
                 }) {
                     Icon(Icons.Outlined.Share, null)
                 }
-            }
-            /* FilledTonalButton(
+            }/* FilledTonalButton(
                  onClick = {}, modifier = Modifier
                      .fillMaxWidth()
                      .navigationBarsPadding()
@@ -172,12 +179,10 @@ fun TopHeadlineDetailScreen(encodedString: String) {
     }
 }
 
+@SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
 fun HeadlineDetailComponent(
-    string: String,
-    imageVector: ImageVector,
-    fontSize: TextUnit = 16.sp,
-    iconSize: Dp = 24.dp
+    string: String, imageVector: ImageVector, fontSize: TextUnit = 16.sp, iconSize: Dp = 24.dp,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically, modifier = Modifier
@@ -188,11 +193,27 @@ fun HeadlineDetailComponent(
             .padding(5.dp)
     ) {
         Spacer(Modifier.width(5.dp))
-        Icon(imageVector, contentDescription = null, modifier = Modifier.size(iconSize))
+        AnimatedContent(targetState = string, transitionSpec = {
+            if (targetState > initialState) {
+                slideInVertically(animationSpec = tween(300)) { height -> height } + fadeIn() togetherWith slideOutVertically(
+                    animationSpec = tween(300)
+                ) { height -> -height } + fadeOut()
+            } else {
+                slideInVertically(animationSpec = tween(300)) { height -> -height } + fadeIn() togetherWith slideOutVertically(
+                    animationSpec = tween(300)
+                ) { height -> height } + fadeOut()
+            }.using(
+                SizeTransform(clip = false)
+            )
+        }) {
+            Icon(imageVector, contentDescription = null, modifier = Modifier.size(iconSize))
+        }
         Spacer(Modifier.width(5.dp))
-        Text(
-            text = string, style = MaterialTheme.typography.titleSmall, fontSize = fontSize
-        )
+        AnimatedContent(targetState = string) {
+            Text(
+                text = it, style = MaterialTheme.typography.titleSmall, fontSize = fontSize
+            )
+        }
         Spacer(Modifier.width(5.dp))
     }
 }

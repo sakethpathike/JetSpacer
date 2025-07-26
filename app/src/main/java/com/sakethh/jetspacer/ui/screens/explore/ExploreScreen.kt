@@ -53,16 +53,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.InfoCard
 import com.sakethh.jetspacer.ui.screens.explore.search.SearchResultComponent
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
-import com.sakethh.jetspacer.ui.navigation.JetSpacerNavigation
+import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExploreScreen(navController: NavController) {
+fun ExploreScreen() {
+    val navController: NavController = LocalNavController.current
     val exploreScreenViewModel: ExploreScreenViewModel = viewModel()
     val searchResultsState = exploreScreenViewModel.searchResultsState
     val issLocationState = exploreScreenViewModel.issLocationState
@@ -163,7 +165,7 @@ fun ExploreScreen(navController: NavController) {
                 items(searchResultsState.value.data) {
                     SearchResultComponent(it, onItemClick = {
                         navController.navigate(
-                            JetSpacerNavigation.Explore.SearchResultScreenRoute(
+                            HyleNavigation.Explore.SearchResultScreenRoute(
                                 Json.encodeToString(it)
                             )
                         )
@@ -276,7 +278,7 @@ fun ExploreScreen(navController: NavController) {
                 imgURL = "https://apod.nasa.gov/apod/image/2410/IC63_1024.jpg",
                 itemTitle = "APOD Archive",
                 onClick = {
-                    navController.navigate(JetSpacerNavigation.Explore.APODArchiveScreen)
+                    navController.navigate(HyleNavigation.Explore.APODArchiveScreen)
                 }
             )
             Spacer(Modifier.height(10.dp))
@@ -284,7 +286,7 @@ fun ExploreScreen(navController: NavController) {
                 imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg/435px-Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg",
                 itemTitle = "Mars Gallery",
                 onClick = {
-                    navController.navigate(JetSpacerNavigation.Explore.MarsGalleryRoute)
+                    navController.navigate(HyleNavigation.Explore.MarsGalleryRoute)
                 }
             )
             Spacer(Modifier.height(110.dp))

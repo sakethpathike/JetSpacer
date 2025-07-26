@@ -9,7 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sakethh.jetspacer.JetSpacerApplication
+import com.sakethh.jetspacer.HyleApplication
 import com.sakethh.jetspacer.common.utils.Constants
 import com.sakethh.jetspacer.domain.SettingType
 import com.sakethh.jetspacer.domain.useCase.SettingsDataUseCases
@@ -25,7 +25,7 @@ object SettingsScreenViewModel : ViewModel() {
 
     fun clearEntireDatabase() {
         viewModelScope.launch(Dispatchers.IO) {
-            JetSpacerApplication.getLocalDb()?.clearAllTables()
+            HyleApplication.getLocalDb()?.clearAllTables()
         }
     }
 

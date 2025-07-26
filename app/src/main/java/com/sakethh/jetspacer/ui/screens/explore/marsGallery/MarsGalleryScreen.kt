@@ -31,7 +31,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.CameraFront
@@ -168,7 +168,7 @@ fun MarsGalleryScreen(navController: NavController) {
             IconButton(onClick = {
                 navController.navigateUp()
             }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                Icon(Icons.Filled.ArrowBack, null)
             }
         }, actions = {
             if (latestImagesDataState.value.error || cameraAndSolSpecificDataState.value.error)

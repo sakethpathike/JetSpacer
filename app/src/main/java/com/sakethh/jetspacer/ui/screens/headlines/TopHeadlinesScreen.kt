@@ -35,7 +35,7 @@ import androidx.navigation.NavController
 import com.sakethh.jetspacer.domain.model.article.Article
 import com.sakethh.jetspacer.domain.model.article.Source
 import com.sakethh.jetspacer.ui.screens.headlines.components.TopHeadlineComponent
-import com.sakethh.jetspacer.ui.navigation.JetSpacerNavigation
+import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -92,7 +92,7 @@ fun TopHeadlinesScreen(navController: NavController) {
                     },
                     onItemClick = {
                         navController.navigate(
-                            JetSpacerNavigation.Headlines.TopHeadlineDetailScreenRoute(
+                            HyleNavigation.Headlines.TopHeadlineDetailScreenRoute(
                                 encodedString = Json.encodeToString(
                                     headline
                                 )

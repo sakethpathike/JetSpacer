@@ -10,11 +10,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
-class JetSpacerApplication : Application() {
+class HyleApplication : Application() {
     companion object {
-        private var localDatabase: LocalDatabase? = null
+        private lateinit var localDatabase: LocalDatabase
 
-        fun getLocalDb(): LocalDatabase? {
+        fun getLocalDb(): LocalDatabase {
             return localDatabase
         }
 
@@ -24,7 +24,7 @@ class JetSpacerApplication : Application() {
         super.onCreate()
         CoroutineScope(Dispatchers.Default).launch {
             awaitAll(async {
-                this@JetSpacerApplication.readAllSettingsValues()
+                this@HyleApplication.readAllSettingsValues()
             }, async {
                 localDatabase = Room.databaseBuilder(
                     applicationContext, LocalDatabase::class.java, LocalDatabase.DATABASE_NAME

@@ -16,40 +16,40 @@ import com.sakethh.jetspacer.ui.screens.home.HomeScreen
 import com.sakethh.jetspacer.ui.screens.home.settings.SettingsScreen
 
 @Composable
-fun MainNavigation() {
+fun HyleContent() {
     val navController = LocalNavController.current
     NavHost(
-        navController = navController, startDestination = JetSpacerNavigation.Root.Latest
+        navController = navController, startDestination = HyleNavigation.Root.Latest
     ) {
-        composable<JetSpacerNavigation.Root.Latest> {
-            HomeScreen(navController)
+        composable<HyleNavigation.Root.Latest> {
+            HomeScreen()
         }
-        composable<JetSpacerNavigation.Root.Headlines> {
-            TopHeadlinesScreen(navController)
+        composable<HyleNavigation.Root.Settings> {
+            SettingsScreen()
         }
-        composable<JetSpacerNavigation.Headlines.TopHeadlineDetailScreenRoute> { navBackStackEntry ->
+        composable<HyleNavigation.Headlines.TopHeadlineDetailScreenRoute> { navBackStackEntry ->
             TopHeadlineDetailScreen(
-                navBackStackEntry.toRoute<JetSpacerNavigation.Headlines.TopHeadlineDetailScreenRoute>().encodedString
+                navBackStackEntry.toRoute<HyleNavigation.Headlines.TopHeadlineDetailScreenRoute>().encodedString
             )
         }
-        composable<JetSpacerNavigation.Root.Explore> {
-            ExploreScreen(navController)
+        composable<HyleNavigation.Root.Explore> {
+            ExploreScreen()
         }
-        composable<JetSpacerNavigation.Explore.SearchResultScreenRoute> {
+        composable<HyleNavigation.Explore.SearchResultScreenRoute> {
             SearchResultScreen(
-                it.toRoute<JetSpacerNavigation.Explore.SearchResultScreenRoute>().encodedString
+                it.toRoute<HyleNavigation.Explore.SearchResultScreenRoute>().encodedString
             )
         }
-        composable<JetSpacerNavigation.Explore.APODArchiveScreen> {
+        composable<HyleNavigation.Explore.APODArchiveScreen> {
             APODArchiveScreen(navController)
         }
-        composable<JetSpacerNavigation.Explore.MarsGalleryRoute> {
+        composable<HyleNavigation.Explore.MarsGalleryRoute> {
             MarsGalleryScreen(navController)
         }
-        composable<JetSpacerNavigation.Latest.Settings> {
-            SettingsScreen(navController)
+        composable<HyleNavigation.Latest.Settings> {
+            SettingsScreen()
         }
-        composable<JetSpacerNavigation.Root.Collections> {
+        composable<HyleNavigation.Root.Collections> {
             CollectionsScreen(navController)
         }
     }

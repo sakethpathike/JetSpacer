@@ -1,16 +1,21 @@
 package com.sakethh.jetspacer.ui.navigation
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Newspaper
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -20,10 +25,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.screens.explore.ExploreScreenViewModel
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BottomNavigationBar() {
     val navController = LocalNavController.current
@@ -32,39 +39,48 @@ fun BottomNavigationBar() {
         listOf(
             BottomNavigationItem(
                 name = "Latest",
-                route = JetSpacerNavigation.Root.Latest,
+                route = HyleNavigation.Root.Latest,
                 selectedIcon = Icons.Filled.CameraAlt,
                 nonSelectedIcon = Icons.Outlined.CameraAlt
             ),
             BottomNavigationItem(
                 name = "Explore",
-                route = JetSpacerNavigation.Root.Explore,
+                route = HyleNavigation.Root.Explore,
                 selectedIcon = Icons.Filled.Explore,
                 nonSelectedIcon = Icons.Outlined.Explore
             ),
             BottomNavigationItem(
-                name = "Headlines",
-                route = JetSpacerNavigation.Root.Headlines,
-                selectedIcon = Icons.Filled.Newspaper,
-                nonSelectedIcon = Icons.Outlined.Newspaper
-            ),
-            BottomNavigationItem(
                 name = "Collection",
-                route = JetSpacerNavigation.Root.Collections,
+                route = HyleNavigation.Root.Collections,
                 selectedIcon = Icons.Filled.Collections,
                 nonSelectedIcon = Icons.Outlined.Collections
             ),
+            BottomNavigationItem(
+                name = "Settings",
+                route = HyleNavigation.Root.Settings,
+                selectedIcon = Icons.Filled.Settings,
+                nonSelectedIcon = Icons.Outlined.Settings
+            ),
         )
     }
-    AnimatedVisibility(visible = navItems.map { it.route }.any {
-        currentNavRoute?.hasRoute(it::class) == true
-    } && ExploreScreenViewModel.isSearchBarExpanded.value.not(), enter = fadeIn()) {
+    AnimatedVisibility(
+        visible = navItems.map { it.route }.any {
+            currentNavRoute?.hasRoute(it::class) == true
+        } && ExploreScreenViewModel.isSearchBarExpanded.value.not(),
+        enter = slideInVertically { it },
+        exit = slideOutVertically { it }) {
         NavigationBar {
             navItems.forEach {
                 val isSelected = currentNavRoute?.hasRoute(it.route::class) == true
                 NavigationBarItem(selected = isSelected, onClick = {
                     if (!isSelected) {
-                        navController.navigate(it.route)
+                        navController.navigate(it.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 }, icon = {
                     Icon(if (isSelected) it.selectedIcon else it.nonSelectedIcon, null)

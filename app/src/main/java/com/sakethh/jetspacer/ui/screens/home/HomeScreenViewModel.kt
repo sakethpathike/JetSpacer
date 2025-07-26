@@ -1,6 +1,8 @@
 package com.sakethh.jetspacer.ui.screens.home
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.domain.Response
@@ -35,7 +37,7 @@ class HomeScreenViewModel(
         )
     )
 
-    val epicState = mutableStateOf(
+    var epicState by mutableStateOf(
         EPICState(
             data = listOf(),
             isLoading = false,
@@ -86,7 +88,7 @@ class HomeScreenViewModel(
         fetchCurrentEPICDataUseCase().onEach {
             when (val epicData = it) {
                 is Response.Failure -> {
-                    epicState.value = epicState.value.copy(
+                    epicState = epicState.copy(
                         isLoading = false,
                         error = true,
                         statusCode = epicData.statusCode,
@@ -99,11 +101,11 @@ class HomeScreenViewModel(
                 }
 
                 is Response.Loading -> {
-                    epicState.value = epicState.value.copy(isLoading = true)
+                    epicState = epicState.copy(isLoading = true)
                 }
 
                 is Response.Success -> {
-                    epicState.value = epicState.value.copy(isLoading = false, data = epicData.data)
+                    epicState = epicState.copy(isLoading = false, data = epicData.data)
                 }
             }
         }.launchIn(viewModelScope)

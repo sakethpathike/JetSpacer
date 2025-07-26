@@ -198,7 +198,7 @@ private val highContrastDarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun JetSpacerTheme(
+fun HyleTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable() () -> Unit
 ) {

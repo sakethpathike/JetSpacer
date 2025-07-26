@@ -2,11 +2,13 @@ package com.sakethh.jetspacer.ui.screens.home.settings
 
 import android.os.Build
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +34,7 @@ import coil.imageLoader
 import com.sakethh.jetspacer.common.utils.Constants
 import com.sakethh.jetspacer.domain.SettingType
 import com.sakethh.jetspacer.ui.GlobalSettings
+import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.screens.home.settings.SettingsScreenViewModel.dataStore
 import com.sakethh.jetspacer.ui.screens.home.settings.components.SettingsCredentialsItem
 import com.sakethh.jetspacer.ui.screens.home.settings.components.SettingsItem
@@ -41,7 +44,8 @@ import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
 @Composable
-fun SettingsScreen(navController: NavController) {
+fun SettingsScreen() {
+    val navController: NavController = LocalNavController.current
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -56,7 +60,7 @@ fun SettingsScreen(navController: NavController) {
             IconButton(onClick = {
                 navController.navigateUp()
             }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                Icon(Icons.Filled.ArrowBack, null)
             }
         })
     }) {
@@ -192,6 +196,9 @@ fun SettingsScreen(navController: NavController) {
                             coroutineScope
                         )
                     })
+            }
+            item {
+                Spacer(Modifier.height(150.dp))
             }
         }
     }

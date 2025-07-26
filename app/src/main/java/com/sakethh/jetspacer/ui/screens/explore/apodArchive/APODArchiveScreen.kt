@@ -19,7 +19,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.CalendarLocale
@@ -107,7 +107,7 @@ fun APODArchiveScreen(navController: NavController) {
                 IconButton(onClick = {
                     navController.navigateUp()
                 }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                    Icon(Icons.Filled.ArrowBack, null)
                 }
             }, actions = {
                 if (apodArchiveState.error)

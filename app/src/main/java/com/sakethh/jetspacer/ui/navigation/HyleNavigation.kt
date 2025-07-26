@@ -5,9 +5,9 @@ import kotlinx.serialization.Serializable
 
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
-sealed interface JetSpacerNavigation {
+sealed interface HyleNavigation {
     @Serializable
-    sealed interface Root : JetSpacerNavigation {
+    sealed interface Root : HyleNavigation {
         @Serializable
         data object Latest : Root
 
@@ -15,21 +15,21 @@ sealed interface JetSpacerNavigation {
         data object Explore : Root
 
         @Serializable
-        data object Headlines : Root
+        data object Collections : Root
 
         @Serializable
-        data object Collections : Root
+        data object Settings : Root
 
     }
 
     @Serializable
-    sealed interface Latest : JetSpacerNavigation {
+    sealed interface Latest : HyleNavigation {
         @Serializable
         data object Settings : Latest
     }
 
     @Serializable
-    sealed interface Explore : JetSpacerNavigation {
+    sealed interface Explore : HyleNavigation {
 
         @Serializable
         data object APODArchiveScreen
@@ -45,7 +45,7 @@ sealed interface JetSpacerNavigation {
     }
 
     @Serializable
-    sealed interface Headlines : JetSpacerNavigation {
+    sealed interface Headlines : HyleNavigation {
         @Serializable
         data class TopHeadlineDetailScreenRoute(
             val encodedString: String
