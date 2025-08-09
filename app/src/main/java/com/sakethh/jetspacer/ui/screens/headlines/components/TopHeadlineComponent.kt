@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,9 +26,11 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -45,7 +48,7 @@ import com.sakethh.jetspacer.ui.components.pulsateEffect
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TopHeadlineComponent(
-    article: Article, onImgClick: () -> Unit, onItemClick: () -> Unit
+    article: Article, colors: List<androidx.compose.ui.graphics.Color>, onItemClick: () -> Unit
 ) {
     val context = LocalContext.current
     val localClipboardManager = LocalClipboardManager.current
@@ -64,15 +67,24 @@ fun TopHeadlineComponent(
     }
     Column(
         modifier = Modifier
+            .then(
+                if (colors.isNotEmpty()) Modifier.background(
+                    alpha = 0.115f,
+                    brush = Brush.radialGradient(
+                        colors = colors
+                    ),
+                ) else Modifier
+            )
             .pulsateEffect()
-            .padding(bottom = 7.5.dp, start = 7.5.dp, end = 7.5.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .clickable {
+            .clickable(onClick = {
                 onItemClick()
-            }
-            .padding(top = 7.5.dp, start = 7.5.dp, end = 7.5.dp)
+            }, interactionSource = remember {
+                MutableInteractionSource()
+            }, indication = null)
+            .padding(top = 7.5.dp)
             .fillMaxWidth()
-            .wrapContentHeight()) {
+            .wrapContentHeight()
+            .padding(top = 7.5.dp, start = 15.dp, end = 15.dp)) {
         if (article.urlToImage.isNotEmpty()) {
             AsyncImage(
                 model = ImageRequest.Builder(context).data(article.urlToImage).crossfade(true)

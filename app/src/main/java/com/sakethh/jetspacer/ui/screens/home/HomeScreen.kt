@@ -63,6 +63,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -83,7 +85,11 @@ import kotlinx.serialization.json.Json
 fun HomeScreen() {
     val navController: NavController = LocalNavController.current
     val context = LocalContext.current
-    val homeScreenViewModel: HomeScreenViewModel = viewModel()
+    val homeScreenViewModel: HomeScreenViewModel = viewModel(factory = viewModelFactory {
+        initializer {
+            HomeScreenViewModel(context)
+        }
+    })
     val apodDataState = homeScreenViewModel.apodState
     val epicDataState = homeScreenViewModel.epicState
     val isAPODBtmSheetVisible = rememberSaveable {
@@ -382,9 +388,9 @@ fun HomeScreen() {
                 Spacer(Modifier.height(15.dp))
             }
             item {
-                Label(text = "Headlines", modifier = commonModifier.padding(bottom = 7.5.dp))
+                Label(text = "Headlines", modifier = commonModifier)
             }
-            items(items = topHeadlinesState.value.data) { headline ->
+            items(items = topHeadlinesState.value.data) { (headline, colors) ->
                 TopHeadlineComponent(
                     article = Article(
                     author = headline.author,
@@ -395,9 +401,7 @@ fun HomeScreen() {
                     title = headline.title,
                     url = headline.url,
                     urlToImage = headline.imageUrl
-                ), onImgClick = {
-
-                }, onItemClick = {
+                ), colors = colors, onItemClick = {
                     navController.navigate(
                         HyleNavigation.Headlines.TopHeadlineDetailScreenRoute(
                             encodedString = Json.encodeToString(
@@ -412,7 +416,7 @@ fun HomeScreen() {
                     LinearWavyProgressIndicator(
                         modifier = Modifier
                             .padding(
-                                top = 45.dp, start = 25.dp, end = 25.dp, bottom = 150.dp
+                                top = 45.dp, start = 25.dp, end = 25.dp, bottom = 250.dp
                             )
                             .fillMaxWidth()
                     )
@@ -445,7 +449,7 @@ fun HomeScreen() {
         }
         LaunchedEffect(lazyColumnState.canScrollForward) {
             if (!lazyColumnState.canScrollForward && !topHeadlinesState.value.reachedMaxHeadlines && !topHeadlinesState.value.isLoading && !topHeadlinesState.value.error) {
-                homeScreenViewModel.retrievePaginatedTopHeadlines()
+                homeScreenViewModel.retrievePaginatedTopHeadlines(context)
             }
         }
     }

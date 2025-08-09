@@ -11,7 +11,7 @@ sealed interface Response<T> {
     data class Loading<T>(val msg: String = "") : Response<T>
 }
 
-fun <T> Response<T>.onSuccess(init:(T)-> Unit): Response<T> {
+suspend fun <T> Response<T>.onSuccess(init:suspend (T)-> Unit): Response<T> {
     if (this is Response.Success){
         init(this.data)
     }

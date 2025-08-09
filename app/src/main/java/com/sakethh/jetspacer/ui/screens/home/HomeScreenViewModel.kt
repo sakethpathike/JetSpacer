@@ -1,10 +1,16 @@
 package com.sakethh.jetspacer.ui.screens.home
 
+import android.content.Context
+import android.graphics.drawable.BitmapDrawable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.palette.graphics.Palette
+import coil.ImageLoader
+import coil.request.ImageRequest
 import com.sakethh.jetspacer.HyleApplication
 import com.sakethh.jetspacer.common.Network
 import com.sakethh.jetspacer.data.repository.TopHeadlinesDataImplementation
@@ -29,69 +35,92 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class HomeScreenViewModel(
+    context: Context,
     private val topHeadlinesRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation(
         Network.ktorClient, topHeadlinesDao = HyleApplication.getLocalDb().topHeadlinesDao
     ),
     fetchCurrentAPODUseCase: FetchCurrentAPODUseCase = FetchCurrentAPODUseCase(),
     fetchCurrentEPICDataUseCase: FetchCurrentEPICDataUseCase = FetchCurrentEPICDataUseCase()
-) :
-    ViewModel() {
-    val topHeadLinesState =
-        mutableStateOf(
-            NewsScreenState(
-                isLoading = true,
-                data = emptyList(),
-                error = false,
-                reachedMaxHeadlines = false, statusCode = 0, statusDescription = ""
-            )
+) : ViewModel() {
+    val topHeadLinesState = mutableStateOf(
+        NewsScreenState(
+            isLoading = true,
+            data = emptyList(),
+            error = false,
+            reachedMaxHeadlines = false,
+            statusCode = 0,
+            statusDescription = ""
         )
+    )
 
     private var currentPage = 0
     private var newsAPIJob: Job? = null
-    fun retrievePaginatedTopHeadlines() {
+    fun retrievePaginatedTopHeadlines(context: Context) {
         newsAPIJob?.cancel()
 
         viewModelScope.launch {
-            newsAPIJob = topHeadlinesRepository.getTopHeadLinesFromRemoteAPI(10, ++currentPage).cancellable().onEach {
-               it.onLoading {
-                   topHeadLinesState.value =
-                       topHeadLinesState.value.copy(isLoading = true, error = false)
-               }.onFailure {
-                   topHeadLinesState.value =
-                       topHeadLinesState.value.copy(
-                           isLoading = false,
-                           error = true,
-                           statusCode = it.statusCode,
-                           statusDescription = it.statusDescription
-                       )
-                   UiChannel.pushUiEvent(
-                       uiEvent = UIEvent.ShowSnackbar(it.exceptionMessage),
-                       coroutineScope = viewModelScope
-                   )
-               }.onSuccess {
-                   topHeadLinesState.value = topHeadLinesState.value.copy(
-                       isLoading = false,
-                       data = topHeadLinesState.value.data + it.articles.map {
-                           Headline(
-                               author = it.author,
-                               content = it.content,
-                               description = it.description,
-                               publishedAt = it.publishedAt,
-                               sourceName = it.source.name,
-                               title = it.title,
-                               url = it.url,
-                               imageUrl = it.urlToImage,
-                               isBookmarked = false,
-                               page = 0
-                           )
-                       },
-                       error = false,
-                       reachedMaxHeadlines = it.articles.isEmpty()
-                   )
-               }
-            }.launchIn(viewModelScope)
+            newsAPIJob =
+                topHeadlinesRepository.getTopHeadLinesFromRemoteAPI(10, ++currentPage).cancellable()
+                    .onEach {
+                        it.onLoading {
+                            topHeadLinesState.value =
+                                topHeadLinesState.value.copy(isLoading = true, error = false)
+                        }.onFailure {
+                            topHeadLinesState.value = topHeadLinesState.value.copy(
+                                isLoading = false,
+                                error = true,
+                                statusCode = it.statusCode,
+                                statusDescription = it.statusDescription
+                            )
+                            UiChannel.pushUiEvent(
+                                uiEvent = UIEvent.ShowSnackbar(it.exceptionMessage),
+                                coroutineScope = viewModelScope
+                            )
+                        }.onSuccess {
+                            topHeadLinesState.value = topHeadLinesState.value.copy(
+                                isLoading = false,
+                                data = topHeadLinesState.value.data + it.articles.map {
+                                    val palette = fetchSwatchesFromUrl(context, it.urlToImage)
+                                    Headline(
+                                        author = it.author,
+                                        content = it.content,
+                                        description = it.description,
+                                        publishedAt = it.publishedAt,
+                                        sourceName = it.source.name,
+                                        title = it.title,
+                                        url = it.url,
+                                        imageUrl = it.urlToImage,
+                                        isBookmarked = false,
+                                        page = 0
+                                    ) to if (palette == null) {
+                                        emptyList()
+                                    } else {
+                                        buildList {
+                                            palette.vibrantSwatch?.rgb?.let { add(Color(it)) }
+                                            palette.lightVibrantSwatch?.rgb?.let { add(Color(it)) }
+                                            palette.mutedSwatch?.rgb?.let { add(Color(it)) }
+                                            palette.darkMutedSwatch?.rgb?.let { add(Color(it)) }
+                                            add(Color.Transparent)
+                                        }
+                                    }
+                                },
+                                error = false,
+                                reachedMaxHeadlines = it.articles.isEmpty()
+                            )
+                        }
+                    }.launchIn(viewModelScope)
         }
     }
+
+    suspend fun fetchSwatchesFromUrl(context: Context, url: String): Palette? {
+        val loader = ImageLoader(context)
+        val request = ImageRequest.Builder(context).data(url).allowHardware(false).build()
+
+        val result = loader.execute(request)
+        val bitmap = (result.drawable as? BitmapDrawable)?.bitmap
+        return if (bitmap == null) null else Palette.from(bitmap).generate()
+    }
+
     val apodState = mutableStateOf(
         APODState(
             isLoading = true, error = false, apod = ModifiedAPODDTO(
@@ -102,9 +131,7 @@ class HomeScreenViewModel(
                 mediaType = "",
                 title = "",
                 url = ""
-            ),
-            statusCode = 0,
-            statusDescription = ""
+            ), statusCode = 0, statusDescription = ""
         )
     )
 
@@ -119,7 +146,7 @@ class HomeScreenViewModel(
     )
 
     init {
-        retrievePaginatedTopHeadlines()
+        retrievePaginatedTopHeadlines(context)
         fetchCurrentAPODUseCase().onEach {
             when (val apodData = it) {
                 is Response.Failure -> {
@@ -141,9 +168,7 @@ class HomeScreenViewModel(
 
                 is Response.Success -> {
                     apodState.value = apodState.value.copy(
-                        isLoading = false,
-                        error = false,
-                        apod = ModifiedAPODDTO(
+                        isLoading = false, error = false, apod = ModifiedAPODDTO(
                             copyright = apodData.data.copyright ?: "",
                             date = apodData.data.date ?: "",
                             explanation = apodData.data.explanation ?: "",
