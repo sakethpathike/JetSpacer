@@ -11,7 +11,6 @@ import com.sakethh.jetspacer.ui.screens.explore.apodArchive.APODArchiveScreen
 import com.sakethh.jetspacer.ui.screens.explore.marsGallery.MarsGalleryScreen
 import com.sakethh.jetspacer.ui.screens.explore.search.SearchResultScreen
 import com.sakethh.jetspacer.ui.screens.headlines.TopHeadlineDetailScreen
-import com.sakethh.jetspacer.ui.screens.headlines.TopHeadlinesScreen
 import com.sakethh.jetspacer.ui.screens.home.HomeScreen
 import com.sakethh.jetspacer.ui.screens.home.settings.SettingsScreen
 
@@ -19,9 +18,9 @@ import com.sakethh.jetspacer.ui.screens.home.settings.SettingsScreen
 fun HyleContent() {
     val navController = LocalNavController.current
     NavHost(
-        navController = navController, startDestination = HyleNavigation.Root.Latest
+        navController = navController, startDestination = HyleNavigation.Root.Home
     ) {
-        composable<HyleNavigation.Root.Latest> {
+        composable<HyleNavigation.Root.Home> {
             HomeScreen()
         }
         composable<HyleNavigation.Root.Settings> {

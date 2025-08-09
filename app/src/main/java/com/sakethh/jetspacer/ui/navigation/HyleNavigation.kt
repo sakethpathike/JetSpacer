@@ -9,7 +9,7 @@ sealed interface HyleNavigation {
     @Serializable
     sealed interface Root : HyleNavigation {
         @Serializable
-        data object Latest : Root
+        data object Home : Root
 
         @Serializable
         data object Explore : Root

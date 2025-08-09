@@ -4,15 +4,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -24,9 +21,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.sakethh.jetspacer.R
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.screens.explore.ExploreScreenViewModel
 
@@ -38,9 +37,10 @@ fun BottomNavigationBar() {
     val navItems = remember {
         listOf(
             BottomNavigationItem(
-                name = "Latest",
-                route = HyleNavigation.Root.Latest,
-                selectedIcon = Icons.Filled.CameraAlt,
+                name = "Home",
+                route = HyleNavigation.Root.Home,
+                selectedIcon = Icons.Filled.Settings,
+                selectedDrawable = R.drawable.outline_planet_24,
                 nonSelectedIcon = Icons.Outlined.CameraAlt
             ),
             BottomNavigationItem(
@@ -65,8 +65,8 @@ fun BottomNavigationBar() {
     }
     AnimatedVisibility(
         visible = navItems.map { it.route }.any {
-            currentNavRoute?.hasRoute(it::class) == true
-        } && ExploreScreenViewModel.isSearchBarExpanded.value.not(),
+        currentNavRoute?.hasRoute(it::class) == true
+    } && ExploreScreenViewModel.isSearchBarExpanded.value.not(),
         enter = slideInVertically { it },
         exit = slideOutVertically { it }) {
         NavigationBar {
@@ -83,7 +83,14 @@ fun BottomNavigationBar() {
                         }
                     }
                 }, icon = {
-                    Icon(if (isSelected) it.selectedIcon else it.nonSelectedIcon, null)
+                    if (it.selectedDrawable != null) {
+                        Icon(
+                            painter = painterResource(it.selectedDrawable),
+                            contentDescription = null
+                        )
+                    } else {
+                        Icon(if (isSelected) it.selectedIcon else it.nonSelectedIcon, null)
+                    }
                 }, label = {
                     Text(
                         text = it.name,
@@ -96,5 +103,9 @@ fun BottomNavigationBar() {
 }
 
 data class BottomNavigationItem<T>(
-    val name: String, val route: T, val selectedIcon: ImageVector, val nonSelectedIcon: ImageVector
+    val name: String,
+    val route: T,
+    val selectedIcon: ImageVector,
+    val selectedDrawable: Int? = null,
+    val nonSelectedIcon: ImageVector
 )

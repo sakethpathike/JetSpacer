@@ -17,7 +17,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class FetchRemoteTopHeadlinesUseCase(
-    private val topHeadlinesRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation(),
     private val topHeadlinesCacheRepository: TopHeadlinesCacheRepository = TopHeadlineCacheImplementation()
 ) {
     operator fun invoke(pageSize: Int, pageNo: Int): Flow<Response<List<Headline>>> = flow {

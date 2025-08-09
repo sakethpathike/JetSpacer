@@ -44,8 +44,6 @@ import kotlinx.serialization.json.Json
 @Composable
 fun TopHeadlinesScreen(navController: NavController) {
     val topHeadlinesScreenViewModel = viewModel<TopHeadlinesScreenViewModel>()
-    val topHeadlinesState = topHeadlinesScreenViewModel.topHeadLinesState
-    val lazyColumnState = rememberLazyListState()
     Scaffold(topBar = {
         Column {
             TopAppBar(title = {
@@ -59,7 +57,6 @@ fun TopHeadlinesScreen(navController: NavController) {
                 )
             }, actions = {
                 IconButton(onClick = {
-                    topHeadlinesScreenViewModel.clearCacheAndRefresh()
                 }) {
                     Icon(imageVector = Icons.Default.ClearAll, contentDescription = null)
                 }
@@ -71,72 +68,9 @@ fun TopHeadlinesScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it),
-            state = lazyColumnState
         ) {
-            items(items = topHeadlinesState.value.data) { headline ->
-                val icon =
-                    if (headline.isBookmarked) Icons.Filled.BookmarkRemove else Icons.Outlined.BookmarkAdd
-                TopHeadlineComponent(
-                    article = Article(
-                        author = headline.author,
-                        content = headline.content,
-                        description = headline.description,
-                        publishedAt = headline.publishedAt,
-                        source = Source(id = "", name = headline.sourceName),
-                        title = headline.title,
-                        url = headline.url,
-                        urlToImage = headline.imageUrl
-                    ),
-                    onImgClick = {
 
-                    },
-                    onItemClick = {
-                        navController.navigate(
-                            HyleNavigation.Headlines.TopHeadlineDetailScreenRoute(
-                                encodedString = Json.encodeToString(
-                                    headline
-                                )
-                            )
-                        )
-                    }
-                )
-            }
-            if (topHeadlinesState.value.isLoading && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.error.not()) {
-                item {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    }
-                }
-            }
-            if (topHeadlinesState.value.error) {
-                item {
-                    Text(
-                        text = "${topHeadlinesState.value.statusCode}\n${topHeadlinesState.value.statusDescription}",
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(15.dp)
-                    )
-                }
-            }
-            if (topHeadlinesState.value.reachedMaxHeadlines) {
-                item {
-                    Text(
-                        text = "That's all the data found.",
-                        style = MaterialTheme.typography.titleSmall,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(15.dp)
-                    )
-                }
-            }
-            item {
-                Spacer(Modifier.height(150.dp))
-            }
         }
-        LaunchedEffect(lazyColumnState.canScrollForward) {
-            if (lazyColumnState.canScrollForward.not() && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.isLoading.not() && topHeadlinesState.value.error.not()) {
-                topHeadlinesScreenViewModel.retrievePaginatedTopHeadlines()
-            }
-        }
+
     }
 }
