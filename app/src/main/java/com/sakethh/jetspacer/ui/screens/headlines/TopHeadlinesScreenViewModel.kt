@@ -7,7 +7,6 @@ import com.sakethh.jetspacer.data.repository.TopHeadlinesDataImplementation
 import com.sakethh.jetspacer.domain.Response
 import com.sakethh.jetspacer.domain.repository.TopHeadlinesCacheRepository
 import com.sakethh.jetspacer.domain.repository.TopHeadlinesDataRepository
-import com.sakethh.jetspacer.domain.useCase.FetchRemoteTopHeadlinesUseCase
 import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 import kotlinx.coroutines.Job

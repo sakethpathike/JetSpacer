@@ -20,15 +20,10 @@ import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.rounded.ImageNotSupported
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,10 +37,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.graphics.shapes.pillStar
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.domain.model.article.Article
+import com.sakethh.jetspacer.ui.components.pulsateEffect
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -67,13 +62,17 @@ fun TopHeadlineComponent(
             .padding(10.dp)
             .size(20.dp)
     }
-    Column(modifier = Modifier
-        .clickable {
-            onItemClick()
-        }
-        .padding(start = 15.dp, end = 15.dp, top = 15.dp)
-        .fillMaxWidth()
-        .wrapContentHeight()) {
+    Column(
+        modifier = Modifier
+            .pulsateEffect()
+            .padding(bottom = 7.5.dp, start = 7.5.dp, end = 7.5.dp)
+            .clip(RoundedCornerShape(15.dp))
+            .clickable {
+                onItemClick()
+            }
+            .padding(top = 7.5.dp, start = 7.5.dp, end = 7.5.dp)
+            .fillMaxWidth()
+            .wrapContentHeight()) {
         if (article.urlToImage.isNotEmpty()) {
             AsyncImage(
                 model = ImageRequest.Builder(context).data(article.urlToImage).crossfade(true)
@@ -143,10 +142,9 @@ fun TopHeadlineComponent(
         )
         Row(
             modifier = Modifier
-                .padding(top = 10.dp)
+                .padding(top = 10.dp, bottom = 10.dp)
                 .fillMaxWidth()
-                .wrapContentHeight(),
-            verticalAlignment = Alignment.CenterVertically
+                .wrapContentHeight(), verticalAlignment = Alignment.CenterVertically
         ) {
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                 Row(
@@ -175,5 +173,4 @@ fun TopHeadlineComponent(
             }
         }
     }
-    HorizontalDivider(modifier = Modifier.padding(top = 12.dp, start = 7.5.dp, end = 7.5.dp),thickness = 1.dp, color = MaterialTheme.colorScheme.primary.copy(0.1f))
 }

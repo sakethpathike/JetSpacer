@@ -7,17 +7,5 @@ import com.sakethh.jetspacer.domain.repository.TopHeadlinesDataRepository
 import kotlinx.coroutines.launch
 
 open class TopHeadlineDetailScreenViewmodel(
-    private val topHeadlinesDataRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation()
 ) : ViewModel() {
-    fun bookmarkANewHeadline(id: Long) {
-        viewModelScope.launch {
-            topHeadlinesDataRepository.addANewHeadline(id)
-        }
-    }
-
-    fun deleteAnExistingHeadlineBookmark(id: Long) {
-        viewModelScope.launch {
-            topHeadlinesDataRepository.deleteAHeadline(id)
-        }
-    }
 }

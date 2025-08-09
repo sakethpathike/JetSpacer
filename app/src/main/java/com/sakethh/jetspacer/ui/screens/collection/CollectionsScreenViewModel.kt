@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class CollectionsScreenViewModel(
-    private val topHeadlinesDataRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation(),
     private val localAPODRepository: LocalAPODRepository = LocalAPODImplementation(),
     private val localRoverImagesRepository: LocalRoverImagesRepository = LocalRoverImagesImplementation()
 ) : ViewModel() {
@@ -39,11 +38,6 @@ class CollectionsScreenViewModel(
     )
 
     init {
-        viewModelScope.launch {
-            topHeadlinesDataRepository.getBookmarkedHeadlines().collectLatest {
-                _bookMarkedTopHeadlinesData.emit(it)
-            }
-        }
         viewModelScope.launch {
             localAPODRepository.getAllBookmarkedAPOD().collectLatest {
                 _bookMarkedAPODData.emit(it)

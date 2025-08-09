@@ -5,12 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.HyleApplication
+import com.sakethh.jetspacer.common.Network
 import com.sakethh.jetspacer.data.repository.TopHeadlinesDataImplementation
 import com.sakethh.jetspacer.domain.Response
+import com.sakethh.jetspacer.domain.model.Headline
+import com.sakethh.jetspacer.domain.onFailure
+import com.sakethh.jetspacer.domain.onLoading
+import com.sakethh.jetspacer.domain.onSuccess
 import com.sakethh.jetspacer.domain.repository.TopHeadlinesDataRepository
 import com.sakethh.jetspacer.domain.useCase.FetchCurrentAPODUseCase
 import com.sakethh.jetspacer.domain.useCase.FetchCurrentEPICDataUseCase
-import com.sakethh.jetspacer.domain.useCase.FetchRemoteTopHeadlinesUseCase
 import com.sakethh.jetspacer.ui.screens.headlines.NewsScreenState
 import com.sakethh.jetspacer.ui.screens.home.state.apod.APODState
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
@@ -21,10 +26,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class HomeScreenViewModel(
-    private val topHeadlinesRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation(),
-    private val fetchRemoteTopHeadlinesUseCase: FetchRemoteTopHeadlinesUseCase = FetchRemoteTopHeadlinesUseCase(),
+    private val topHeadlinesRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation(
+        Network.ktorClient, topHeadlinesDao = HyleApplication.getLocalDb().topHeadlinesDao
+    ),
     fetchCurrentAPODUseCase: FetchCurrentAPODUseCase = FetchCurrentAPODUseCase(),
     fetchCurrentEPICDataUseCase: FetchCurrentEPICDataUseCase = FetchCurrentEPICDataUseCase()
 ) :
@@ -43,43 +50,47 @@ class HomeScreenViewModel(
     private var newsAPIJob: Job? = null
     fun retrievePaginatedTopHeadlines() {
         newsAPIJob?.cancel()
-        newsAPIJob = fetchRemoteTopHeadlinesUseCase(10, ++currentPage).cancellable().onEach {
-            when (val topHeadLinesData = it) {
-                is Response.Failure -> {
-                    topHeadLinesState.value =
-                        topHeadLinesState.value.copy(
-                            isLoading = false,
-                            error = true,
-                            statusCode = topHeadLinesData.statusCode,
-                            statusDescription = topHeadLinesData.statusDescription
-                        )
-                    UiChannel.pushUiEvent(
-                        uiEvent = UIEvent.ShowSnackbar(topHeadLinesData.exceptionMessage),
-                        coroutineScope = viewModelScope
-                    )
-                }
 
-                is Response.Loading -> {
-                    topHeadLinesState.value =
-                        topHeadLinesState.value.copy(isLoading = true, error = false)
-                }
-
-                is Response.Success -> {
-                    topHeadLinesState.value = topHeadLinesState.value.copy(
-                        isLoading = false,
-                        data = topHeadLinesData.data.dropLastWhile {
-                            it.id == (-1).toLong()
-                        },
-                        error = false,
-                        reachedMaxHeadlines = try {
-                            topHeadLinesData.data.last().id == (-1).toLong()
-                        } catch (_: Exception) {
-                            false
-                        }
-                    )
-                }
-            }
-        }.launchIn(viewModelScope)
+        viewModelScope.launch {
+            newsAPIJob = topHeadlinesRepository.getTopHeadLinesFromRemoteAPI(10, ++currentPage).cancellable().onEach {
+               it.onLoading {
+                   topHeadLinesState.value =
+                       topHeadLinesState.value.copy(isLoading = true, error = false)
+               }.onFailure {
+                   topHeadLinesState.value =
+                       topHeadLinesState.value.copy(
+                           isLoading = false,
+                           error = true,
+                           statusCode = it.statusCode,
+                           statusDescription = it.statusDescription
+                       )
+                   UiChannel.pushUiEvent(
+                       uiEvent = UIEvent.ShowSnackbar(it.exceptionMessage),
+                       coroutineScope = viewModelScope
+                   )
+               }.onSuccess {
+                   topHeadLinesState.value = topHeadLinesState.value.copy(
+                       isLoading = false,
+                       data = topHeadLinesState.value.data + it.articles.map {
+                           Headline(
+                               author = it.author,
+                               content = it.content,
+                               description = it.description,
+                               publishedAt = it.publishedAt,
+                               sourceName = it.source.name,
+                               title = it.title,
+                               url = it.url,
+                               imageUrl = it.urlToImage,
+                               isBookmarked = false,
+                               page = 0
+                           )
+                       },
+                       error = false,
+                       reachedMaxHeadlines = it.articles.isEmpty()
+                   )
+               }
+            }.launchIn(viewModelScope)
+        }
     }
     val apodState = mutableStateOf(
         APODState(

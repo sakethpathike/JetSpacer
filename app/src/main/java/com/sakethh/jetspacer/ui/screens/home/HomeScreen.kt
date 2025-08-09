@@ -42,6 +42,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -220,14 +221,16 @@ fun HomeScreen() {
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             epicDataState.data.forEach {
-                                Box(
-                                    modifier = Modifier
-                                        .padding(start = 5.dp, end = 5.dp)
-                                        .height(5.dp)
-                                        .width(if (it.timeWhenImageWasCaptured == currentEPICCapturedTime) 50.dp else 35.dp)
-                                        .clip(RoundedCornerShape(25.dp))
-                                        .background(if (it.timeWhenImageWasCaptured == currentEPICCapturedTime) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer)
-                                )
+                                key(it.timeWhenImageWasCaptured) {
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(start = 5.dp, end = 5.dp)
+                                            .height(5.dp)
+                                            .width(if (it.timeWhenImageWasCaptured == currentEPICCapturedTime) 50.dp else 35.dp)
+                                            .clip(RoundedCornerShape(25.dp))
+                                            .background(if (it.timeWhenImageWasCaptured == currentEPICCapturedTime) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer)
+                                    )
+                                }
                             }
                         }
                     }
@@ -341,7 +344,6 @@ fun HomeScreen() {
                         apodDataState.value.apod.title.trim(),
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.primary,
                         modifier = commonModifier
                     )
                 }
@@ -380,7 +382,7 @@ fun HomeScreen() {
                 Spacer(Modifier.height(15.dp))
             }
             item {
-                Label(text = "Headlines", modifier = commonModifier)
+                Label(text = "Headlines", modifier = commonModifier.padding(bottom = 7.5.dp))
             }
             items(items = topHeadlinesState.value.data) { headline ->
                 TopHeadlineComponent(
@@ -407,7 +409,13 @@ fun HomeScreen() {
             }
             if (topHeadlinesState.value.isLoading && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.error.not()) {
                 item {
-                    LinearWavyProgressIndicator(modifier = Modifier.padding(top = 45.dp, start = 25.dp, end = 25.dp, bottom = 45.dp).fillMaxWidth())
+                    LinearWavyProgressIndicator(
+                        modifier = Modifier
+                            .padding(
+                                top = 45.dp, start = 25.dp, end = 25.dp, bottom = 150.dp
+                            )
+                            .fillMaxWidth()
+                    )
                 }
             }
             if (topHeadlinesState.value.error) {
@@ -436,7 +444,7 @@ fun HomeScreen() {
             }
         }
         LaunchedEffect(lazyColumnState.canScrollForward) {
-            if (lazyColumnState.canScrollForward.not() && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.isLoading.not() && topHeadlinesState.value.error.not()) {
+            if (!lazyColumnState.canScrollForward && !topHeadlinesState.value.reachedMaxHeadlines && !topHeadlinesState.value.isLoading && !topHeadlinesState.value.error) {
                 homeScreenViewModel.retrievePaginatedTopHeadlines()
             }
         }

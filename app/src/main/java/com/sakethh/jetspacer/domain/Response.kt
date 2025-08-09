@@ -10,3 +10,23 @@ sealed interface Response<T> {
 
     data class Loading<T>(val msg: String = "") : Response<T>
 }
+
+fun <T> Response<T>.onSuccess(init:(T)-> Unit): Response<T> {
+    if (this is Response.Success){
+        init(this.data)
+    }
+    return this
+}
+
+fun <T> Response<T>.onFailure(init:(Response.Failure<T>)-> Unit): Response<T> {
+    if (this is Response.Failure){
+        init(this)
+    }
+    return this
+}
+fun <T> Response<T>.onLoading(init:()-> Unit): Response<T> {
+    if (this is Response.Loading){
+        init()
+    }
+    return this
+}
