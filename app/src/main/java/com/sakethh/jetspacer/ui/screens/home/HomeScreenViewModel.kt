@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.ui.screens.home
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -42,16 +43,20 @@ class HomeScreenViewModel(
     fetchCurrentAPODUseCase: FetchCurrentAPODUseCase = FetchCurrentAPODUseCase(),
     fetchCurrentEPICDataUseCase: FetchCurrentEPICDataUseCase = FetchCurrentEPICDataUseCase()
 ) : ViewModel() {
+
+    private val headlines = mutableStateListOf<Pair<Headline, List<Color>>>()
+
     val topHeadLinesState = mutableStateOf(
         NewsScreenState(
             isLoading = true,
-            data = emptyList(),
+            data = headlines,
             error = false,
             reachedMaxHeadlines = false,
             statusCode = 0,
             statusDescription = ""
         )
     )
+
 
     private var currentPage = 0
     private var newsAPIJob: Job? = null
@@ -131,7 +136,7 @@ class HomeScreenViewModel(
                 mediaType = "",
                 title = "",
                 url = ""
-            ), statusCode = 0, statusDescription = ""
+            ) to emptyList(), statusCode = 0, statusDescription = ""
         )
     )
 
@@ -176,8 +181,23 @@ class HomeScreenViewModel(
                             mediaType = apodData.data.mediaType ?: "",
                             title = apodData.data.title ?: "",
                             url = apodData.data.url ?: ""
-                        )
-                    )
+                        ) to run {
+                            if (apodData.data.url == null) return@run emptyList()
+                            val palette = fetchSwatchesFromUrl(context, apodData.data.url)
+                            if (palette == null) {
+                                emptyList()
+                            } else {
+                                buildList {
+                                    add(Color.Transparent)
+                                    add(Color.Transparent)
+                                    palette.vibrantSwatch?.rgb?.let { add(Color(it)) }
+                                    palette.lightVibrantSwatch?.rgb?.let { add(Color(it)) }
+                                    palette.mutedSwatch?.rgb?.let { add(Color(it)) }
+                                    palette.darkMutedSwatch?.rgb?.let { add(Color(it)) }
+                                    add(Color.Transparent)
+                                }
+                            }
+                        })
                 }
             }
         }.launchIn(viewModelScope)

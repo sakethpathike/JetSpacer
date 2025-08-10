@@ -8,18 +8,15 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.rounded.ImageNotSupported
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -44,6 +41,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.domain.model.article.Article
 import com.sakethh.jetspacer.ui.components.pulsateEffect
+import com.sakethh.jetspacer.ui.utils.iconModifier
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -54,17 +52,6 @@ fun TopHeadlineComponent(
     val localClipboardManager = LocalClipboardManager.current
     val localUriHandler = LocalUriHandler.current
     val colorScheme = MaterialTheme.colorScheme
-    val iconModifier: (onClick: () -> Unit) -> Modifier = {
-        Modifier
-            .padding(start = 5.dp, end = 5.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .clickable {
-                it()
-            }
-            .background(colorScheme.primary.copy(0.1f))
-            .padding(10.dp)
-            .size(20.dp)
-    }
     Column(
         modifier = Modifier
             .then(
@@ -84,7 +71,8 @@ fun TopHeadlineComponent(
             .padding(top = 7.5.dp)
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(top = 7.5.dp, start = 15.dp, end = 15.dp)) {
+            .padding(top = 7.5.dp, start = 15.dp, end = 15.dp)
+    ) {
         if (article.urlToImage.isNotEmpty()) {
             AsyncImage(
                 model = ImageRequest.Builder(context).data(article.urlToImage).crossfade(true)
@@ -101,22 +89,6 @@ fun TopHeadlineComponent(
                     ),
                 contentScale = ContentScale.Crop
             )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(bottomStart = 15.dp, bottomEnd = 15.dp))
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    imageVector = Icons.Rounded.ImageNotSupported,
-                    contentDescription = null,
-                    modifier = Modifier.size(50.dp)
-                )
-            }
         }
         Text(
             modifier = Modifier
@@ -163,16 +135,16 @@ fun TopHeadlineComponent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        modifier = iconModifier {
+                        modifier = Modifier.iconModifier(colorScheme) {
                             localUriHandler.openUri(article.url)
                         }, imageVector = Icons.Outlined.OpenInBrowser, contentDescription = null
                     )
                     Icon(
-                        modifier = iconModifier {
+                        modifier = Modifier.iconModifier(colorScheme) {
                             localClipboardManager.setText(AnnotatedString(article.url))
                         }, imageVector = Icons.Outlined.ContentCopy, contentDescription = null
                     )
-                    Icon(modifier = iconModifier {
+                    Icon(modifier = Modifier.iconModifier(colorScheme) {
                         val intent = Intent().apply {
                             action = Intent.ACTION_SEND
                             putExtra(Intent.EXTRA_TEXT, article.url)

@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.ui.screens.home
 
+import android.content.Intent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,11 +30,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Copyright
+import androidx.compose.material.icons.outlined.OpenInBrowser
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -52,11 +57,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -72,10 +84,11 @@ import com.sakethh.jetspacer.domain.model.article.Article
 import com.sakethh.jetspacer.domain.model.article.Source
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.Label
+import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
-import com.sakethh.jetspacer.ui.screens.explore.apodArchive.apodBtmSheet.APODBtmSheet
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.screens.headlines.components.TopHeadlineComponent
+import com.sakethh.jetspacer.ui.utils.iconModifier
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -90,7 +103,7 @@ fun HomeScreen() {
             HomeScreenViewModel(context)
         }
     })
-    val apodDataState = homeScreenViewModel.apodState
+    val apodDataState = homeScreenViewModel.apodState.value
     val epicDataState = homeScreenViewModel.epicState
     val isAPODBtmSheetVisible = rememberSaveable {
         mutableStateOf(false)
@@ -106,6 +119,8 @@ fun HomeScreen() {
     var currentEPICCapturedTime by rememberSaveable {
         mutableStateOf("")
     }
+    val localClipboardManager = LocalClipboardManager.current
+    val localUriHandler = LocalUriHandler.current
 
     val sliderValue = rememberSaveable {
         mutableFloatStateOf(0f)
@@ -113,6 +128,7 @@ fun HomeScreen() {
     val topHeadlinesState = homeScreenViewModel.topHeadLinesState
     val colorScheme = MaterialTheme.colorScheme
     val lazyColumnState = rememberLazyListState()
+    val localDensity = LocalDensity.current
 
     LaunchedEffect(epicDataState.data, horizontalPager.currentPage) {
         currentEPICCapturedTime = try {
@@ -270,7 +286,7 @@ fun HomeScreen() {
             }
 
             item {
-                if (apodDataState.value.isLoading || apodDataState.value.error) {
+                if (apodDataState.isLoading || apodDataState.error) {
                     Box(
                         modifier = commonModifier
                             .fillMaxWidth()
@@ -279,106 +295,164 @@ fun HomeScreen() {
                             .background(MaterialTheme.colorScheme.primary.copy(0.25f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (apodDataState.value.isLoading) {
+                        if (apodDataState.isLoading) {
                             ContainedLoadingIndicator()
                         } else {
                             Text(
-                                text = "${apodDataState.value.statusCode}\n${apodDataState.value.statusDescription}",
+                                text = "${apodDataState.statusCode}\n${apodDataState.statusDescription}",
                                 style = MaterialTheme.typography.titleSmall,
                                 textAlign = TextAlign.Center
                             )
                         }
                     }
                 } else {
-                    AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(apodDataState.value.apod.url.trim()).crossfade(true).build(),
-                        contentDescription = null,
-                        modifier = commonModifier
-                            .clip(RoundedCornerShape(15.dp))
-                            .border(
-                                1.5.dp,
-                                LocalContentColor.current.copy(0.25f),
-                                RoundedCornerShape(15.dp)
-                            )
-                            .clickable {
-                                isAPODBtmSheetVisible.value = true
-                                coroutineScope.launch {
-                                    apodBtmSheetState.show()
+                    val imageHeight = rememberSaveable {
+                        mutableStateOf(1)
+                    }
+                    Column(
+                        if (apodDataState.apod.second.isNotEmpty()) {
+                        Modifier.drawWithCache {
+                            onDrawWithContent {
+                                drawRect(
+                                    alpha = 0.115f,brush = Brush.linearGradient(
+                                        colors = apodDataState.apod.second
+                                    )
+                                )
+                                drawContent()
+                            }
+                        }
+                    } else {
+                        Modifier
+                    }) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                            .data(apodDataState.apod.first.url.trim()).crossfade(true).build(),
+                            contentDescription = null,
+                            modifier = commonModifier
+                                .onGloballyPositioned {
+                                    imageHeight.value = it.size.height
                                 }
-                            },
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            }
-            if (apodDataState.value.apod.date.trim().isNotBlank()) {
-                item {
-                    Spacer(Modifier.height(15.dp))
-                    Box(modifier = commonModifier) {
-                        HeadlineDetailComponent(
-                            string = apodDataState.value.apod.date.trim(),
-                            imageVector = Icons.Outlined.CalendarToday,
-                            fontSize = 14.sp,
-                            iconSize = 20.dp
+                                .clip(RoundedCornerShape(15.dp))
+                                .border(
+                                    1.5.dp,
+                                    LocalContentColor.current.copy(0.25f),
+                                    RoundedCornerShape(15.dp)
+                                )
+                                .clickable {
+                                    isAPODBtmSheetVisible.value = true
+                                    coroutineScope.launch {
+                                        apodBtmSheetState.show()
+                                    }
+                                },
+                            contentScale = ContentScale.Crop
                         )
-                    }
-                }
-            }
-            if (apodDataState.value.apod.copyright.trim().isNotBlank()) {
-                item {
-                    Spacer(Modifier.height(5.dp))
-                    Box(commonModifier) {
-                        HeadlineDetailComponent(
-                            string = apodDataState.value.apod.copyright.trim().replace("\n", ""),
-                            imageVector = Icons.Outlined.Copyright,
-                            fontSize = 14.sp,
-                            iconSize = 20.dp
-                        )
-                    }
-                }
-            }
-            if (apodDataState.value.apod.title.trim().isNotBlank()) {
-                item {
-                    Spacer(Modifier.height(15.dp))
-                    Text(
-                        modifier = commonModifier,
-                        text = "Title",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Text(
-                        apodDataState.value.apod.title.trim(),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontSize = 16.sp,
-                        modifier = commonModifier
-                    )
-                }
-            }
-            if (apodDataState.value.apod.explanation.trim().isNotBlank()) {
-                item {
-                    val isExplanationExpanded = rememberSaveable {
-                        mutableStateOf(false)
-                    }
-                    Spacer(Modifier.height(15.dp))
-                    Text(
-                        modifier = commonModifier,
-                        text = "Explanation",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Box(
-                        modifier = commonModifier
-                    ) {
-                        Text(
-                            text = apodDataState.value.apod.explanation.trim(),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontSize = 16.sp,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = if (isExplanationExpanded.value) Int.MAX_VALUE else 3,
-                            modifier = Modifier.clickable {
-                                isExplanationExpanded.value = !isExplanationExpanded.value
-                            })
+
+                        if (apodDataState.apod.first.date.trim().isNotBlank()) {
+                            Spacer(Modifier.height(15.dp))
+                            Box(modifier = commonModifier) {
+                                HeadlineDetailComponent(
+                                    string = apodDataState.apod.first.date.trim(),
+                                    imageVector = Icons.Outlined.CalendarToday,
+                                    fontSize = 14.sp,
+                                    iconSize = 20.dp
+                                )
+                            }
+                        }
+
+                        if (apodDataState.apod.first.copyright.trim().isNotBlank()) {
+                            Spacer(Modifier.height(5.dp))
+                            Box(commonModifier) {
+                                HeadlineDetailComponent(
+                                    string = apodDataState.apod.first.copyright.trim()
+                                        .replace("\n", ""),
+                                    imageVector = Icons.Outlined.Copyright,
+                                    fontSize = 14.sp,
+                                    iconSize = 20.dp
+                                )
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(start = 10.dp, top = 10.dp)
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .pulsateEffect(0.85f)
+                                    .iconModifier(colorScheme) {
+                                        localClipboardManager.setText(AnnotatedString(apodDataState.apod.first.url))
+                                    },
+                                imageVector = Icons.Outlined.ContentCopy,
+                                contentDescription = null
+                            )
+                            Icon(
+                                modifier = Modifier
+                                    .pulsateEffect(0.85f)
+                                    .iconModifier(colorScheme) {
+                                        val intent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(
+                                                Intent.EXTRA_TEXT, apodDataState.apod.first.url
+                                            )
+                                            type = "text/plain"
+                                        }
+                                        val shareIntent = Intent.createChooser(intent, null)
+                                        context.startActivity(shareIntent)
+                                    }, imageVector = Icons.Outlined.Share, contentDescription = null
+                            )
+                            Icon(
+                                modifier = Modifier
+                                    .pulsateEffect(0.85f)
+                                    .iconModifier(colorScheme) {
+                                        localUriHandler.openUri(apodDataState.apod.first.url)
+                                    },
+                                imageVector = Icons.Outlined.OpenInBrowser,
+                                contentDescription = null
+                            )
+                        }
+
+                        if (apodDataState.apod.first.title.trim().isNotBlank()) {
+                            Spacer(Modifier.height(15.dp))
+                            Text(
+                                modifier = commonModifier,
+                                text = "Title",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            Text(
+                                apodDataState.apod.first.title.trim(),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontSize = 16.sp,
+                                modifier = commonModifier
+                            )
+                        }
+
+                        if (apodDataState.apod.first.explanation.trim().isNotBlank()) {
+                            val isExplanationExpanded = rememberSaveable {
+                                mutableStateOf(false)
+                            }
+                            Spacer(Modifier.height(15.dp))
+                            Text(
+                                modifier = commonModifier,
+                                text = "Explanation",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Box(
+                                modifier = commonModifier
+                            ) {
+                                Text(
+                                    text = apodDataState.apod.first.explanation.trim(),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontSize = 16.sp,
+                                    overflow = TextOverflow.Ellipsis,
+                                    maxLines = if (isExplanationExpanded.value) Int.MAX_VALUE else 3,
+                                    modifier = Modifier.clickable {
+                                        isExplanationExpanded.value = !isExplanationExpanded.value
+                                    })
+                            }
+                        }
                     }
                 }
             }
@@ -393,23 +467,23 @@ fun HomeScreen() {
             items(items = topHeadlinesState.value.data) { (headline, colors) ->
                 TopHeadlineComponent(
                     article = Article(
-                    author = headline.author,
-                    content = headline.content,
-                    description = headline.description,
-                    publishedAt = headline.publishedAt,
-                    source = Source(id = "", name = headline.sourceName),
-                    title = headline.title,
-                    url = headline.url,
-                    urlToImage = headline.imageUrl
-                ), colors = colors, onItemClick = {
-                    navController.navigate(
-                        HyleNavigation.Headlines.TopHeadlineDetailScreenRoute(
-                            encodedString = Json.encodeToString(
-                                headline
+                        author = headline.author,
+                        content = headline.content,
+                        description = headline.description,
+                        publishedAt = headline.publishedAt,
+                        source = Source(id = "", name = headline.sourceName),
+                        title = headline.title,
+                        url = headline.url,
+                        urlToImage = headline.imageUrl
+                    ), colors = colors, onItemClick = {
+                        navController.navigate(
+                            HyleNavigation.Headlines.TopHeadlineDetailScreenRoute(
+                                encodedString = Json.encodeToString(
+                                    headline
+                                )
                             )
                         )
-                    )
-                })
+                    })
             }
             if (topHeadlinesState.value.isLoading && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.error.not()) {
                 item {
@@ -453,9 +527,4 @@ fun HomeScreen() {
             }
         }
     }
-    APODBtmSheet(
-        modifiedAPODDTO = apodDataState.value.apod,
-        visible = isAPODBtmSheetVisible,
-        btmSheetState = apodBtmSheetState
-    )
 }

@@ -43,7 +43,6 @@ import com.sakethh.jetspacer.domain.CollectionType
 import com.sakethh.jetspacer.domain.model.rover_latest_images.Camera
 import com.sakethh.jetspacer.domain.model.rover_latest_images.LatestPhoto
 import com.sakethh.jetspacer.domain.model.rover_latest_images.Rover
-import com.sakethh.jetspacer.ui.screens.explore.apodArchive.apodBtmSheet.APODBtmSheet
 import com.sakethh.jetspacer.ui.screens.explore.marsGallery.RoverImageDetailsBtmSheet
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.ui.utils.customMutableRememberSavable
@@ -276,11 +275,6 @@ fun CollectionsScreen(navController: NavController) {
             }
         }
     }
-    APODBtmSheet(
-        modifiedAPODDTO = selectedAPODData.value,
-        visible = isAPODBtmSheetVisible,
-        btmSheetState = apodBtmSheetState
-    )
     RoverImageDetailsBtmSheet(
         image = selectedRoverImage.value,
         visible = isRoverImageBtmSheetVisible,

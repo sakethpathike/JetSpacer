@@ -57,7 +57,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.sakethh.jetspacer.ui.screens.explore.apodArchive.apodBtmSheet.APODBtmSheet
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.ui.utils.customMutableRememberSavable
 import kotlinx.coroutines.launch
@@ -200,11 +199,6 @@ fun APODArchiveScreen(navController: NavController) {
             }
         }
     }
-    APODBtmSheet(
-        modifiedAPODDTO = selectedAPODData.value,
-        visible = isBtmSheetVisible,
-        btmSheetState = btmSheetState
-    )
     if (isDateRangePickerDialogVisible.value) {
 
         val dateRangePickerState =

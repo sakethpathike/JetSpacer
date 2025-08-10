@@ -23,11 +23,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SearchBar
@@ -55,13 +57,13 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.InfoCard
+import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.screens.explore.search.SearchResultComponent
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
-import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ExploreScreen() {
     val navController: NavController = LocalNavController.current
@@ -80,12 +82,12 @@ fun ExploreScreen() {
                 ProvideTextStyle(MaterialTheme.typography.titleSmall) {
                     SearchBarDefaults.InputField(
                         placeholder = {
-                            Text(
-                                "Search in NASA Image Library",
-                                modifier = Modifier.basicMarquee(),
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                        },
+                        Text(
+                            "Search in NASA Image Library",
+                            modifier = Modifier.basicMarquee(),
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                    },
                         trailingIcon = {
                             if (ExploreScreenViewModel.isSearchBarExpanded.value) {
                                 IconButton(onClick = {
@@ -109,8 +111,7 @@ fun ExploreScreen() {
                         expanded = ExploreScreenViewModel.isSearchBarExpanded.value,
                         onExpandedChange = {
                             ExploreScreenViewModel.isSearchBarExpanded.value = it
-                        }
-                    )
+                        })
                 }
             },
             expanded = ExploreScreenViewModel.isSearchBarExpanded.value,
@@ -118,7 +119,9 @@ fun ExploreScreen() {
                 ExploreScreenViewModel.isSearchBarExpanded.value = it
             }) {
             if (searchResultsState.value.isLoading) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularWavyProgressIndicator()
+                }
             }
             LazyVerticalStaggeredGrid(columns = StaggeredGridCells.Adaptive(150.dp)) {
                 if (searchResultsState.value.error) {
@@ -134,8 +137,7 @@ fun ExploreScreen() {
                                     style = MaterialTheme.typography.titleMedium,
                                     fontSize = 32.sp,
                                     textAlign = TextAlign.Start,
-                                    modifier = Modifier
-                                        .padding(end = 50.dp)
+                                    modifier = Modifier.padding(end = 50.dp)
                                 )
                             }
                         }
@@ -155,8 +157,7 @@ fun ExploreScreen() {
                                     style = MaterialTheme.typography.titleMedium,
                                     fontSize = 32.sp,
                                     textAlign = TextAlign.Start,
-                                    modifier = Modifier
-                                        .padding(end = 50.dp)
+                                    modifier = Modifier.padding(end = 50.dp)
                                 )
                             }
                         }
@@ -181,26 +182,26 @@ fun ExploreScreen() {
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-        Text(
-            "ISS",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .padding(start = 15.dp)
-                .clip(RoundedCornerShape(5.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(0.25f))
-                .padding(5.dp)
-        )
-        Spacer(Modifier.height(5.dp))
-        Text(
-            "Current Location of the International Space Station",
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.padding(start = 15.dp, end = 15.dp)
-        )
-        Spacer(Modifier.height(5.dp))
+            Text(
+                "ISS",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(start = 15.dp)
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(0.25f))
+                    .padding(5.dp)
+            )
+            Spacer(Modifier.height(5.dp))
+            Text(
+                "Current Location of the International Space Station",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.padding(start = 15.dp, end = 15.dp)
+            )
+            Spacer(Modifier.height(5.dp))
             if (issLocationState.value.timestamp.isBlank()) {
-                LinearProgressIndicator(
+                LinearWavyProgressIndicator(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 15.dp, top = 15.dp, end = 15.dp, bottom = 10.dp)
@@ -212,8 +213,7 @@ fun ExploreScreen() {
                         .padding(start = 15.dp, end = 15.dp)
                 ) {
                     HeadlineDetailComponent(
-                        string = issLocationState.value.timestamp,
-                        Icons.Default.Event
+                        string = issLocationState.value.timestamp, Icons.Default.Event
                     )
                     Spacer(Modifier.height(10.dp))
                     Row(
@@ -268,29 +268,27 @@ fun ExploreScreen() {
                     )
                 }
             }
-        HorizontalDivider(Modifier.padding(15.dp))
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(start = 15.dp, end = 15.dp)
-        ) {
-            ExploreSectionItem(
-                imgURL = "https://apod.nasa.gov/apod/image/2410/IC63_1024.jpg",
-                itemTitle = "APOD Archive",
-                onClick = {
-                    navController.navigate(HyleNavigation.Explore.APODArchiveScreen)
-                }
-            )
-            Spacer(Modifier.height(10.dp))
-            ExploreSectionItem(
-                imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg/435px-Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg",
-                itemTitle = "Mars Gallery",
-                onClick = {
-                    navController.navigate(HyleNavigation.Explore.MarsGalleryRoute)
-                }
-            )
-            Spacer(Modifier.height(110.dp))
-        }
+            HorizontalDivider(Modifier.padding(15.dp))
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(start = 15.dp, end = 15.dp)
+            ) {
+                ExploreSectionItem(
+                    imgURL = "https://apod.nasa.gov/apod/image/2410/IC63_1024.jpg",
+                    itemTitle = "APOD Archive",
+                    onClick = {
+                        navController.navigate(HyleNavigation.Explore.APODArchiveScreen)
+                    })
+                Spacer(Modifier.height(10.dp))
+                ExploreSectionItem(
+                    imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg/435px-Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg",
+                    itemTitle = "Mars Gallery",
+                    onClick = {
+                        navController.navigate(HyleNavigation.Explore.MarsGalleryRoute)
+                    })
+                Spacer(Modifier.height(110.dp))
+            }
         }
     }
     DisposableEffect(Unit) {
@@ -310,12 +308,9 @@ private fun ExploreSectionItem(imgURL: String, itemTitle: String, onClick: () ->
             .height(150.dp)
             .clip(RoundedCornerShape(15.dp))
             .background(MaterialTheme.colorScheme.primary.copy(0.25f))
-            .clickable { onClick() }
-    ) {
+            .clickable { onClick() }) {
         AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(imgURL)
-                .crossfade(true).build(),
+            model = ImageRequest.Builder(context).data(imgURL).crossfade(true).build(),
             contentDescription = null,
             modifier = Modifier
                 .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
