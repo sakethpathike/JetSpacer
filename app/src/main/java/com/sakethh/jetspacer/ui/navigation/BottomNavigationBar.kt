@@ -6,10 +6,12 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -39,9 +41,8 @@ fun BottomNavigationBar() {
             BottomNavigationItem(
                 name = "Home",
                 route = HyleNavigation.Root.Home,
-                selectedIcon = Icons.Filled.Settings,
-                selectedDrawable = R.drawable.outline_planet_24,
-                nonSelectedIcon = Icons.Outlined.CameraAlt
+                selectedIcon = Icons.Filled.Home,
+                nonSelectedIcon = Icons.Outlined.Home
             ),
             BottomNavigationItem(
                 name = "Explore",
