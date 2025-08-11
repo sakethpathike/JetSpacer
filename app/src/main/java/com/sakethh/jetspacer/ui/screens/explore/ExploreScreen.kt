@@ -57,9 +57,11 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.InfoCard
+import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.screens.explore.search.SearchResultComponent
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
+import com.sakethh.jetspacer.ui.screens.home.HomeScreenViewModel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -123,7 +125,7 @@ fun ExploreScreen() {
                     CircularWavyProgressIndicator()
                 }
             }
-            LazyVerticalStaggeredGrid(columns = StaggeredGridCells.Adaptive(150.dp)) {
+            LazyVerticalStaggeredGrid(modifier = Modifier.padding(5.dp),columns = StaggeredGridCells.Adaptive(150.dp)) {
                 if (searchResultsState.value.error) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Box(
@@ -275,7 +277,7 @@ fun ExploreScreen() {
                     .padding(start = 15.dp, end = 15.dp)
             ) {
                 ExploreSectionItem(
-                    imgURL = "https://apod.nasa.gov/apod/image/2410/IC63_1024.jpg",
+                    imgURL = HomeScreenViewModel.currentAPODImgURL.ifBlank { "https://apod.nasa.gov/apod/image/2410/IC63_1024.jpg" },
                     itemTitle = "APOD Archive",
                     onClick = {
                         navController.navigate(HyleNavigation.Explore.APODArchiveScreen)
@@ -304,6 +306,7 @@ private fun ExploreSectionItem(imgURL: String, itemTitle: String, onClick: () ->
     val colorScheme = MaterialTheme.colorScheme
     Box(
         Modifier
+            .pulsateEffect()
             .fillMaxWidth()
             .height(150.dp)
             .clip(RoundedCornerShape(15.dp))

@@ -1,7 +1,6 @@
 package com.sakethh.jetspacer.ui.screens.home
 
 import android.content.Context
-import android.graphics.drawable.BitmapDrawable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -9,9 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.palette.graphics.Palette
-import coil.ImageLoader
-import coil.request.ImageRequest
 import com.sakethh.jetspacer.HyleApplication
 import com.sakethh.jetspacer.common.Network
 import com.sakethh.jetspacer.data.repository.TopHeadlinesDataImplementation
@@ -27,6 +23,7 @@ import com.sakethh.jetspacer.ui.screens.headlines.NewsScreenState
 import com.sakethh.jetspacer.ui.screens.home.state.apod.APODState
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.ui.screens.home.state.epic.EPICState
+import com.sakethh.jetspacer.ui.utils.fetchSwatchesFromUrl
 import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 import kotlinx.coroutines.Job
@@ -57,6 +54,11 @@ class HomeScreenViewModel(
         )
     )
 
+
+    companion object {
+        var currentAPODImgURL by mutableStateOf("")
+            private set
+    }
 
     private var currentPage = 0
     private var newsAPIJob: Job? = null
@@ -117,15 +119,6 @@ class HomeScreenViewModel(
         }
     }
 
-    suspend fun fetchSwatchesFromUrl(context: Context, url: String): Palette? {
-        val loader = ImageLoader(context)
-        val request = ImageRequest.Builder(context).data(url).allowHardware(false).build()
-
-        val result = loader.execute(request)
-        val bitmap = (result.drawable as? BitmapDrawable)?.bitmap
-        return if (bitmap == null) null else Palette.from(bitmap).generate()
-    }
-
     val apodState = mutableStateOf(
         APODState(
             isLoading = true, error = false, apod = ModifiedAPODDTO(
@@ -172,6 +165,7 @@ class HomeScreenViewModel(
                 }
 
                 is Response.Success -> {
+                    currentAPODImgURL = apodData.data.url ?: ""
                     apodState.value = apodState.value.copy(
                         isLoading = false, error = false, apod = ModifiedAPODDTO(
                             copyright = apodData.data.copyright ?: "",
@@ -188,6 +182,7 @@ class HomeScreenViewModel(
                                 emptyList()
                             } else {
                                 buildList {
+                                    add(Color.Transparent)
                                     add(Color.Transparent)
                                     add(Color.Transparent)
                                     palette.vibrantSwatch?.rgb?.let { add(Color(it)) }

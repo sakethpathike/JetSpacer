@@ -1,7 +1,9 @@
 package com.sakethh.jetspacer.ui.screens.explore
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.common.utils.logger
@@ -10,6 +12,7 @@ import com.sakethh.jetspacer.domain.model.iss.modified.ISSLocationModifiedDTO
 import com.sakethh.jetspacer.domain.useCase.FetchISSLocationUseCase
 import com.sakethh.jetspacer.domain.useCase.FetchImagesFromNasaImageLibraryUseCase
 import com.sakethh.jetspacer.ui.screens.explore.search.state.SearchResultState
+import com.sakethh.jetspacer.ui.utils.fetchSwatchesFromUrl
 import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 import kotlinx.coroutines.Job
@@ -25,7 +28,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @Suppress("OPT_IN_USAGE")
-class ExploreScreenViewModel(
+class  ExploreScreenViewModel(
+    context: Context,
     private val fetchImagesFromNasaImageLibraryUseCase: FetchImagesFromNasaImageLibraryUseCase = FetchImagesFromNasaImageLibraryUseCase(),
     private val fetchISSLocationUseCase: FetchISSLocationUseCase = FetchISSLocationUseCase()
 ) :
@@ -65,7 +69,7 @@ class ExploreScreenViewModel(
             searchResultsState.value =
                 searchResultsState.value.copy(isLoading = true, error = false, data = emptyList())
         }.debounce(1500).onEach { query ->
-            loadSearchResults(flowOf(query))
+            loadSearchResults(context,flowOf(query))
         }.launchIn(viewModelScope)
 
         issLocationJob = viewModelScope.launch {
@@ -94,7 +98,7 @@ class ExploreScreenViewModel(
         issLocationJob?.cancel()
     }
 
-    private fun loadSearchResults(querySearchSnapShotFlow: Flow<String>) {
+    private fun loadSearchResults(context: Context,querySearchSnapShotFlow: Flow<String>) {
         searchResultsJob = viewModelScope.launch {
             querySearchSnapShotFlow.cancellable().collectLatest {
                 if (it.isBlank()) {
@@ -123,7 +127,21 @@ class ExploreScreenViewModel(
 
                         is Response.Success -> {
                             searchResultsState.value = searchResultsState.value.copy(
-                                isLoading = false, error = false, data = nasaSearchData.data
+                                isLoading = false, error = false, data = nasaSearchData.data.map {
+                                    it to run {
+                                        val palette = fetchSwatchesFromUrl(context = context,url=it.imageUrl)
+                                        if (palette == null) {
+                                            emptyList()
+                                        } else {
+                                            buildList {
+                                                palette.vibrantSwatch?.rgb?.let { add(Color(it)) }
+                                                palette.lightVibrantSwatch?.rgb?.let { add(Color(it)) }
+                                                palette.mutedSwatch?.rgb?.let { add(Color(it)) }
+                                                palette.darkMutedSwatch?.rgb?.let { add(Color(it)) }
+                                            }
+                                        }
+                                    }
+                                }
                             )
                         }
                     }
