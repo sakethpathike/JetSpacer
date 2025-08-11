@@ -52,6 +52,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -69,7 +71,12 @@ import kotlinx.serialization.json.Json
 @Composable
 fun ExploreScreen() {
     val navController: NavController = LocalNavController.current
-    val exploreScreenViewModel: ExploreScreenViewModel = viewModel()
+    val localContext = LocalContext.current
+    val exploreScreenViewModel: ExploreScreenViewModel = viewModel(factory = viewModelFactory {
+        initializer {
+            ExploreScreenViewModel(context = localContext)
+        }
+    })
     val searchResultsState = exploreScreenViewModel.searchResultsState
     val issLocationState = exploreScreenViewModel.issLocationState
 
@@ -125,7 +132,10 @@ fun ExploreScreen() {
                     CircularWavyProgressIndicator()
                 }
             }
-            LazyVerticalStaggeredGrid(modifier = Modifier.padding(5.dp),columns = StaggeredGridCells.Adaptive(150.dp)) {
+            LazyVerticalStaggeredGrid(
+                modifier = Modifier.padding(5.dp),
+                columns = StaggeredGridCells.Adaptive(150.dp)
+            ) {
                 if (searchResultsState.value.error) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Box(
@@ -166,13 +176,16 @@ fun ExploreScreen() {
                     }
                 }
                 items(searchResultsState.value.data) {
-                    SearchResultComponent(it, onItemClick = {
-                        navController.navigate(
-                            HyleNavigation.Explore.SearchResultScreenRoute(
-                                Json.encodeToString(it)
+                    SearchResultComponent(
+                        nasaImageLibrarySearchModifiedDTO = it.first,
+                        palette = it.second,
+                        onItemClick = {
+                            navController.navigate(
+                                HyleNavigation.Explore.SearchResultScreenRoute(
+                                    Json.encodeToString(it)
+                                )
                             )
-                        )
-                    })
+                        })
                 }
                 item(span = StaggeredGridItemSpan.FullLine) {
                     Spacer(Modifier.height(25.dp))

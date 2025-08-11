@@ -23,15 +23,17 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.CalendarLocale
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerFormatter
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DateRangePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
@@ -57,6 +59,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.ui.utils.customMutableRememberSavable
 import kotlinx.coroutines.launch
@@ -66,7 +69,11 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
 @Composable
 fun APODArchiveScreen(navController: NavController) {
     val apodArchiveScreenViewModel: APODArchiveScreenViewModel = viewModel()
@@ -98,27 +105,25 @@ fun APODArchiveScreen(navController: NavController) {
     val isDataBasedOnCustomRangeSelector = rememberSaveable {
         mutableStateOf(false)
     }
-    Scaffold(modifier = Modifier.fillMaxSize(),
-        topBar = {
-            MediumTopAppBar(scrollBehavior = topAppBarScrollBehavior, title = {
-                Text("APOD Archive", style = MaterialTheme.typography.titleSmall, fontSize = 16.sp)
-            }, navigationIcon = {
-                IconButton(onClick = {
-                    navController.navigateUp()
-                }) {
-                    Icon(Icons.Filled.ArrowBack, null)
-                }
-            }, actions = {
-                if (apodArchiveState.error)
-                    return@MediumTopAppBar
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+        MediumTopAppBar(scrollBehavior = topAppBarScrollBehavior, title = {
+            Text("APOD Archive", style = MaterialTheme.typography.titleSmall, fontSize = 16.sp)
+        }, navigationIcon = {
+            IconButton(onClick = {
+                navController.navigateUp()
+            }) {
+                Icon(Icons.Filled.ArrowBack, null)
+            }
+        }, actions = {
+            if (apodArchiveState.error) return@MediumTopAppBar
 
-                IconButton(onClick = {
-                    isDateRangePickerDialogVisible.value = true
-                }) {
-                    Icon(Icons.Default.DateRange, null)
-                }
-            })
-        }) {
+            IconButton(onClick = {
+                isDateRangePickerDialogVisible.value = true
+            }) {
+                Icon(Icons.Default.DateRange, null)
+            }
+        })
+    }) {
         LazyVerticalStaggeredGrid(
             state = lazyVerticalStaggeredGridState,
             columns = StaggeredGridCells.Adaptive(150.dp),
@@ -126,17 +131,16 @@ fun APODArchiveScreen(navController: NavController) {
                 .padding(it)
                 .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
         ) {
-            if (apodArchiveState.isLoading.not() || apodArchiveState.error) {
+            if (!apodArchiveState.isLoading || apodArchiveState.error) {
                 item(span = StaggeredGridItemSpan.FullLine) {
                     Spacer(Modifier.height(10.dp))
                 }
             }
             items(apodArchiveState.data) {
                 AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(it.url)
-                        .crossfade(true).build(),
+                    model = ImageRequest.Builder(context).data(it.url).crossfade(true).build(),
                     modifier = Modifier
+                        .pulsateEffect()
                         .wrapContentHeight()
                         .padding(5.dp)
                         .clip(RoundedCornerShape(15.dp))
@@ -151,12 +155,20 @@ fun APODArchiveScreen(navController: NavController) {
                             }
                         }, onLongClick = {
 
-                        }), contentDescription = null
+                        }),
+                    contentDescription = null
                 )
             }
             if (apodArchiveState.isLoading) {
                 item(span = StaggeredGridItemSpan.FullLine) {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    Box(
+                        modifier = Modifier
+                            .padding(15.dp)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ContainedLoadingIndicator()
+                    }
                 }
             }
             if (apodArchiveState.error) {
@@ -187,6 +199,7 @@ fun APODArchiveScreen(navController: NavController) {
                         )
                         Button(
                             modifier = Modifier
+                                .pulsateEffect()
                                 .fillMaxWidth()
                                 .padding(start = 15.dp, end = 15.dp, bottom = 15.dp), onClick = {
                                 isDataBasedOnCustomRangeSelector.value = false
@@ -256,15 +269,13 @@ fun APODArchiveScreen(navController: NavController) {
                             }
 
                             override fun formatMonthYear(
-                                monthMillis: Long?,
-                                locale: CalendarLocale
+                                monthMillis: Long?, locale: CalendarLocale
                             ): String? {
                                 if (monthMillis == null) return null
                                 val monthYearFormat = SimpleDateFormat("MMMM yyyy", locale)
                                 return monthYearFormat.format(Date(monthMillis))
                             }
-                        }
-                    )
+                        })
                 })
             }
             Column(
@@ -274,6 +285,7 @@ fun APODArchiveScreen(navController: NavController) {
                     .align(Alignment.BottomCenter)
             ) {
                 Button(modifier = Modifier
+                    .pulsateEffect()
                     .fillMaxWidth()
                     .padding(15.dp), onClick = {
                     isDateRangePickerDialogVisible.value = false
