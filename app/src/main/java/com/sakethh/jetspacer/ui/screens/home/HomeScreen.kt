@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,11 +60,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -129,7 +128,7 @@ fun HomeScreen() {
     val colorScheme = MaterialTheme.colorScheme
     val lazyColumnState = rememberLazyListState()
     val localDensity = LocalDensity.current
-
+    val apodImageURL = apodDataState.apod.first.url.trim()
     LaunchedEffect(epicDataState.data, horizontalPager.currentPage) {
         currentEPICCapturedTime = try {
             epicDataState.data[horizontalPager.currentPage].timeWhenImageWasCaptured
@@ -273,193 +272,202 @@ fun HomeScreen() {
                 HorizontalDivider(commonModifier)
                 Spacer(Modifier.height(15.dp))
             }
-            item {
-                Label(text = "APOD", modifier = commonModifier)
-                Spacer(Modifier.height(5.dp))
-                Text(
-                    modifier = commonModifier,
-                    text = "Astronomy Picture of the Day",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(Modifier.height(15.dp))
-            }
 
-            item {
-                if (apodDataState.isLoading || apodDataState.error) {
-                    Box(
-                        modifier = commonModifier
-                            .fillMaxWidth()
-                            .height(150.dp)
-                            .clip(RoundedCornerShape(15.dp))
-                            .background(MaterialTheme.colorScheme.primary.copy(0.25f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (apodDataState.isLoading) {
-                            ContainedLoadingIndicator()
-                        } else {
-                            Text(
-                                text = "${apodDataState.statusCode}\n${apodDataState.statusDescription}",
-                                style = MaterialTheme.typography.titleSmall,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                } else {
-                    val imageHeight = rememberSaveable {
-                        mutableStateOf(1)
-                    }
-                    Column(
-                        if (apodDataState.apod.second.isNotEmpty()) {
-                        Modifier.drawWithCache {
-                            onDrawWithContent {
-                                drawRect(
-                                    alpha = 0.115f,brush = Brush.linearGradient(
-                                        colors = apodDataState.apod.second
-                                    )
+            if (apodDataState.isLoading || apodImageURL.isNotBlank()) {
+                item {
+                    Label(text = "APOD", modifier = commonModifier)
+                    Spacer(Modifier.height(5.dp))
+                    Text(
+                        modifier = commonModifier,
+                        text = "Astronomy Picture of the Day",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(Modifier.height(15.dp))
+                }
+
+                item {
+                    if (apodDataState.isLoading || apodDataState.error) {
+                        Box(
+                            modifier = commonModifier
+                                .fillMaxWidth()
+                                .height(150.dp)
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(0.25f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (apodDataState.isLoading) {
+                                ContainedLoadingIndicator()
+                            } else {
+                                Text(
+                                    text = "${apodDataState.statusCode}\n${apodDataState.statusDescription}",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    textAlign = TextAlign.Center
                                 )
-                                drawContent()
                             }
                         }
                     } else {
-                        Modifier
-                    }) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context)
-                            .data(apodDataState.apod.first.url.trim()).crossfade(true).build(),
-                            contentDescription = null,
-                            modifier = commonModifier
-                                .onGloballyPositioned {
-                                    imageHeight.value = it.size.height
-                                }
-                                .clip(RoundedCornerShape(15.dp))
-                                .border(
-                                    1.5.dp,
-                                    LocalContentColor.current.copy(0.25f),
-                                    RoundedCornerShape(15.dp)
-                                )
-                                .clickable {
-                                    isAPODBtmSheetVisible.value = true
-                                    coroutineScope.launch {
-                                        apodBtmSheetState.show()
-                                    }
-                                },
-                            contentScale = ContentScale.Crop
-                        )
-
-                        if (apodDataState.apod.first.date.trim().isNotBlank()) {
-                            Spacer(Modifier.height(15.dp))
-                            Box(modifier = commonModifier) {
-                                HeadlineDetailComponent(
-                                    string = apodDataState.apod.first.date.trim(),
-                                    imageVector = Icons.Outlined.CalendarToday,
-                                    fontSize = 14.sp,
-                                    iconSize = 20.dp
-                                )
-                            }
-                        }
-
-                        if (apodDataState.apod.first.copyright.trim().isNotBlank()) {
-                            Spacer(Modifier.height(5.dp))
-                            Box(commonModifier) {
-                                HeadlineDetailComponent(
-                                    string = apodDataState.apod.first.copyright.trim()
-                                        .replace("\n", ""),
-                                    imageVector = Icons.Outlined.Copyright,
-                                    fontSize = 14.sp,
-                                    iconSize = 20.dp
-                                )
-                            }
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(start = 10.dp, top = 10.dp)
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .pulsateEffect(0.85f)
-                                    .iconModifier(colorScheme) {
-                                        localClipboardManager.setText(AnnotatedString(apodDataState.apod.first.url))
-                                    },
-                                imageVector = Icons.Outlined.ContentCopy,
-                                contentDescription = null
-                            )
-                            Icon(
-                                modifier = Modifier
-                                    .pulsateEffect(0.85f)
-                                    .iconModifier(colorScheme) {
-                                        val intent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            putExtra(
-                                                Intent.EXTRA_TEXT, apodDataState.apod.first.url
+                        Column(
+                            if (apodDataState.apod.second.isNotEmpty()) {
+                                Modifier.drawWithCache {
+                                    onDrawWithContent {
+                                        drawRect(
+                                            alpha = 0.115f, brush = Brush.linearGradient(
+                                                colors = apodDataState.apod.second
                                             )
-                                            type = "text/plain"
+                                        )
+                                        drawContent()
+                                    }
+                                }
+                            } else {
+                                Modifier
+                            }.animateContentSize()) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context).data(apodImageURL)
+                                    .crossfade(true).build(),
+                                contentDescription = null,
+                                modifier = commonModifier
+                                    .clip(RoundedCornerShape(15.dp))
+                                    .border(
+                                        1.5.dp,
+                                        LocalContentColor.current.copy(0.25f),
+                                        RoundedCornerShape(15.dp)
+                                    )
+                                    .clickable {
+                                        isAPODBtmSheetVisible.value = true
+                                        coroutineScope.launch {
+                                            apodBtmSheetState.show()
                                         }
-                                        val shareIntent = Intent.createChooser(intent, null)
-                                        context.startActivity(shareIntent)
-                                    }, imageVector = Icons.Outlined.Share, contentDescription = null
-                            )
-                            Icon(
-                                modifier = Modifier
-                                    .pulsateEffect(0.85f)
-                                    .iconModifier(colorScheme) {
-                                        localUriHandler.openUri(apodDataState.apod.first.url)
                                     },
-                                imageVector = Icons.Outlined.OpenInBrowser,
-                                contentDescription = null
+                                contentScale = ContentScale.Crop
                             )
-                        }
 
-                        if (apodDataState.apod.first.title.trim().isNotBlank()) {
-                            Spacer(Modifier.height(15.dp))
-                            Text(
-                                modifier = commonModifier,
-                                text = "Title",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                            Text(
-                                apodDataState.apod.first.title.trim(),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontSize = 16.sp,
-                                modifier = commonModifier
-                            )
-                        }
-
-                        if (apodDataState.apod.first.explanation.trim().isNotBlank()) {
-                            val isExplanationExpanded = rememberSaveable {
-                                mutableStateOf(false)
+                            if (apodDataState.apod.first.date.trim().isNotBlank()) {
+                                Spacer(Modifier.height(15.dp))
+                                Box(modifier = commonModifier) {
+                                    HeadlineDetailComponent(
+                                        string = apodDataState.apod.first.date.trim(),
+                                        imageVector = Icons.Outlined.CalendarToday,
+                                        fontSize = 14.sp,
+                                        iconSize = 20.dp
+                                    )
+                                }
                             }
-                            Spacer(Modifier.height(15.dp))
-                            Text(
-                                modifier = commonModifier,
-                                text = "Explanation",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                            Spacer(Modifier.height(2.dp))
-                            Box(
-                                modifier = commonModifier
+
+                            if (apodDataState.apod.first.copyright.trim().isNotBlank()) {
+                                Spacer(Modifier.height(5.dp))
+                                Box(commonModifier) {
+                                    HeadlineDetailComponent(
+                                        string = apodDataState.apod.first.copyright.trim()
+                                            .replace("\n", ""),
+                                        imageVector = Icons.Outlined.Copyright,
+                                        fontSize = 14.sp,
+                                        iconSize = 20.dp
+                                    )
+                                }
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(start = 10.dp, top = 10.dp)
                             ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .pulsateEffect(0.85f)
+                                        .iconModifier(colorScheme) {
+                                            localClipboardManager.setText(
+                                                AnnotatedString(
+                                                    apodDataState.apod.first.url
+                                                )
+                                            )
+                                        },
+                                    imageVector = Icons.Outlined.ContentCopy,
+                                    contentDescription = null
+                                )
+                                Icon(
+                                    modifier = Modifier
+                                        .pulsateEffect(0.85f)
+                                        .iconModifier(colorScheme) {
+                                            val intent = Intent().apply {
+                                                action = Intent.ACTION_SEND
+                                                putExtra(
+                                                    Intent.EXTRA_TEXT, apodDataState.apod.first.url
+                                                )
+                                                type = "text/plain"
+                                            }
+                                            val shareIntent = Intent.createChooser(intent, null)
+                                            context.startActivity(shareIntent)
+                                        },
+                                    imageVector = Icons.Outlined.Share,
+                                    contentDescription = null
+                                )
+                                Icon(
+                                    modifier = Modifier
+                                        .pulsateEffect(0.85f)
+                                        .iconModifier(colorScheme) {
+                                            localUriHandler.openUri(apodDataState.apod.first.url)
+                                        },
+                                    imageVector = Icons.Outlined.OpenInBrowser,
+                                    contentDescription = null
+                                )
+                            }
+
+                            if (apodDataState.apod.first.title.trim().isNotBlank()) {
+                                Spacer(Modifier.height(15.dp))
                                 Text(
-                                    text = apodDataState.apod.first.explanation.trim(),
+                                    modifier = commonModifier,
+                                    text = "Title",
                                     style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                                Text(
+                                    apodDataState.apod.first.title.trim(),
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontSize = 16.sp,
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = if (isExplanationExpanded.value) Int.MAX_VALUE else 3,
-                                    modifier = Modifier.clickable {
-                                        isExplanationExpanded.value = !isExplanationExpanded.value
-                                    })
+                                    modifier = commonModifier
+                                )
+                            }
+
+                            if (apodDataState.apod.first.explanation.trim().isNotBlank()) {
+                                val isExplanationExpanded = rememberSaveable {
+                                    mutableStateOf(false)
+                                }
+                                Spacer(Modifier.height(15.dp))
+                                Text(
+                                    modifier = commonModifier,
+                                    text = "Explanation",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                                Spacer(Modifier.height(2.dp))
+                                Box(
+                                    modifier = commonModifier
+                                ) {
+                                    Text(
+                                        text = apodDataState.apod.first.explanation.trim(),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontSize = 16.sp,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = if (isExplanationExpanded.value) Int.MAX_VALUE else 3,
+                                        modifier = Modifier
+                                            .pulsateEffect()
+                                            .clickable(onClick = {
+                                                isExplanationExpanded.value =
+                                                    !isExplanationExpanded.value
+                                            }, indication = null, interactionSource = remember {
+                                                MutableInteractionSource()
+                                            }))
+                                }
                             }
                         }
                     }
                 }
-            }
-            item {
-                Spacer(Modifier.height(15.dp))
-                HorizontalDivider(commonModifier)
-                Spacer(Modifier.height(15.dp))
+
+                item {
+                    Spacer(Modifier.height(15.dp))
+                    HorizontalDivider(commonModifier)
+                    Spacer(Modifier.height(15.dp))
+                }
             }
             item {
                 Label(text = "Headlines", modifier = commonModifier)
@@ -490,7 +498,7 @@ fun HomeScreen() {
                     LinearWavyProgressIndicator(
                         modifier = Modifier
                             .padding(
-                                top = 45.dp, start = 25.dp, end = 25.dp, bottom = 250.dp
+                                top = 45.dp, start = 15.dp, end = 15.dp, bottom = 250.dp
                             )
                             .fillMaxWidth()
                     )
