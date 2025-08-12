@@ -1,6 +1,7 @@
 package com.sakethh.jetspacer.ui.screens.home
 
 import android.content.Intent
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -124,7 +125,7 @@ fun HomeScreen() {
     val sliderValue = rememberSaveable {
         mutableFloatStateOf(0f)
     }
-    val topHeadlinesState = homeScreenViewModel.topHeadLinesState
+    val topHeadlinesState by homeScreenViewModel.topHeadLinesState
     val colorScheme = MaterialTheme.colorScheme
     val lazyColumnState = rememberLazyListState()
     val localDensity = LocalDensity.current
@@ -208,25 +209,29 @@ fun HomeScreen() {
                 }
             }
             item {
-                HorizontalPager(
-                    state = horizontalPager,
-                ) { epicItemIndex ->
-                    Column {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context)
-                                .data(epicDataState.data[epicItemIndex].imageURL).crossfade(true)
-                                .build(),
-                            contentDescription = null,
-                            modifier = commonModifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
-                                .clip(RoundedCornerShape(15.dp))
-                                .clickable {
+                AnimatedContent(targetState = !epicDataState.error && !epicDataState.isLoading) {
+                    if (it) {
+                        HorizontalPager(
+                            state = horizontalPager,
+                        ) { epicItemIndex ->
+                            Column {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(epicDataState.data[epicItemIndex].imageURL)
+                                        .crossfade(true).build(),
+                                    contentDescription = null,
+                                    modifier = commonModifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f)
+                                        .clip(RoundedCornerShape(15.dp))
+                                        .clickable {
 
-                                },
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(Modifier.height(10.dp))
+                                        },
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(Modifier.height(10.dp))
+                            }
+                        }
                     }
                 }
                 if (currentEPICCapturedTime.isNotBlank()) {
@@ -273,21 +278,32 @@ fun HomeScreen() {
                 Spacer(Modifier.height(15.dp))
             }
 
-            if (apodDataState.isLoading || apodImageURL.isNotBlank()) {
-                item {
-                    Label(text = "APOD", modifier = commonModifier)
-                    Spacer(Modifier.height(5.dp))
-                    Text(
-                        modifier = commonModifier,
-                        text = "Astronomy Picture of the Day",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Spacer(Modifier.height(15.dp))
+            item {
+                AnimatedContent(
+                    contentKey = {
+                        it
+                    },
+                    targetState = apodDataState.error || apodDataState.isLoading || apodImageURL.isNotBlank()
+                ) {
+                    Column {
+                        if (it) {
+                            Label(text = "APOD", modifier = commonModifier)
+                            Spacer(Modifier.height(5.dp))
+                            Text(
+                                modifier = commonModifier,
+                                text = "Astronomy Picture of the Day",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
                 }
+                Spacer(Modifier.height(15.dp))
+            }
 
-                item {
-                    if (apodDataState.isLoading || apodDataState.error) {
+            item {
+                AnimatedContent(targetState = apodDataState.isLoading || apodDataState.error) {
+                    if (it) {
                         Box(
                             modifier = commonModifier
                                 .fillMaxWidth()
@@ -298,30 +314,30 @@ fun HomeScreen() {
                         ) {
                             if (apodDataState.isLoading) {
                                 ContainedLoadingIndicator()
-                            } else {
+                            } else if (apodDataState.error) {
                                 Text(
                                     text = "${apodDataState.statusCode}\n${apodDataState.statusDescription}",
                                     style = MaterialTheme.typography.titleSmall,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                             }
                         }
                     } else {
                         Column(
                             if (apodDataState.apod.second.isNotEmpty()) {
-                                Modifier.drawWithCache {
-                                    onDrawWithContent {
-                                        drawRect(
-                                            alpha = 0.115f, brush = Brush.linearGradient(
-                                                colors = apodDataState.apod.second
-                                            )
+                            Modifier.drawWithCache {
+                                onDrawWithContent {
+                                    drawRect(
+                                        alpha = 0.115f, brush = Brush.linearGradient(
+                                            colors = apodDataState.apod.second
                                         )
-                                        drawContent()
-                                    }
+                                    )
+                                    drawContent()
                                 }
-                            } else {
-                                Modifier
-                            }.animateContentSize()) {
+                            }
+                        } else {
+                            Modifier
+                        }.animateContentSize()) {
                             AsyncImage(
                                 model = ImageRequest.Builder(context).data(apodImageURL)
                                     .crossfade(true).build(),
@@ -456,23 +472,44 @@ fun HomeScreen() {
                                                     !isExplanationExpanded.value
                                             }, indication = null, interactionSource = remember {
                                                 MutableInteractionSource()
-                                            }))
+                                            })
+                                    )
                                 }
                             }
                         }
                     }
                 }
+            }
 
-                item {
-                    Spacer(Modifier.height(15.dp))
-                    HorizontalDivider(commonModifier)
-                    Spacer(Modifier.height(15.dp))
-                }
+            item {
+                Spacer(Modifier.height(15.dp))
+                HorizontalDivider(commonModifier)
+                Spacer(Modifier.height(15.dp))
             }
             item {
                 Label(text = "Headlines", modifier = commonModifier)
             }
-            items(items = topHeadlinesState.value.data) { (headline, colors) ->
+            if (topHeadlinesState.error) {
+                item {
+                    Box(
+                        modifier = commonModifier
+                            .padding(bottom = 150.dp, top = 15.dp)
+                            .fillMaxWidth()
+                            .height(150.dp)
+                            .clip(RoundedCornerShape(15.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(0.25f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${topHeadlinesState.statusCode}\n${apodDataState.statusDescription}",
+                            style = MaterialTheme.typography.titleSmall,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+                return@LazyColumn
+            }
+            items(items = topHeadlinesState.data) { (headline, colors) ->
                 TopHeadlineComponent(
                     article = Article(
                         author = headline.author,
@@ -493,7 +530,7 @@ fun HomeScreen() {
                         )
                     })
             }
-            if (topHeadlinesState.value.isLoading && topHeadlinesState.value.reachedMaxHeadlines.not() && topHeadlinesState.value.error.not()) {
+            if (topHeadlinesState.isLoading && !topHeadlinesState.reachedMaxHeadlines && !topHeadlinesState.error) {
                 item {
                     LinearWavyProgressIndicator(
                         modifier = Modifier
@@ -504,16 +541,16 @@ fun HomeScreen() {
                     )
                 }
             }
-            if (topHeadlinesState.value.error) {
+            if (topHeadlinesState.error) {
                 item {
                     Text(
-                        text = "${topHeadlinesState.value.statusCode}\n${topHeadlinesState.value.statusDescription}",
+                        text = "${topHeadlinesState.statusCode}\n${topHeadlinesState.statusDescription}",
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(15.dp)
                     )
                 }
             }
-            if (topHeadlinesState.value.reachedMaxHeadlines) {
+            if (topHeadlinesState.reachedMaxHeadlines) {
                 item {
                     Text(
                         text = "That's all the data found.",
@@ -530,7 +567,7 @@ fun HomeScreen() {
             }
         }
         LaunchedEffect(lazyColumnState.canScrollForward) {
-            if (!lazyColumnState.canScrollForward && !topHeadlinesState.value.reachedMaxHeadlines && !topHeadlinesState.value.isLoading && !topHeadlinesState.value.error) {
+            if (!lazyColumnState.canScrollForward && !topHeadlinesState.reachedMaxHeadlines && !topHeadlinesState.isLoading && !topHeadlinesState.error) {
                 homeScreenViewModel.retrievePaginatedTopHeadlines(context)
             }
         }
