@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.ui.screens.home
 
 import android.content.Intent
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,7 +35,10 @@ import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Copyright
+import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.Hd
 import androidx.compose.material.icons.outlined.OpenInBrowser
+import androidx.compose.material.icons.outlined.Sd
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -88,6 +92,7 @@ import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.screens.headlines.components.TopHeadlineComponent
+import com.sakethh.jetspacer.ui.utils.downloadImage
 import com.sakethh.jetspacer.ui.utils.iconModifier
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
@@ -130,6 +135,9 @@ fun HomeScreen() {
     val lazyColumnState = rememberLazyListState()
     val localDensity = LocalDensity.current
     val apodImageURL = apodDataState.apod.first.url.trim()
+    var apodDownloadBtnClicked by rememberSaveable {
+        mutableStateOf(false)
+    }
     LaunchedEffect(epicDataState.data, horizontalPager.currentPage) {
         currentEPICCapturedTime = try {
             epicDataState.data[horizontalPager.currentPage].timeWhenImageWasCaptured
@@ -385,8 +393,12 @@ fun HomeScreen() {
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(start = 10.dp, top = 10.dp)
+                                modifier = Modifier
+                                    .animateContentSize()
+                                    .horizontalScroll(rememberScrollState())
+                                    .padding(start = 10.dp, top = 10.dp, end = 10.dp)
                             ) {
+                                // a loop would've been better than this copy-paste of icon btn composables
                                 Icon(
                                     modifier = Modifier
                                         .pulsateEffect(0.85f)
@@ -407,7 +419,7 @@ fun HomeScreen() {
                                             val intent = Intent().apply {
                                                 action = Intent.ACTION_SEND
                                                 putExtra(
-                                                    Intent.EXTRA_TEXT, apodDataState.apod.first.url
+                                                    Intent.EXTRA_TEXT, "https://apod.nasa.gov"
                                                 )
                                                 type = "text/plain"
                                             }
@@ -417,11 +429,71 @@ fun HomeScreen() {
                                     imageVector = Icons.Outlined.Share,
                                     contentDescription = null
                                 )
+                                Row(
+                                    modifier = (if (apodDownloadBtnClicked) {
+                                        Modifier
+                                            .padding(start = 5.dp, end = 5.dp)
+                                            .clip(RoundedCornerShape(15.dp))
+                                            .background(colorScheme.primary.copy(0.1f))
+                                            .padding(10.dp)
+                                    } else Modifier).animateContentSize()
+                                ) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .pulsateEffect(0.85f)
+                                            .iconModifier(colorScheme) {
+                                                apodDownloadBtnClicked = !apodDownloadBtnClicked
+                                            },
+                                        imageVector = Icons.Outlined.FileDownload,
+                                        contentDescription = null
+                                    )
+                                    AnimatedVisibility(visible = apodDownloadBtnClicked) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Spacer(
+                                                modifier = Modifier
+                                                    .padding(horizontal = 8.dp)
+                                                    .width(1.dp)
+                                                    .height(20.dp)
+                                                    .background(LocalContentColor.current.copy(alpha = 0.5f))
+                                            )
+                                            Icon(
+                                                modifier = Modifier
+                                                    .pulsateEffect(0.85f)
+                                                    .iconModifier(colorScheme) {
+                                                        downloadImage(
+                                                            context = context,
+                                                            imgURL = apodDataState.apod.first.hdUrl,
+                                                            fileName = apodDataState.apod.first.hdUrl.substringAfterLast("/"),
+                                                            description = "APOD: Downloading HD image (${apodDataState.apod.first.date})"
+                                                        )
+                                                        apodDownloadBtnClicked = false
+                                                    },
+                                                imageVector = Icons.Outlined.Hd,
+                                                contentDescription = null
+                                            )
+                                            Icon(
+                                                modifier = Modifier
+                                                    .pulsateEffect(0.85f)
+                                                    .iconModifier(colorScheme) {
+                                                        downloadImage(
+                                                            context = context,
+                                                            imgURL = apodDataState.apod.first.url,
+                                                            fileName = apodDataState.apod.first.url.substringAfterLast("/"),
+                                                            description = "APOD: Downloading SD image (${apodDataState.apod.first.date})"
+                                                        )
+                                                        apodDownloadBtnClicked = false
+                                                    },
+                                                imageVector = Icons.Outlined.Sd,
+                                                contentDescription = null
+                                            )
+                                        }
+                                    }
+                                }
                                 Icon(
                                     modifier = Modifier
                                         .pulsateEffect(0.85f)
                                         .iconModifier(colorScheme) {
-                                            localUriHandler.openUri(apodDataState.apod.first.url)
+                                            localUriHandler.openUri("https://apod.nasa.gov")
                                         },
                                     imageVector = Icons.Outlined.OpenInBrowser,
                                     contentDescription = null

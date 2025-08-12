@@ -1,7 +1,10 @@
 package com.sakethh.jetspacer.ui.utils
 
+import android.app.DownloadManager
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
+import android.os.Environment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
@@ -14,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.request.ImageRequest
+import androidx.core.net.toUri
 
 fun Modifier.iconModifier(colorScheme: ColorScheme, onClick: () -> Unit): Modifier {
     return this
@@ -34,4 +38,15 @@ suspend fun fetchSwatchesFromUrl(context: Context, url: String): Palette? {
     val result = loader.execute(request)
     val bitmap = (result.drawable as? BitmapDrawable)?.bitmap
     return if (bitmap == null) null else Palette.from(bitmap).generate()
+}
+
+fun downloadImage(context: Context,imgURL: String,fileName: String,description: String){
+    val downloadRequest = DownloadManager.Request(imgURL.toUri())
+        .setTitle(fileName)
+        .setDescription(description)
+        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        .setDestinationInExternalPublicDir(Environment.DIRECTORY_PICTURES, fileName)
+
+    val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+    downloadManager.enqueue(downloadRequest)
 }
