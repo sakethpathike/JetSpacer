@@ -134,25 +134,33 @@ fun TopHeadlineComponent(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        modifier = Modifier.iconModifier(colorScheme) {
+                    Icon(modifier = Modifier
+                        .iconModifier(colorScheme) {
                             localUriHandler.openUri(article.url)
-                        }, imageVector = Icons.Outlined.OpenInBrowser, contentDescription = null
-                    )
-                    Icon(
-                        modifier = Modifier.iconModifier(colorScheme) {
-                            localClipboardManager.setText(AnnotatedString(article.url))
-                        }, imageVector = Icons.Outlined.ContentCopy, contentDescription = null
-                    )
-                    Icon(modifier = Modifier.iconModifier(colorScheme) {
-                        val intent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, article.url)
-                            type = "text/plain"
                         }
-                        val shareIntent = Intent.createChooser(intent, null)
-                        context.startActivity(shareIntent)
-                    }, imageVector = Icons.Outlined.Share, contentDescription = null)
+                        .pulsateEffect(0.75f),
+                        imageVector = Icons.Outlined.OpenInBrowser,
+                        contentDescription = null)
+                    Icon(modifier = Modifier
+                        .iconModifier(colorScheme) {
+                            localClipboardManager.setText(AnnotatedString(article.url))
+                        }
+                        .pulsateEffect(0.75f),
+                        imageVector = Icons.Outlined.ContentCopy,
+                        contentDescription = null)
+                    Icon(modifier = Modifier
+                        .iconModifier(colorScheme) {
+                            val intent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, article.url)
+                                type = "text/plain"
+                            }
+                            val shareIntent = Intent.createChooser(intent, null)
+                            context.startActivity(shareIntent)
+                        }
+                        .pulsateEffect(0.75f),
+                        imageVector = Icons.Outlined.Share,
+                        contentDescription = null)
                 }
             }
         }
