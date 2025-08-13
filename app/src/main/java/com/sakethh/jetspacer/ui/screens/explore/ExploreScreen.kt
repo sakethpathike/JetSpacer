@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.ui.screens.explore
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +38,6 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -306,6 +306,7 @@ fun ExploreScreen() {
                     .padding(start = 15.dp, end = 15.dp)
             ) {
                 ExploreSectionItem(
+                    palette = exploreScreenViewModel.apodArchiveBannerColors,
                     imgURL = HomeScreenViewModel.currentAPODImgURL.ifBlank { "https://apod.nasa.gov/apod/image/2410/IC63_1024.jpg" },
                     itemTitle = "APOD Archive",
                     onClick = {
@@ -313,6 +314,7 @@ fun ExploreScreen() {
                     })
                 Spacer(Modifier.height(10.dp))
                 ExploreSectionItem(
+                    palette = exploreScreenViewModel.marsGalleryBannerColors,
                     imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg/435px-Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg",
                     itemTitle = "Mars Gallery",
                     onClick = {
@@ -325,7 +327,9 @@ fun ExploreScreen() {
 }
 
 @Composable
-private fun ExploreSectionItem(imgURL: String, itemTitle: String, onClick: () -> Unit) {
+private fun ExploreSectionItem(
+    palette: List<Color>, imgURL: String, itemTitle: String, onClick: () -> Unit
+) {
     val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
     Box(
@@ -334,7 +338,11 @@ private fun ExploreSectionItem(imgURL: String, itemTitle: String, onClick: () ->
             .fillMaxWidth()
             .height(150.dp)
             .clip(RoundedCornerShape(15.dp))
-            .background(MaterialTheme.colorScheme.primary.copy(0.25f))
+            .border(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                width = 2.5.dp,
+                shape = RoundedCornerShape(15.dp)
+            )
             .clickable { onClick() }) {
         AsyncImage(
             model = ImageRequest.Builder(context).data(imgURL).crossfade(true).build(),
@@ -344,18 +352,18 @@ private fun ExploreSectionItem(imgURL: String, itemTitle: String, onClick: () ->
                 .drawWithContent {
                     drawContent()
                     drawRect(
-                        Brush.verticalGradient(
-                            listOf(
+                        brush = Brush.verticalGradient(
+                            colors = if (palette.size >= 2) palette else listOf(
                                 colorScheme.surface, Color.Transparent
                             )
-                        ), blendMode = BlendMode.DstIn
+                        ), blendMode = BlendMode.Multiply
                     )
                 }
                 .fillMaxWidth(),
             contentScale = ContentScale.Crop,
         )
         Text(
-            itemTitle,
+            text = itemTitle,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier

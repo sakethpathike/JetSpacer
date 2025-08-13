@@ -3,7 +3,6 @@ package com.sakethh.jetspacer.ui.utils
 import android.app.DownloadManager
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.os.Environment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,11 +12,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.request.ImageRequest
-import androidx.core.net.toUri
 
 fun Modifier.iconModifier(colorScheme: ColorScheme, onClick: () -> Unit): Modifier {
     return this
@@ -31,7 +31,7 @@ fun Modifier.iconModifier(colorScheme: ColorScheme, onClick: () -> Unit): Modifi
         .size(20.dp)
 }
 
-suspend fun fetchSwatchesFromUrl(context: Context, url: String): Palette? {
+suspend fun retrievePaletteFromUrl(context: Context, url: String): Palette? {
     val loader = ImageLoader(context)
     val request = ImageRequest.Builder(context).data(url).allowHardware(false).build()
 
@@ -40,12 +40,20 @@ suspend fun fetchSwatchesFromUrl(context: Context, url: String): Palette? {
     return if (bitmap == null) null else Palette.from(bitmap).generate()
 }
 
-fun downloadImage(context: Context,imgURL: String,fileName: String,description: String){
-    val downloadRequest = DownloadManager.Request(imgURL.toUri())
-        .setTitle(fileName)
-        .setDescription(description)
-        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-        .setDestinationInExternalPublicDir(Environment.DIRECTORY_PICTURES, fileName)
+fun generateColorPaletteList(palette: Palette): List<Color> {
+    return buildList {
+        palette.vibrantSwatch?.rgb?.let { add(Color(it)) }
+        palette.lightVibrantSwatch?.rgb?.let { add(Color(it)) }
+        palette.mutedSwatch?.rgb?.let { add(Color(it)) }
+        palette.darkMutedSwatch?.rgb?.let { add(Color(it)) }
+    }
+}
+
+fun downloadImage(context: Context, imgURL: String, fileName: String, description: String) {
+    val downloadRequest =
+        DownloadManager.Request(imgURL.toUri()).setTitle(fileName).setDescription(description)
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setDestinationInExternalPublicDir(Environment.DIRECTORY_PICTURES, fileName)
 
     val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
     downloadManager.enqueue(downloadRequest)
