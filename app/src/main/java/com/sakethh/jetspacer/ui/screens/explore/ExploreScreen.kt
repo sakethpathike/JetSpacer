@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.ui.screens.explore
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -133,8 +134,7 @@ fun ExploreScreen() {
                 }
             }
             LazyVerticalStaggeredGrid(
-                modifier = Modifier.padding(5.dp),
-                columns = StaggeredGridCells.Adaptive(150.dp)
+                modifier = Modifier.padding(5.dp), columns = StaggeredGridCells.Adaptive(150.dp)
             ) {
                 if (searchResultsState.value.error) {
                     item(span = StaggeredGridItemSpan.FullLine) {
@@ -198,7 +198,7 @@ fun ExploreScreen() {
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
-                "ISS",
+                text = "ISS",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -215,13 +215,29 @@ fun ExploreScreen() {
                 modifier = Modifier.padding(start = 15.dp, end = 15.dp)
             )
             Spacer(Modifier.height(5.dp))
-            if (issLocationState.value.timestamp.isBlank()) {
-                LinearWavyProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 15.dp, top = 15.dp, end = 15.dp, bottom = 10.dp)
-                )
-            } else {
+            AnimatedContent(
+                targetState = issLocationState.value.timestamp.isBlank() to issLocationState.value.error,
+                contentKey = {
+                    it
+                }) {
+
+                if (it.second) {
+                    InfoCard(
+                        modifier = Modifier.padding(start = 15.dp, top = 5.dp, end = 15.dp),
+                        info = issLocationState.value.errorMessage
+                    )
+                    return@AnimatedContent
+                }
+
+                if (it.first) {
+                    LinearWavyProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 15.dp, top = 15.dp, end = 15.dp, bottom = 10.dp)
+                    )
+                    return@AnimatedContent
+                }
+
                 Column(
                     Modifier
                         .fillMaxSize()
@@ -304,11 +320,6 @@ fun ExploreScreen() {
                     })
                 Spacer(Modifier.height(110.dp))
             }
-        }
-    }
-    DisposableEffect(Unit) {
-        onDispose {
-            exploreScreenViewModel.stopIssLocationRetrieval()
         }
     }
 }

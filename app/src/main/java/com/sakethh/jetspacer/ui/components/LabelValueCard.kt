@@ -1,5 +1,9 @@
 package com.sakethh.jetspacer.ui.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,11 +45,15 @@ fun LabelValueCard(
             )
             Spacer(Modifier.height(2.dp))
         }
-        Text(
-            value,
-            style = MaterialTheme.typography.titleMedium,
-            fontSize = 15.sp,
-            color = MaterialTheme.colorScheme.primary
-        )
+        AnimatedContent(targetState = value, transitionSpec = {
+            fadeIn() togetherWith fadeOut()
+        }) {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.titleMedium,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
     }
 }

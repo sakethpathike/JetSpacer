@@ -25,7 +25,9 @@ class FetchISSLocationUseCase(private val exploreScreenRelatedAPIsRepository: Ex
                 latitude = originalData.issPosition.latitude,
                 longitude = originalData.issPosition.longitude,
                 message = originalData.message,
-                timestamp = Date(originalData.timestamp.toLong() * 1000).toString()
+                timestamp = Date(originalData.timestamp.toLong() * 1000).toString(),
+                error = false,
+                errorMessage = ""
             )
             Response.Success(modifiedData)
         } catch (e: Exception) {

@@ -16,6 +16,7 @@ import com.sakethh.jetspacer.ui.utils.fetchSwatchesFromUrl
 import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -28,12 +29,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @Suppress("OPT_IN_USAGE")
-class  ExploreScreenViewModel(
+class ExploreScreenViewModel(
     context: Context,
     private val fetchImagesFromNasaImageLibraryUseCase: FetchImagesFromNasaImageLibraryUseCase = FetchImagesFromNasaImageLibraryUseCase(),
     private val fetchISSLocationUseCase: FetchISSLocationUseCase = FetchISSLocationUseCase()
-) :
-    ViewModel() {
+) : ViewModel() {
 
     val searchResultsState = mutableStateOf(
         SearchResultState(
@@ -44,7 +44,14 @@ class  ExploreScreenViewModel(
     )
 
     val issLocationState = mutableStateOf(
-        ISSLocationModifiedDTO(latitude = "", longitude = "", message = "", timestamp = "")
+        ISSLocationModifiedDTO(
+            latitude = "",
+            longitude = "",
+            message = "",
+            timestamp = "",
+            error = false,
+            errorMessage = ""
+        )
     )
 
     companion object {
@@ -60,16 +67,14 @@ class  ExploreScreenViewModel(
             searchResultsJob?.cancel()
             if (query.isBlank()) {
                 searchResultsState.value = searchResultsState.value.copy(
-                    isLoading = false,
-                    error = false,
-                    data = emptyList()
+                    isLoading = false, error = false, data = emptyList()
                 )
                 return@onEach
             }
             searchResultsState.value =
                 searchResultsState.value.copy(isLoading = true, error = false, data = emptyList())
         }.debounce(1500).onEach { query ->
-            loadSearchResults(context,flowOf(query))
+            loadSearchResults(context, flowOf(query))
         }.launchIn(viewModelScope)
 
         issLocationJob = viewModelScope.launch {
@@ -77,28 +82,26 @@ class  ExploreScreenViewModel(
                 logger("retrieving issLocation")
                 when (val issLocationData = fetchISSLocationUseCase()) {
                     is Response.Success -> {
-                        issLocationState.value = issLocationData.data
+                        issLocationState.value =
+                            issLocationData.data.copy(error = false)
                     }
 
-                    else -> {
-                        issLocationState.value = ISSLocationModifiedDTO(
-                            latitude = "",
-                            longitude = "",
-                            message = "",
-                            timestamp = ""
+                    is Response.Failure<*> -> {
+                        cancel()
+                        issLocationState.value = issLocationState.value.copy(
+                            error = true,
+                            errorMessage = "${issLocationData.statusCode}\n${issLocationData.statusDescription}"
                         )
                     }
+
+                    is Response.Loading<*> -> {}
                 }
                 delay(5000)
             }
         }
     }
 
-    fun stopIssLocationRetrieval() {
-        issLocationJob?.cancel()
-    }
-
-    private fun loadSearchResults(context: Context,querySearchSnapShotFlow: Flow<String>) {
+    private fun loadSearchResults(context: Context, querySearchSnapShotFlow: Flow<String>) {
         searchResultsJob = viewModelScope.launch {
             querySearchSnapShotFlow.cancellable().collectLatest {
                 if (it.isBlank()) {
@@ -107,13 +110,12 @@ class  ExploreScreenViewModel(
                 fetchImagesFromNasaImageLibraryUseCase(it, 1).onEach {
                     when (val nasaSearchData = it) {
                         is Response.Failure -> {
-                            searchResultsState.value =
-                                searchResultsState.value.copy(
-                                    isLoading = false,
-                                    error = true,
-                                    statusCode = nasaSearchData.statusCode,
-                                    statusDescription = nasaSearchData.statusDescription
-                                )
+                            searchResultsState.value = searchResultsState.value.copy(
+                                isLoading = false,
+                                error = true,
+                                statusCode = nasaSearchData.statusCode,
+                                statusDescription = nasaSearchData.statusDescription
+                            )
                             UiChannel.pushUiEvent(
                                 uiEvent = UIEvent.ShowSnackbar(nasaSearchData.exceptionMessage),
                                 coroutineScope = this
@@ -129,7 +131,9 @@ class  ExploreScreenViewModel(
                             searchResultsState.value = searchResultsState.value.copy(
                                 isLoading = false, error = false, data = nasaSearchData.data.map {
                                     it to run {
-                                        val palette = fetchSwatchesFromUrl(context = context,url=it.imageUrl)
+                                        val palette = fetchSwatchesFromUrl(
+                                            context = context, url = it.imageUrl
+                                        )
                                         if (palette == null) {
                                             emptyList()
                                         } else {
@@ -141,8 +145,7 @@ class  ExploreScreenViewModel(
                                             }
                                         }
                                     }
-                                }
-                            )
+                                })
                         }
                     }
                 }.launchIn(this)

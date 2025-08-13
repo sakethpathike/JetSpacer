@@ -4,5 +4,7 @@ data class ISSLocationModifiedDTO(
     val latitude: String,
     val longitude: String,
     val message: String,
-    val timestamp: String
+    val timestamp: String,
+    val error: Boolean,
+    val errorMessage: String,
 )
