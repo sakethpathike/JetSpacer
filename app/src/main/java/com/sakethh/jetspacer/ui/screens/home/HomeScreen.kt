@@ -2,6 +2,9 @@ package com.sakethh.jetspacer.ui.screens.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,12 +35,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Copyright
-import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -85,8 +86,6 @@ import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.screens.headlines.components.TopHeadlineComponent
 import com.sakethh.jetspacer.ui.screens.home.components.ImageActionsRow
-import com.sakethh.jetspacer.ui.utils.downloadImage
-import com.sakethh.jetspacer.ui.utils.iconModifier
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -501,40 +500,33 @@ fun HomeScreen() {
                         )
                     })
             }
-            if (topHeadlinesState.isLoading && !topHeadlinesState.reachedMaxHeadlines && !topHeadlinesState.error) {
-                item {
-                    LinearWavyProgressIndicator(
-                        modifier = Modifier
-                            .padding(
-                                top = 45.dp, start = 15.dp, end = 15.dp, bottom = 250.dp
-                            )
-                            .fillMaxWidth()
-                    )
-                }
-            }
-            if (topHeadlinesState.error) {
-                item {
-                    Text(
-                        text = "${topHeadlinesState.statusCode}\n${topHeadlinesState.statusDescription}",
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(15.dp)
-                    )
-                }
-            }
-            if (topHeadlinesState.reachedMaxHeadlines) {
-                item {
-                    Text(
-                        text = "That's all the data found.",
-                        style = MaterialTheme.typography.titleSmall,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(15.dp)
-                    )
-                }
-            }
             item {
-                Spacer(Modifier.height(150.dp))
+                AnimatedContent(
+                    contentKey = {
+                    it
+                },
+                    transitionSpec = {
+                        fadeIn() togetherWith fadeOut()
+                    },
+                    modifier = Modifier.padding(
+                        start = 15.dp, end = 15.dp, top = 15.dp, bottom = 150.dp
+                    ),
+                    targetState = topHeadlinesState.reachedMaxHeadlines to topHeadlinesState.isLoading
+                ) {
+                    if (it.second) {
+                        LinearWavyProgressIndicator(
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    if (it.first) {
+                        Text(
+                            text = "That's all the data found.",
+                            style = MaterialTheme.typography.titleSmall,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             }
         }
         LaunchedEffect(lazyColumnState.canScrollForward) {
