@@ -1,9 +1,13 @@
 package com.sakethh.jetspacer.ui.screens.explore.apodArchive
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,12 +61,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.pulsateEffect
+import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.ui.utils.customMutableRememberSavable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -72,10 +79,14 @@ import java.util.TimeZone
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalFoundationApi::class,
-    ExperimentalMaterial3ExpressiveApi::class
+    ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalSharedTransitionApi::class
 )
 @Composable
-fun APODArchiveScreen(navController: NavController) {
+fun SharedTransitionScope.APODArchiveScreen(
+    animatedVisibilityScope: AnimatedVisibilityScope
+) {
+    val navController = LocalNavController.current
     val apodArchiveScreenViewModel: APODArchiveScreenViewModel = viewModel()
     val apodArchiveState = apodArchiveScreenViewModel.apodArchiveState.value
     val context = LocalContext.current
@@ -109,8 +120,7 @@ fun APODArchiveScreen(navController: NavController) {
         mutableIntStateOf(150)
     }
     val animateGridComponentsMinSize = animateIntAsState(
-        animationSpec = tween(durationMillis = 300),
-        targetValue = gridComponentsMinSize.intValue
+        animationSpec = tween(durationMillis = 300), targetValue = gridComponentsMinSize.intValue
     )
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         MediumTopAppBar(scrollBehavior = topAppBarScrollBehavior, title = {
@@ -153,13 +163,25 @@ fun APODArchiveScreen(navController: NavController) {
                         Spacer(Modifier.height(10.dp))
                     }
                 }
-                items(apodArchiveState.data) {
+                items(items = apodArchiveState.data, key = {
+                    it.url
+                }) {
                     AsyncImage(
                         model = ImageRequest.Builder(context).data(it.url).crossfade(true).build(),
                         modifier = Modifier
+                            .sharedElement(
+                                sharedContentState = rememberSharedContentState(key = "APOD${it.url}"),
+                                animatedVisibilityScope = animatedVisibilityScope)
                             .wrapContentHeight()
                             .padding(5.dp)
-                            .clip(RoundedCornerShape(15.dp)),
+                            .clip(RoundedCornerShape(15.dp))
+                            .clickable {
+                                navController.navigate(
+                                    HyleNavigation.APODArchiveScreen.APODDetailScreen(
+                                        apod = Json.encodeToString(it)
+                                    )
+                                )
+                            },
                         contentDescription = null,
                     )
                 }

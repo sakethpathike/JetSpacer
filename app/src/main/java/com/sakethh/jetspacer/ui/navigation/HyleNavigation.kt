@@ -1,6 +1,7 @@
 package com.sakethh.jetspacer.ui.navigation
 
 import android.annotation.SuppressLint
+import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import kotlinx.serialization.Serializable
 
 @SuppressLint("UnsafeOptInUsageError")
@@ -28,6 +29,7 @@ sealed interface HyleNavigation {
         data object Settings : Latest
     }
 
+
     @Serializable
     sealed interface Explore : HyleNavigation {
 
@@ -36,18 +38,25 @@ sealed interface HyleNavigation {
 
 
         @Serializable
-        data object MarsGalleryRoute
+        data object MarsGalleryScreen
 
         @Serializable
-        data class SearchResultScreenRoute(
+        data class SearchResultScreen(
             val encodedString: String
         )
+
+    }
+
+    @Serializable
+    sealed interface APODArchiveScreen {
+        @Serializable
+        data class APODDetailScreen(val apod: String)
     }
 
     @Serializable
     sealed interface Headlines : HyleNavigation {
         @Serializable
-        data class TopHeadlineDetailScreenRoute(
+        data class TopHeadlineDetailScreen(
             val encodedString: String
         )
     }
