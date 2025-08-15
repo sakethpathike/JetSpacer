@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
@@ -32,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.screens.home.components.ImageActionsRow
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
@@ -42,8 +42,7 @@ import kotlinx.serialization.json.Json
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.APODDetailScreen(
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    apod: String
+    animatedVisibilityScope: AnimatedVisibilityScope, apod: String
 ) {
     val apod = rememberObject {
         Json.decodeFromString<ModifiedAPODDTO>(apod)
@@ -108,12 +107,15 @@ fun SharedTransitionScope.APODDetailScreen(
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.secondary
         )
-        Text(
-            text = apod.title.trim(),
-            style = MaterialTheme.typography.titleMedium,
-            fontSize = 16.sp,
-            modifier = commonModifier
-        )
+
+        SelectionContainer {
+            Text(
+                text = apod.title.trim(),
+                style = MaterialTheme.typography.titleMedium,
+                fontSize = 16.sp,
+                modifier = commonModifier
+            )
+        }
 
         Spacer(Modifier.height(15.dp))
         Text(
@@ -123,14 +125,12 @@ fun SharedTransitionScope.APODDetailScreen(
             color = MaterialTheme.colorScheme.secondary
         )
         Spacer(Modifier.height(2.dp))
-        Box(
-            modifier = commonModifier
-        ) {
+        SelectionContainer {
             Text(
                 text = apod.explanation.trim(),
                 style = MaterialTheme.typography.titleSmall,
                 fontSize = 16.sp,
-                modifier = Modifier.pulsateEffect()
+                modifier = commonModifier
             )
         }
         Spacer(
