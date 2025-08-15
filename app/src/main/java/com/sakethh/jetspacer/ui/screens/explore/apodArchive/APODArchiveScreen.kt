@@ -1,9 +1,10 @@
 package com.sakethh.jetspacer.ui.screens.explore.apodArchive
 
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,7 +24,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.CalendarLocale
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerFormatter
@@ -34,7 +34,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -45,6 +44,7 @@ import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,7 +63,6 @@ import coil.request.ImageRequest
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.ui.utils.customMutableRememberSavable
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -105,6 +105,13 @@ fun APODArchiveScreen(navController: NavController) {
     val isDataBasedOnCustomRangeSelector = rememberSaveable {
         mutableStateOf(false)
     }
+    val gridComponentsMinSize = rememberSaveable {
+        mutableIntStateOf(150)
+    }
+    val animateGridComponentsMinSize = animateIntAsState(
+        animationSpec = tween(durationMillis = 300),
+        targetValue = gridComponentsMinSize.intValue
+    )
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         MediumTopAppBar(scrollBehavior = topAppBarScrollBehavior, title = {
             Text("APOD Archive", style = MaterialTheme.typography.titleSmall, fontSize = 16.sp)
@@ -124,88 +131,89 @@ fun APODArchiveScreen(navController: NavController) {
             }
         })
     }) {
-        LazyVerticalStaggeredGrid(
-            state = lazyVerticalStaggeredGridState,
-            columns = StaggeredGridCells.Adaptive(150.dp),
-            modifier = Modifier
-                .padding(it)
-                .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-        ) {
-            if (!apodArchiveState.isLoading || apodArchiveState.error) {
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    Spacer(Modifier.height(10.dp))
+        Box(modifier = Modifier
+            .padding(it)
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTransformGestures { _, _, zoom, _ ->
+                    val newSize = (gridComponentsMinSize.intValue * zoom).toInt()
+                    gridComponentsMinSize.intValue = newSize.coerceIn(50, 400)
                 }
-            }
-            items(apodArchiveState.data) {
-                AsyncImage(
-                    model = ImageRequest.Builder(context).data(it.url).crossfade(true).build(),
-                    modifier = Modifier
-                        .pulsateEffect()
-                        .wrapContentHeight()
-                        .padding(5.dp)
-                        .clip(RoundedCornerShape(15.dp))
-                        .border(
-                            1.5.dp, LocalContentColor.current.copy(0.25f), RoundedCornerShape(15.dp)
-                        )
-                        .combinedClickable(onClick = {
-                            selectedAPODData.value = it
-                            isBtmSheetVisible.value = true
-                            coroutineScope.launch {
-                                btmSheetState.show()
-                            }
-                        }, onLongClick = {
-
-                        }),
-                    contentDescription = null
-                )
-            }
-            if (apodArchiveState.isLoading) {
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    Box(
-                        modifier = Modifier
-                            .padding(15.dp)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        ContainedLoadingIndicator()
+            }) {
+            LazyVerticalStaggeredGrid(
+                state = lazyVerticalStaggeredGridState,
+                columns = StaggeredGridCells.Adaptive(animateGridComponentsMinSize.value.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 5.dp)
+                    .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
+            ) {
+                if (!apodArchiveState.isLoading || apodArchiveState.error) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Spacer(Modifier.height(10.dp))
                     }
                 }
-            }
-            if (apodArchiveState.error) {
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    Text(
-                        text = "${apodArchiveState.statusCode}\n${apodArchiveState.statusDescription}",
-                        style = MaterialTheme.typography.titleSmall,
+                items(apodArchiveState.data) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context).data(it.url).crossfade(true).build(),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 15.dp)
+                            .wrapContentHeight()
+                            .padding(5.dp)
+                            .clip(RoundedCornerShape(15.dp)),
+                        contentDescription = null,
                     )
                 }
-            }
-            if (isDataBasedOnCustomRangeSelector.value && apodArchiveState.isLoading.not()) {
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    Column {
-                        HorizontalDivider(
+                if (apodArchiveState.isLoading) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
                                 .padding(15.dp)
-                        )
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            ContainedLoadingIndicator()
+                        }
+                    }
+                }
+                if (apodArchiveState.error) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
                         Text(
-                            "That's all the data found based on the filter you applied.",
+                            text = "${apodArchiveState.statusCode}\n${apodArchiveState.statusDescription}",
                             style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+                                .padding(start = 15.dp)
                         )
-                        Button(
-                            modifier = Modifier
-                                .pulsateEffect()
-                                .fillMaxWidth()
-                                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp), onClick = {
-                                isDataBasedOnCustomRangeSelector.value = false
-                                apodArchiveScreenViewModel.resetAPODArchiveStateAndReloadAgain()
-                            }) {
-                            Text("Clear the filter", style = MaterialTheme.typography.titleSmall)
+                    }
+                }
+                if (isDataBasedOnCustomRangeSelector.value && apodArchiveState.isLoading.not()) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Column {
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(15.dp)
+                            )
+                            Text(
+                                "That's all the data found based on the filter you applied.",
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+                            )
+                            Button(
+                                modifier = Modifier
+                                    .pulsateEffect()
+                                    .fillMaxWidth()
+                                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                                onClick = {
+                                    isDataBasedOnCustomRangeSelector.value = false
+                                    apodArchiveScreenViewModel.resetAPODArchiveStateAndReloadAgain()
+                                }) {
+                                Text(
+                                    "Clear the filter", style = MaterialTheme.typography.titleSmall
+                                )
+                            }
                         }
                     }
                 }
@@ -284,23 +292,24 @@ fun APODArchiveScreen(navController: NavController) {
                     .background(DatePickerDefaults.colors().containerColor)
                     .align(Alignment.BottomCenter)
             ) {
-                Button(modifier = Modifier
-                    .pulsateEffect()
-                    .fillMaxWidth()
-                    .padding(15.dp), onClick = {
-                    isDateRangePickerDialogVisible.value = false
-                    isDataBasedOnCustomRangeSelector.value = true
-                    val endDate = Date(
-                        dateRangePickerState.selectedStartDateMillis ?: 0
-                    )
-                    apodArchiveScreenViewModel.retrieveAPODDataBetweenSpecificDates(
-                        apodStartDate = SimpleDateFormat("yyyy-MM-dd").format(
-                            dateRangePickerState.selectedEndDateMillis ?: 0
-                        ),
-                        apodEndDate = SimpleDateFormat("yyyy-MM-dd").format(endDate),
-                        erasePreviousData = true
-                    )
-                }) {
+                Button(
+                    modifier = Modifier
+                        .pulsateEffect()
+                        .fillMaxWidth()
+                        .padding(15.dp), onClick = {
+                        isDateRangePickerDialogVisible.value = false
+                        isDataBasedOnCustomRangeSelector.value = true
+                        val endDate = Date(
+                            dateRangePickerState.selectedStartDateMillis ?: 0
+                        )
+                        apodArchiveScreenViewModel.retrieveAPODDataBetweenSpecificDates(
+                            apodStartDate = SimpleDateFormat("yyyy-MM-dd").format(
+                                dateRangePickerState.selectedEndDateMillis ?: 0
+                            ),
+                            apodEndDate = SimpleDateFormat("yyyy-MM-dd").format(endDate),
+                            erasePreviousData = true
+                        )
+                    }) {
                     Text("Apply", style = MaterialTheme.typography.titleSmall)
                 }
             }
