@@ -43,12 +43,12 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.domain.model.NASAImageLibrarySearchModifiedDTO
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
-import com.sakethh.jetspacer.ui.utils.customRememberSavable
+import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import kotlinx.serialization.json.Json
 
 @Composable
 fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
-    val searchResult = customRememberSavable {
+    val searchResult = rememberSerializableObject {
         Json.decodeFromString<NASAImageLibrarySearchModifiedDTO>(
             encodedNasaImageLibrarySearchModifiedDTO
         )

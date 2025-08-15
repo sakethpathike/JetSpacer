@@ -60,13 +60,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.sakethh.jetspacer.domain.model.Headline
-import com.sakethh.jetspacer.ui.utils.customRememberSavable
+import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import kotlinx.serialization.json.Json
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun TopHeadlineDetailScreen(encodedString: String) {
-    val headline = customRememberSavable {
+    val headline = rememberSerializableObject {
         Json.decodeFromString<Headline>(encodedString)
     }
     val isBookmarked = rememberSaveable {
