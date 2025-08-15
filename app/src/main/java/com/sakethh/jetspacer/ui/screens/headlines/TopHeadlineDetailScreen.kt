@@ -3,6 +3,9 @@ package com.sakethh.jetspacer.ui.screens.headlines
 import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -17,13 +20,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,9 +69,12 @@ import com.sakethh.jetspacer.domain.model.Headline
 import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import kotlinx.serialization.json.Json
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun TopHeadlineDetailScreen(encodedString: String) {
+fun SharedTransitionScope.TopHeadlineDetailScreen(
+    animatedVisibilityScope: AnimatedVisibilityScope, encodedString: String
+) {
     val headline = rememberSerializableObject {
         Json.decodeFromString<Headline>(encodedString)
     }
@@ -79,50 +88,66 @@ fun TopHeadlineDetailScreen(encodedString: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.statusBars)
             .verticalScroll(rememberScrollState())
     ) {
         Column(
             modifier = Modifier
-                .padding(start = 15.dp, end = 15.dp)
+                .padding(start = 15.dp, end = 15.dp, top = 15.dp)
                 .align(Alignment.BottomCenter)
         ) {
             Spacer(Modifier.height(50.dp))
             AsyncImage(
                 model = ImageRequest.Builder(context).data(headline.imageUrl).crossfade(true)
-                    .build(),
-                modifier = Modifier
+                    .build(), modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_IMG_${headline.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
                     .wrapContentHeight()
                     .padding(top = 15.dp, bottom = 15.dp)
                     .clip(RoundedCornerShape(15.dp))
                     .border(
                         1.5.dp, LocalContentColor.current.copy(0.25f), RoundedCornerShape(15.dp)
-                    ),
-                contentDescription = null
+                    ), contentDescription = null
             )
             Text(
                 text = headline.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 16.sp,
                 modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_TITLE_${headline.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
                     .fillMaxWidth()
                     .padding(bottom = if (headline.author.isNotBlank()) 15.dp else 0.dp)
             )
-            if (headline.author.isNotBlank()) {
-                HeadlineDetailComponent(
-                    string = headline.author, imageVector = Icons.Default.PersonOutline
+            Column(
+                modifier = Modifier.sharedElement(
+                    sharedContentState = rememberSharedContentState(key = "HEADLINE_SOURCE_${headline.url}"),
+                    animatedVisibilityScope = animatedVisibilityScope
                 )
-            }
-            if (headline.sourceName.isNotBlank()) {
-                Spacer(Modifier.height(if (headline.author.isNotBlank()) 5.dp else 15.dp))
-                HeadlineDetailComponent(
-                    string = headline.sourceName, imageVector = Icons.Default.Public
-                )
-            }
-            if (headline.publishedAt.isNotBlank()) {
-                Spacer(Modifier.height(if (headline.sourceName.isNotBlank()) 5.dp else 15.dp))
-                HeadlineDetailComponent(
-                    string = headline.publishedAt, imageVector = Icons.Default.AccessTime
-                )
+            ) {
+                if (headline.author.isNotBlank()) {
+                    HeadlineDetailComponent(
+                        string = headline.author, imageVector = Icons.Default.PersonOutline
+                    )
+                }
+
+                if (headline.sourceName.isNotBlank()) {
+                    Spacer(Modifier.height(if (headline.author.isNotBlank()) 5.dp else 15.dp))
+                    HeadlineDetailComponent(
+                        string = headline.sourceName, imageVector = Icons.Default.Public
+                    )
+                }
+
+                if (headline.publishedAt.isNotBlank()) {
+                    Spacer(Modifier.height(if (headline.sourceName.isNotBlank()) 5.dp else 15.dp))
+                    HeadlineDetailComponent(
+                        string = headline.publishedAt, imageVector = Icons.Default.AccessTime
+                    )
+                }
             }
             Spacer(Modifier.height(15.dp))
             HorizontalDivider(modifier = Modifier.fillMaxWidth())
@@ -131,9 +156,13 @@ fun TopHeadlineDetailScreen(encodedString: String) {
                 text = headline.description,
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_DESC_${headline.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
                     .fillMaxWidth()
-                    .padding(bottom = 15.dp)
             )
+            Spacer(Modifier.height(15.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -141,25 +170,37 @@ fun TopHeadlineDetailScreen(encodedString: String) {
                     .fillMaxWidth()
                     .navigationBarsPadding()
             ) {
-                FilledTonalButton(onClick = {
-                    localUriHandler.openUri(headline.url)
-                }) {
+                FilledTonalButton(
+                    modifier = Modifier.sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_OIB_${headline.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    ), onClick = {
+                        localUriHandler.openUri(headline.url)
+                    }) {
                     Icon(Icons.Outlined.OpenInBrowser, null)
                 }
-                FilledTonalButton(onClick = {
-                    localClipboardManager.setText(AnnotatedString(headline.url))
-                }) {
+                FilledTonalButton(
+                    modifier = Modifier.sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_CL_${headline.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    ), onClick = {
+                        localClipboardManager.setText(AnnotatedString(headline.url))
+                    }) {
                     Icon(Icons.Outlined.ContentCopy, null)
                 }
-                FilledTonalButton(onClick = {
-                    val intent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, headline.url)
-                        type = "text/plain"
-                    }
-                    val shareIntent = Intent.createChooser(intent, null)
-                    context.startActivity(shareIntent)
-                }) {
+                FilledTonalButton(
+                    modifier = Modifier.sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_SHARE_${headline.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    ), onClick = {
+                        val intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, headline.url)
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(intent, null)
+                        context.startActivity(shareIntent)
+                    }) {
                     Icon(Icons.Outlined.Share, null)
                 }
             }/* FilledTonalButton(

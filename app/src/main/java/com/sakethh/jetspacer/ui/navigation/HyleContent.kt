@@ -26,14 +26,17 @@ fun HyleContent() {
             navController = navController, startDestination = HyleNavigation.Root.Home
         ) {
             composable<HyleNavigation.Root.Home> {
-                HomeScreen()
+                HomeScreen(
+                    animatedVisibilityScope = this
+                )
             }
             composable<HyleNavigation.Root.Settings> {
                 SettingsScreen()
             }
             composable<HyleNavigation.Headlines.TopHeadlineDetailScreen> { navBackStackEntry ->
                 TopHeadlineDetailScreen(
-                    navBackStackEntry.toRoute<HyleNavigation.Headlines.TopHeadlineDetailScreen>().encodedString
+                    animatedVisibilityScope = this,
+                    encodedString = navBackStackEntry.toRoute<HyleNavigation.Headlines.TopHeadlineDetailScreen>().encodedString
                 )
             }
             composable<HyleNavigation.Root.Explore> {
