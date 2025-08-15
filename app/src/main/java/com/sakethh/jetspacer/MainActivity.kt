@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.navigation.BottomNavigationBar
-import com.sakethh.jetspacer.ui.navigation.HyleContent
+import com.sakethh.jetspacer.ui.navigation.HyleNavHost
 import com.sakethh.jetspacer.ui.theme.HyleTheme
 import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
                         SnackbarHost(hostState = snackBarHostState)
                     }) {
                         Surface {
-                            HyleContent()
+                            HyleNavHost()
                         }
                     }
                 }

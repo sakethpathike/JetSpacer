@@ -1,6 +1,7 @@
 package com.sakethh.jetspacer.ui.navigation
 
 import android.annotation.SuppressLint
+import com.sakethh.jetspacer.domain.model.rover_latest_images.LatestPhoto
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import kotlinx.serialization.Serializable
 
@@ -51,6 +52,11 @@ sealed interface HyleNavigation {
     sealed interface APODArchiveScreen {
         @Serializable
         data class APODDetailScreen(val apod: String)
+    }
+    @Serializable
+    sealed interface MarsGalleryScreen {
+        @Serializable
+        data class RoverImageDetailsScreen(val image: String)
     }
 
     @Serializable

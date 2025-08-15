@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Rover(
+data class RoverDTO(
     val cameras: List<CameraX> = emptyList(), val id: Int = 0,
     @SerialName("landing_date") val landingDate: String = "",
     @SerialName("launch_date") val launchDate: String = "",

@@ -23,7 +23,7 @@ import com.sakethh.jetspacer.ui.screens.headlines.NewsScreenState
 import com.sakethh.jetspacer.ui.screens.home.state.apod.APODState
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.ui.screens.home.state.epic.EPICState
-import com.sakethh.jetspacer.ui.utils.fetchSwatchesFromUrl
+import com.sakethh.jetspacer.ui.utils.retrievePaletteFromUrl
 import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 import kotlinx.coroutines.Job
@@ -87,7 +87,7 @@ class HomeScreenViewModel(
                             topHeadLinesState.value = topHeadLinesState.value.copy(
                                 isLoading = false,
                                 data = topHeadLinesState.value.data + it.articles.map {
-                                    val palette = fetchSwatchesFromUrl(context, it.urlToImage)
+                                    val palette = retrievePaletteFromUrl(context, it.urlToImage)
                                     Headline(
                                         author = it.author,
                                         content = it.content,
@@ -177,7 +177,7 @@ class HomeScreenViewModel(
                             url = apodData.data.url ?: ""
                         ) to run {
                             if (apodData.data.url == null) return@run emptyList()
-                            val palette = fetchSwatchesFromUrl(context, apodData.data.url)
+                            val palette = retrievePaletteFromUrl(context, apodData.data.url)
                             if (palette == null) {
                                 emptyList()
                             } else {

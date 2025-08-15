@@ -11,6 +11,6 @@ data class LatestPhoto(
     val id: Int,
     @SerialName("img_src")
     val imgSrc: String,
-    val rover: Rover,
+    val rover: RoverDTO,
     val sol: Int
 )

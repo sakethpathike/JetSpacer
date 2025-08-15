@@ -42,8 +42,8 @@ import coil.request.ImageRequest
 import com.sakethh.jetspacer.domain.CollectionType
 import com.sakethh.jetspacer.domain.model.rover_latest_images.Camera
 import com.sakethh.jetspacer.domain.model.rover_latest_images.LatestPhoto
-import com.sakethh.jetspacer.domain.model.rover_latest_images.Rover
-import com.sakethh.jetspacer.ui.screens.explore.marsGallery.RoverImageDetailsBtmSheet
+import com.sakethh.jetspacer.domain.model.rover_latest_images.RoverDTO
+import com.sakethh.jetspacer.ui.screens.explore.marsGallery.RoverImageDetailsScreen
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.ui.utils.customMutableRememberSavable
 import kotlinx.coroutines.launch
@@ -84,7 +84,7 @@ fun CollectionsScreen(navController: NavController) {
             )
         )
     }
-    val selectedRoverImage = customMutableRememberSavable {
+    val selectedRoverDTOImage = customMutableRememberSavable {
         mutableStateOf(
             LatestPhoto(
                 camera = Camera(
@@ -92,7 +92,7 @@ fun CollectionsScreen(navController: NavController) {
                     id = 0,
                     name = "",
                     roverID = 0
-                ), earthDate = "", id = 0, imgSrc = "", rover = Rover(
+                ), earthDate = "", id = 0, imgSrc = "", rover = RoverDTO(
                     cameras = listOf(),
                     id = 0,
                     landingDate = "",
@@ -239,7 +239,7 @@ fun CollectionsScreen(navController: NavController) {
                                                 RoundedCornerShape(15.dp)
                                             )
                                             .combinedClickable(onClick = {
-                                                selectedRoverImage.value = LatestPhoto(
+                                                selectedRoverDTOImage.value = LatestPhoto(
                                                     camera = Camera(
                                                         fullName = it.cameraFullName,
                                                         id = 0,
@@ -249,7 +249,7 @@ fun CollectionsScreen(navController: NavController) {
                                                     earthDate = it.earthDate,
                                                     id = it.id.toInt(),
                                                     imgSrc = it.imgUrl,
-                                                    rover = Rover(
+                                                    rover = RoverDTO(
                                                         cameras = listOf(),
                                                         id = 0,
                                                         landingDate = "",
@@ -275,10 +275,5 @@ fun CollectionsScreen(navController: NavController) {
             }
         }
     }
-    RoverImageDetailsBtmSheet(
-        image = selectedRoverImage.value,
-        visible = isRoverImageBtmSheetVisible,
-        btmSheetState = roverImageBtmSheetState
-    )
 }
 

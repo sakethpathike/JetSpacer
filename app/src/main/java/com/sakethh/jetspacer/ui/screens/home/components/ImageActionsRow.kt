@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -47,6 +48,7 @@ fun ImageActionsRow(
     supportsBothHDDAndSD: Boolean,
     hdURL: String?,
     sdURL: String,
+    paddingValues: PaddingValues=PaddingValues(start = 10.dp, top = 10.dp, end = 10.dp)
 ) {
     val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
@@ -60,7 +62,7 @@ fun ImageActionsRow(
         modifier = Modifier
             .animateContentSize()
             .horizontalScroll(rememberScrollState())
-            .padding(start = 10.dp, top = 10.dp, end = 10.dp)
+            .padding(paddingValues)
     ) {
         // a loop would've been better than this copy-paste of icon btn composables
         Icon(

@@ -6,20 +6,25 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.sakethh.jetspacer.domain.model.rover_latest_images.LatestPhoto
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.screens.collection.CollectionsScreen
 import com.sakethh.jetspacer.ui.screens.explore.ExploreScreen
 import com.sakethh.jetspacer.ui.screens.explore.apodArchive.APODArchiveScreen
 import com.sakethh.jetspacer.ui.screens.explore.apodArchive.APODDetailScreen
 import com.sakethh.jetspacer.ui.screens.explore.marsGallery.MarsGalleryScreen
+import com.sakethh.jetspacer.ui.screens.explore.marsGallery.RoverImageDetailsScreen
 import com.sakethh.jetspacer.ui.screens.explore.search.SearchResultScreen
 import com.sakethh.jetspacer.ui.screens.headlines.TopHeadlineDetailScreen
 import com.sakethh.jetspacer.ui.screens.home.HomeScreen
 import com.sakethh.jetspacer.ui.screens.home.settings.SettingsScreen
+import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
+import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun HyleContent() {
+fun HyleNavHost() {
     val navController = LocalNavController.current
     SharedTransitionLayout {
         NavHost(
@@ -51,7 +56,7 @@ fun HyleContent() {
                 APODArchiveScreen(animatedVisibilityScope = this)
             }
             composable<HyleNavigation.Explore.MarsGalleryScreen> {
-                MarsGalleryScreen(navController)
+                MarsGalleryScreen(animatedVisibilityScope = this)
             }
             composable<HyleNavigation.Latest.Settings> {
                 SettingsScreen()
@@ -60,8 +65,18 @@ fun HyleContent() {
                 CollectionsScreen(navController)
             }
             composable<HyleNavigation.APODArchiveScreen.APODDetailScreen> {
-                val apodDTO = it.toRoute<HyleNavigation.APODArchiveScreen.APODDetailScreen>()
-                APODDetailScreen(animatedVisibilityScope = this, apod = apodDTO.apod)
+                val apod =
+                    rememberSerializableObject(it.toRoute<HyleNavigation.APODArchiveScreen.APODDetailScreen>().apod) {
+                        Json.decodeFromString<ModifiedAPODDTO>(it.toRoute<HyleNavigation.APODArchiveScreen.APODDetailScreen>().apod)
+                    }
+                APODDetailScreen(animatedVisibilityScope = this, apod = apod)
+            }
+            composable<HyleNavigation.MarsGalleryScreen.RoverImageDetailsScreen> {
+                val image =
+                    rememberSerializableObject(it.toRoute<HyleNavigation.MarsGalleryScreen.RoverImageDetailsScreen>().image) {
+                        Json.decodeFromString<LatestPhoto>(it.toRoute<HyleNavigation.MarsGalleryScreen.RoverImageDetailsScreen>().image)
+                    }
+                RoverImageDetailsScreen(animatedVisibilityScope = this, image = image)
             }
         }
     }

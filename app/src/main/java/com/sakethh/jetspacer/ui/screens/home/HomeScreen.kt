@@ -1,6 +1,9 @@
 package com.sakethh.jetspacer.ui.screens.home
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -13,6 +16,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -31,6 +35,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.CalendarToday
@@ -81,18 +86,22 @@ import com.sakethh.jetspacer.domain.model.article.Article
 import com.sakethh.jetspacer.domain.model.article.Source
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.Label
+import com.sakethh.jetspacer.ui.components.LabelValueCard
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.screens.headlines.components.TopHeadlineComponent
 import com.sakethh.jetspacer.ui.screens.home.components.ImageActionsRow
-import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalSharedTransitionApi::class
+)
 @Composable
-fun HomeScreen() {
+fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibilityScope) {
     val navController: NavController = LocalNavController.current
     val context = LocalContext.current
     val homeScreenViewModel: HomeScreenViewModel = viewModel(factory = viewModelFactory {
@@ -116,6 +125,12 @@ fun HomeScreen() {
     var currentEPICCapturedTime by rememberSaveable {
         mutableStateOf("")
     }
+    var currentDistanceToEarthFromTheEPIC by rememberSaveable {
+        mutableStateOf("")
+    }
+    var currentDistanceToSunFromEPIC by rememberSaveable {
+        mutableStateOf("")
+    }
     val localClipboardManager = LocalClipboardManager.current
     val localUriHandler = LocalUriHandler.current
 
@@ -133,6 +148,16 @@ fun HomeScreen() {
     LaunchedEffect(epicDataState.data, horizontalPager.currentPage) {
         currentEPICCapturedTime = try {
             epicDataState.data[horizontalPager.currentPage].timeWhenImageWasCaptured
+        } catch (_: Exception) {
+            ""
+        }
+        currentDistanceToSunFromEPIC = try {
+            epicDataState.data[horizontalPager.currentPage].distanceToSunFromEPIC.toString()
+        } catch (_: Exception) {
+            ""
+        }
+        currentDistanceToEarthFromTheEPIC = try {
+            epicDataState.data[horizontalPager.currentPage].distanceToEarthFromTheEPIC.toString()
         } catch (_: Exception) {
             ""
         }
@@ -269,6 +294,19 @@ fun HomeScreen() {
                             iconSize = 20.dp
                         )
                     }
+                    Spacer(Modifier.height(10.dp))
+                    Row {
+                        LabelValueCard(
+                            outerPaddingValues = PaddingValues(start = 10.dp),
+                            title = "Earth-Epic Distance",
+                            value = currentDistanceToEarthFromTheEPIC
+                        )
+                        LabelValueCard(
+                            outerPaddingValues = PaddingValues(start = 10.dp),
+                            title = "Sun-Epic Distance",
+                            value = currentDistanceToSunFromEPIC
+                        )
+                    }
                     ImageActionsRow(
                         openInBrowserURL = epicDataState.data[horizontalPager.currentPage].imageURL,
                         supportsBothHDDAndSD = false,
@@ -356,13 +394,7 @@ fun HomeScreen() {
                                         1.5.dp,
                                         LocalContentColor.current.copy(0.25f),
                                         RoundedCornerShape(15.dp)
-                                    )
-                                    .clickable {
-                                        isAPODBtmSheetVisible.value = true
-                                        coroutineScope.launch {
-                                            apodBtmSheetState.show()
-                                        }
-                                    },
+                                    ),
                                 contentScale = ContentScale.Crop
                             )
 
@@ -406,12 +438,14 @@ fun HomeScreen() {
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.secondary
                                 )
-                                Text(
-                                    apodDataState.apod.first.title.trim(),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontSize = 16.sp,
-                                    modifier = commonModifier
-                                )
+                                SelectionContainer {
+                                    Text(
+                                        apodDataState.apod.first.title.trim(),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontSize = 16.sp,
+                                        modifier = commonModifier
+                                    )
+                                }
                             }
 
                             if (apodDataState.apod.first.explanation.trim().isNotBlank()) {
@@ -426,7 +460,7 @@ fun HomeScreen() {
                                     color = MaterialTheme.colorScheme.secondary
                                 )
                                 Spacer(Modifier.height(2.dp))
-                                Box(
+                                SelectionContainer(
                                     modifier = commonModifier
                                 ) {
                                     Text(
@@ -490,15 +524,19 @@ fun HomeScreen() {
                         title = headline.title,
                         url = headline.url,
                         urlToImage = headline.imageUrl
-                    ), colors = colors, onItemClick = {
+                    ),
+                    colors = colors,
+                    onItemClick = {
                         navController.navigate(
-                            HyleNavigation.Headlines.TopHeadlineDetailScreenRoute(
+                            HyleNavigation.Headlines.TopHeadlineDetailScreen(
                                 encodedString = Json.encodeToString(
                                     headline
                                 )
                             )
                         )
-                    })
+                    },
+                    animatedVisibilityScope = animatedVisibilityScope,
+                )
             }
             item {
                 AnimatedContent(
@@ -520,7 +558,7 @@ fun HomeScreen() {
                     }
                     if (it.first) {
                         Text(
-                            text = "That's all the data found.",
+                            text = "That's all the headlines available at this time.",
                             style = MaterialTheme.typography.titleSmall,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()

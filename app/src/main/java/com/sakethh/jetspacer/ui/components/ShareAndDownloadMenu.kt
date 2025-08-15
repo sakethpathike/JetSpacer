@@ -4,8 +4,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.sakethh.jetspacer.R
 
 @Composable
-fun BoxScope.ShareAndDownloadMenu(
+fun ShareAndDownloadMenu(
     isBtmColumnExpanded: MutableState<Boolean>,
     onOpenInBrowserClick: () -> Unit,
     onContentCopyClick: () -> Unit,
@@ -49,111 +47,104 @@ fun BoxScope.ShareAndDownloadMenu(
     onBookMarkClick: () -> Unit,
     bookMarkIcon: ImageVector
 ) {
-    Box(
+    Column(
         modifier = Modifier
-            .align(Alignment.BottomCenter)
             .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.surfaceColorAtElevation(
+                    BottomAppBarDefaults.ContainerElevation
+                )
+            )
+            .animateContentSize()
     ) {
-        Column(
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(
-                        BottomAppBarDefaults.ContainerElevation
-                    )
-                )
-                .animateContentSize()
+                .padding(top = 7.5.dp, bottom = 7.5.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-            ) {
-                FilledTonalButton(onClick = {
-                    onOpenInBrowserClick()
-                }) {
-                    Icon(Icons.Outlined.OpenInBrowser, null)
-                }
-                FilledTonalButton(onClick = {
-                    onContentCopyClick()
-                }) {
-                    Icon(Icons.Outlined.ContentCopy, null)
-                }
-                FilledTonalButton(onClick = {
-                    onShareClick()
-                }) {
-                    Icon(Icons.Outlined.Share, null)
-                }
-                FilledTonalButton(onClick = {
-                    onBookMarkClick()
-                }) {
-                    Icon(imageVector = bookMarkIcon, null)
-                }
+            FilledTonalButton(onClick = {
+                onContentCopyClick()
+            }) {
+                Icon(Icons.Outlined.ContentCopy, null)
             }
-            if (isBtmColumnExpanded.value.not()) return@Column
-            FilledTonalButton(
-                onClick = {
+            FilledTonalButton(onClick = {
+                onShareClick()
+            }) {
+                Icon(Icons.Outlined.Share, null)
+            }
+            FilledTonalButton(onClick = {
+                onOpenInBrowserClick()
+            }) {
+                Icon(Icons.Outlined.OpenInBrowser, null)
+            }
+        }
+        FilledTonalButton(
+            onClick = {
+                onBookMarkClick()
 
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp)
-            ) {
-                Icon(Icons.Outlined.Sd, null)
-                Spacer(Modifier.width(5.dp))
-                Text("Download in SD", style = MaterialTheme.typography.titleSmall)
-            }
-            FilledTonalButton(
-                onClick = {
+            }, modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(imageVector = bookMarkIcon, null)
+            Spacer(Modifier.width(5.dp))
+            Text("Bookmark", style = MaterialTheme.typography.titleSmall)
+        }
+        if (!isBtmColumnExpanded.value) return@Column
+        FilledTonalButton(
+            onClick = {
 
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp)
-            ) {
-                Icon(Icons.Outlined.Hd, null)
-                Spacer(Modifier.width(5.dp))
-                Text("Download in HD", style = MaterialTheme.typography.titleSmall)
-            }
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, end = 20.dp, top = 5.dp, bottom = 5.dp)
+            }, modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp)
+        ) {
+            Icon(Icons.Outlined.Sd, null)
+            Spacer(Modifier.width(5.dp))
+            Text("Download in SD", style = MaterialTheme.typography.titleSmall)
+        }
+        FilledTonalButton(
+            onClick = {
+
+            }, modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp)
+        ) {
+            Icon(Icons.Outlined.Hd, null)
+            Spacer(Modifier.width(5.dp))
+            Text("Download in HD", style = MaterialTheme.typography.titleSmall)
+        }
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, end = 20.dp, top = 5.dp, bottom = 5.dp)
+        )
+        FilledTonalButton(
+            onClick = {},
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp)
+                .navigationBarsPadding()
+        ) {
+            Icon(
+                painterResource(if (isSystemInDarkTheme()) R.drawable.instagram_white else R.drawable.instagram_black),
+                contentDescription = null,
+                modifier = Modifier.size(16.dp)
             )
-            FilledTonalButton(
-                onClick = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp)
-                    .navigationBarsPadding()
-            ) {
-                Icon(
-                    painterResource(if (isSystemInDarkTheme()) R.drawable.instagram_white else R.drawable.instagram_black),
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.width(5.dp))
-                Text(
-                    "Share via Instagram Stories",
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
+            Spacer(Modifier.width(5.dp))
+            Text(
+                "Share via Instagram Stories", style = MaterialTheme.typography.titleSmall
+            )
         }
     }
     return
     Column(
-        modifier = Modifier
-            .align(Alignment.BottomEnd)
-            .animateContentSize()
+        modifier = Modifier.animateContentSize()
     ) {
         FilledTonalIconButton(modifier = Modifier
             .padding(end = 15.dp)
-            .size(50.dp),
-            onClick = {
-                isBtmColumnExpanded.value = !isBtmColumnExpanded.value
-            }) {
+            .size(50.dp), onClick = {
+            isBtmColumnExpanded.value = !isBtmColumnExpanded.value
+        }) {
             Icon(
                 if (isBtmColumnExpanded.value) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
                 null

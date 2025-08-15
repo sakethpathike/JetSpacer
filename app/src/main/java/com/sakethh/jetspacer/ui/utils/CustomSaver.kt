@@ -9,8 +9,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Composable
-inline fun <reified T : Any> rememberSerializableObject(noinline init: () -> T): T {
-    return rememberSaveable(saver = Saver(
+inline fun <reified T : Any> rememberSerializableObject(vararg inputs: Any?, noinline init: () -> T): T {
+    return rememberSaveable(inputs = inputs, saver = Saver(
         save = {
             Json.encodeToString(it)
         },

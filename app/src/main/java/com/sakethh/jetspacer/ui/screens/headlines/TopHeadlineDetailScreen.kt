@@ -94,6 +94,7 @@ fun SharedTransitionScope.TopHeadlineDetailScreen(
         Column(
             modifier = Modifier
                 .padding(start = 15.dp, end = 15.dp, top = 15.dp)
+                .verticalScroll(rememberScrollState())
                 .align(Alignment.BottomCenter)
         ) {
             Spacer(Modifier.height(50.dp))

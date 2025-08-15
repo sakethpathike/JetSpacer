@@ -43,11 +43,9 @@ import kotlinx.serialization.json.Json
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.APODDetailScreen(
-    animatedVisibilityScope: AnimatedVisibilityScope, apod: String
+    animatedVisibilityScope: AnimatedVisibilityScope, apod: ModifiedAPODDTO
 ) {
-    val apod = rememberSerializableObject {
-        Json.decodeFromString<ModifiedAPODDTO>(apod)
-    }
+
     val commonModifier = remember {
         Modifier.padding(start = 15.dp, end = 15.dp)
     }

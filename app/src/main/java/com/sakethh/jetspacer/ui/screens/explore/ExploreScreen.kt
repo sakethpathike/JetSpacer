@@ -181,7 +181,7 @@ fun ExploreScreen() {
                         palette = it.second,
                         onItemClick = {
                             navController.navigate(
-                                HyleNavigation.Explore.SearchResultScreenRoute(
+                                HyleNavigation.Explore.SearchResultScreen(
                                     Json.encodeToString(it)
                                 )
                             )
@@ -209,7 +209,7 @@ fun ExploreScreen() {
             )
             Spacer(Modifier.height(5.dp))
             Text(
-                "Current Location of the International Space Station",
+                text = "Current Location of the International Space Station",
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.padding(start = 15.dp, end = 15.dp)
@@ -318,7 +318,7 @@ fun ExploreScreen() {
                     imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg/435px-Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg",
                     itemTitle = "Mars Gallery",
                     onClick = {
-                        navController.navigate(HyleNavigation.Explore.MarsGalleryRoute)
+                        navController.navigate(HyleNavigation.Explore.MarsGalleryScreen)
                     })
                 Spacer(Modifier.height(110.dp))
             }
