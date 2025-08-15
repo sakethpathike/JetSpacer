@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -36,7 +37,7 @@ import coil.request.ImageRequest
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.screens.home.components.ImageActionsRow
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
-import com.sakethh.jetspacer.ui.utils.rememberObject
+import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -44,7 +45,7 @@ import kotlinx.serialization.json.Json
 fun SharedTransitionScope.APODDetailScreen(
     animatedVisibilityScope: AnimatedVisibilityScope, apod: String
 ) {
-    val apod = rememberObject {
+    val apod = rememberSerializableObject {
         Json.decodeFromString<ModifiedAPODDTO>(apod)
     }
     val commonModifier = remember {
@@ -84,13 +85,18 @@ fun SharedTransitionScope.APODDetailScreen(
         }
 
         Spacer(Modifier.height(5.dp))
-        Box(commonModifier) {
-            HeadlineDetailComponent(
-                string = apod.copyright.trim().replace("\n", ""),
-                imageVector = Icons.Outlined.Copyright,
-                fontSize = 14.sp,
-                iconSize = 20.dp
-            )
+        val copyright = rememberSaveable {
+            apod.copyright.trim().replace("\n", "")
+        }
+        if (copyright.isNotBlank()) {
+            Box(commonModifier) {
+                HeadlineDetailComponent(
+                    string = copyright,
+                    imageVector = Icons.Outlined.Copyright,
+                    fontSize = 14.sp,
+                    iconSize = 20.dp
+                )
+            }
         }
         ImageActionsRow(
             openInBrowserURL = "https://apod.nasa.gov",
