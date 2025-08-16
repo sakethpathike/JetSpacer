@@ -3,6 +3,7 @@ package com.sakethh.jetspacer.ui.screens.explore.marsGallery
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.common.utils.logger
 import com.sakethh.jetspacer.domain.Response
 import com.sakethh.jetspacer.domain.Rover
 import com.sakethh.jetspacer.domain.model.CameraAndSolSpecificDTO

@@ -43,7 +43,9 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
@@ -84,6 +86,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.sakethh.jetspacer.domain.Rover
 import com.sakethh.jetspacer.ui.LocalNavController
+import com.sakethh.jetspacer.ui.components.InfoCard
 import com.sakethh.jetspacer.ui.components.LabelValueCard
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
@@ -99,7 +102,8 @@ import java.util.Locale
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalLayoutApi::class,
-    ExperimentalSharedTransitionApi::class
+    ExperimentalSharedTransitionApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
 )
 @Composable
 fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVisibilityScope) {
@@ -123,17 +127,45 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
     val isCameraSelectionDialogBoxVisible = rememberSaveable {
         mutableStateOf(false)
     }
-    val selectedCameraFullName = rememberSaveable {
-        mutableStateOf("")
+    val selectedCameraFullName = rememberSaveable(latestImagesDataState.value.roverName) {
+        mutableStateOf(
+            when (latestImagesDataState.value.roverName) {
+                Rover.Curiosity.name -> Rover.Curiosity.cameras
+                Rover.Opportunity.name -> Rover.Opportunity.cameras
+                else -> Rover.Spirit.cameras
+            }.first().name
+        )
     }
-    val selectedCameraAbbreviation = rememberSaveable {
-        mutableStateOf("")
+    val selectedCameraAbbreviation = rememberSaveable(latestImagesDataState.value.roverName) {
+        mutableStateOf(
+            when (latestImagesDataState.value.roverName) {
+                Rover.Curiosity.name -> Rover.Curiosity.cameras
+                Rover.Opportunity.name -> Rover.Opportunity.cameras
+                else -> Rover.Spirit.cameras
+            }.first().abbreviation
+        )
     }
     val isDataSwitchedToCameraSpecific = rememberSaveable {
         mutableStateOf(false)
     }
     val dataBasedOnTheCamera = rememberSaveable {
         mutableStateOf("")
+    }
+    val maxSol = rememberSaveable(latestImagesDataState.value.data.latestImages) {
+        if (latestImagesDataState.value.data.latestImages.isNotEmpty()) {
+            latestImagesDataState.value.data.latestImages.first().rover.maxSol.toString().takeIf {
+                it != "0"
+            } ?: latestImagesDataState.value.data.latestImages.first().sol.toString()
+        } else {
+            ""
+        }
+    }
+    val maxDate = rememberSaveable(latestImagesDataState.value.data.latestImages) {
+        if (latestImagesDataState.value.data.latestImages.isNotEmpty()) {
+            latestImagesDataState.value.data.latestImages.first().rover.maxDate.ifBlank {
+                latestImagesDataState.value.data.latestImages.first().earthDate
+            }
+        } else ""
     }
     val lazyStaggeredGridState = rememberLazyStaggeredGridState()
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
@@ -208,7 +240,9 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                 .padding(it)
         ) {
             LazyVerticalStaggeredGrid(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 5.dp),
                 columns = StaggeredGridCells.Adaptive(150.dp),
                 state = lazyStaggeredGridState
             ) {
@@ -248,7 +282,14 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                 }
                 if (latestImagesDataState.value.isLoading || cameraAndSolSpecificDataState.value.isLoading) {
                     item(span = StaggeredGridItemSpan.FullLine) {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Box(
+                            modifier = Modifier
+                                .padding(15.dp)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            ContainedLoadingIndicator()
+                        }
                     }
                 }
                 if (latestImagesDataState.value.error || cameraAndSolSpecificDataState.value.error) {
@@ -316,7 +357,7 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                                     isDropDownForRoverSelectionExpanded.value =
                                         !isDropDownForRoverSelectionExpanded.value
                                     isDataSwitchedToCameraSpecific.value = false
-                                    selectedCameraFullName.value = ""
+                                    selectedCameraFullName.value = rover.name
                                     marsGalleryScreenViewModel.loadLatestImagesFromRover(rover.name.lowercase())
                                 }) {
                             Text(
@@ -368,15 +409,16 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                 Row(Modifier.padding(top = 15.dp)) {
                     LabelValueCard(
                         title = "Max Sol",
-                        value = latestImagesDataState.value.data.latestImages.first().rover.maxSol.toString(),
+                        value = maxSol,
                         outerPaddingValues = PaddingValues(start = 15.dp)
                     )
                     LabelValueCard(
-                        title = "Max Date",
-                        value = latestImagesDataState.value.data.latestImages.first().rover.maxDate
+                        title = "Max Date", value = maxDate
                     )
                 }
-                Spacer(Modifier.height(15.dp))
+                Box(Modifier.padding(15.dp)) {
+                    InfoCard(info = "Mars Rover API may still return Max Sol and Max Date values, but this is uncertain as their implementation can change. If these values are not returned or are blank, fallback values will be used.")
+                }
                 LabelValueCard(
                     title = "Status",
                     value = latestImagesDataState.value.data.latestImages.first().rover.status.replaceFirstChar {
@@ -432,13 +474,12 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                 )
                 LabelValueCard(
                     title = "Max Sol",
-                    value = latestImagesDataState.value.data.latestImages.first().rover.maxSol.toString(),
+                    value = maxSol,
                     outerPaddingValues = PaddingValues(start = 15.dp, bottom = 15.dp)
                 )
                 TextField(
                     textStyle = Typography.titleSmall,
                     keyboardActions = KeyboardActions(onGo = {
-
                         coroutineScope.launch {
                             filterBtmSheetState.hide()
                         }.invokeOnCompletion {
@@ -463,7 +504,7 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                                 .replace("\n", "")
                     },
                     isError = try {
-                        solTextFieldValue.value.toLong() > latestImagesDataState.value.data.latestImages.first().rover.maxSol
+                        solTextFieldValue.value.toLong() > maxSol.toLong()
                     } catch (_: Exception) {
                         true
                     },
@@ -525,7 +566,7 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                             top = 5.dp, start = 15.dp, end = 15.dp
                         ), onClick = {
                         if (try {
-                                solTextFieldValue.value.toLong() < latestImagesDataState.value.data.latestImages.first().rover.maxSol
+                                solTextFieldValue.value.toLong() < maxSol.toLong()
                             } catch (_: Exception) {
                                 false
                             }
@@ -567,6 +608,12 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                                 UIEvent.ShowSnackbar(errorMessage = "sol value cannot be greater than ${latestImagesDataState.value.data.latestImages.first().rover.maxSol}"),
                                 coroutineScope
                             )
+                            coroutineScope.launch {
+                                filterBtmSheetState.hide()
+                            }.invokeOnCompletion {
+                                isFilterBtmSheetExpanded.value =
+                                    isFilterBtmSheetExpanded.value.not()
+                            }
                         }
                     }) {
                     Text("Apply Filters", style = MaterialTheme.typography.titleSmall)
