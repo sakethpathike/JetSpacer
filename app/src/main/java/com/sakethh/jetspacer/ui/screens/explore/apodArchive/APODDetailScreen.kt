@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.ui.screens.explore.apodArchive
 
+import android.os.Build.VERSION.SDK_INT
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -32,13 +33,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.screens.home.components.ImageActionsRow
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
-import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
-import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -58,7 +61,13 @@ fun SharedTransitionScope.APODDetailScreen(
                 Modifier.windowInsetsPadding(WindowInsets.statusBars)
             )
         }
-        AsyncImage(
+        AsyncImage(imageLoader = ImageLoader.Builder(LocalContext.current).components {
+                if (SDK_INT >= 28) {
+                    add(AnimatedImageDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }.build(),
             model = ImageRequest.Builder(context).data(apod.url).crossfade(true).build(),
             contentDescription = null,
             modifier = commonModifier
@@ -70,8 +79,7 @@ fun SharedTransitionScope.APODDetailScreen(
                 .border(
                     1.5.dp, LocalContentColor.current.copy(0.25f), RoundedCornerShape(15.dp)
                 ),
-            contentScale = ContentScale.Crop
-        )
+            contentScale = ContentScale.Crop)
         Spacer(Modifier.height(15.dp))
         Box(modifier = commonModifier) {
             HeadlineDetailComponent(

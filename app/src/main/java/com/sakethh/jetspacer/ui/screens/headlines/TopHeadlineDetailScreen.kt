@@ -63,8 +63,9 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.sakethh.jetspacer.domain.model.Headline
 import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import kotlinx.serialization.json.Json
@@ -89,7 +90,6 @@ fun SharedTransitionScope.TopHeadlineDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.statusBars)
-            .verticalScroll(rememberScrollState())
     ) {
         Column(
             modifier = Modifier

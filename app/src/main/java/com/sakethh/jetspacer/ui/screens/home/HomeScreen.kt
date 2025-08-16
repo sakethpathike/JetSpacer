@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.ui.screens.home
 
+import android.os.Build.VERSION.SDK_INT
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -80,8 +81,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.sakethh.jetspacer.common.utils.logger
 import com.sakethh.jetspacer.domain.model.article.Article
 import com.sakethh.jetspacer.domain.model.article.Source
 import com.sakethh.jetspacer.ui.LocalNavController
@@ -385,18 +391,27 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                             Modifier
                         }.animateContentSize()) {
                             AsyncImage(
-                                model = ImageRequest.Builder(context).data(apodImageURL)
-                                    .crossfade(true).build(),
+                                imageLoader = ImageLoader.Builder(LocalContext.current)
+                                    .components {
+                                        if (SDK_INT >= 28) {
+                                            add(AnimatedImageDecoder.Factory())
+                                        } else {
+                                            add(GifDecoder.Factory())
+                                        }
+                                    }
+                                    .build(),
+                                model = ImageRequest.Builder(context).data("https://static.scientificamerican.com/sciam/assets/Image/2019/spinningblackhole.gif").crossfade(true).build(),
                                 contentDescription = null,
                                 modifier = commonModifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f)
                                     .clip(RoundedCornerShape(15.dp))
                                     .border(
                                         1.5.dp,
                                         LocalContentColor.current.copy(0.25f),
                                         RoundedCornerShape(15.dp)
                                     ),
-                                contentScale = ContentScale.Crop
-                            )
+                                contentScale = ContentScale.Crop)
 
                             if (apodDataState.apod.first.date.trim().isNotBlank()) {
                                 Spacer(Modifier.height(15.dp))

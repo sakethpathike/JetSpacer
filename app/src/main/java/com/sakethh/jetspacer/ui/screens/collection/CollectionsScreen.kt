@@ -37,8 +37,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.sakethh.jetspacer.domain.CollectionType
 import com.sakethh.jetspacer.domain.model.rover_latest_images.Camera
 import com.sakethh.jetspacer.domain.model.rover_latest_images.LatestPhoto

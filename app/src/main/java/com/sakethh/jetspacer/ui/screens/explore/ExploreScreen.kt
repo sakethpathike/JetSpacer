@@ -56,8 +56,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.InfoCard
 import com.sakethh.jetspacer.ui.components.pulsateEffect

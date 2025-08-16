@@ -29,8 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.navigation.NavController
-import coil.annotation.ExperimentalCoilApi
-import coil.imageLoader
+import coil3.imageLoader
 import com.sakethh.jetspacer.common.utils.Constants
 import com.sakethh.jetspacer.domain.SettingType
 import com.sakethh.jetspacer.ui.GlobalSettings
@@ -42,7 +41,7 @@ import com.sakethh.jetspacer.ui.screens.home.settings.components.SettingsSwitchI
 import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen() {
     val navController: NavController = LocalNavController.current
@@ -80,7 +79,8 @@ fun SettingsScreen() {
             }
             if (GlobalSettings.isDarkModeEnabled.value.not()) {
                 item {
-                    SettingsSwitchItem("Follow System Theme",
+                    SettingsSwitchItem(
+                        "Follow System Theme",
                         isEnabled = GlobalSettings.isThemingSetToDefault.value,
                         onClick = {
                             GlobalSettings.isThemingSetToDefault.value = it
@@ -94,7 +94,8 @@ fun SettingsScreen() {
             }
             if (GlobalSettings.isThemingSetToDefault.value.not()) {
                 item {
-                    SettingsSwitchItem("Use Dark Theme",
+                    SettingsSwitchItem(
+                        "Use Dark Theme",
                         isEnabled = GlobalSettings.isDarkModeEnabled.value,
                         onClick = {
                             GlobalSettings.isDarkModeEnabled.value = it
@@ -140,7 +141,8 @@ fun SettingsScreen() {
                             dataStore = context.dataStore,
                             newValue = GlobalSettings.nasaAPIKey.value
                         )
-                    }, onSaveClick = {
+                    },
+                    onSaveClick = {
                         GlobalSettings.nasaAPIKey.value = it
                         SettingsScreenViewModel.changeSettingValue(
                             preferenceKey = stringPreferencesKey(SettingType.NASA_API_KEY.name),
@@ -160,7 +162,8 @@ fun SettingsScreen() {
                             dataStore = context.dataStore,
                             newValue = GlobalSettings.newsApiAPIKey.value
                         )
-                    }, onSaveClick = {
+                    },
+                    onSaveClick = {
                         GlobalSettings.newsApiAPIKey.value = it
                         SettingsScreenViewModel.changeSettingValue(
                             preferenceKey = stringPreferencesKey(SettingType.NEWS_API_KEY.name),
@@ -179,16 +182,13 @@ fun SettingsScreen() {
             }
             item {
                 SettingsItem(
-                    icon = Icons.Default.Storage,
-                    title = "Clear local database", onClick = {
+                    icon = Icons.Default.Storage, title = "Clear local database", onClick = {
                         SettingsScreenViewModel.clearEntireDatabase()
                     })
             }
             item {
                 SettingsItem(
-                    icon = Icons.Default.BrokenImage,
-                    title = "Clear Image cache",
-                    onClick = {
+                    icon = Icons.Default.BrokenImage, title = "Clear Image cache", onClick = {
                         navController.context.imageLoader.memoryCache?.clear()
                         navController.context.imageLoader.diskCache?.clear()
                         UiChannel.pushUiEvent(

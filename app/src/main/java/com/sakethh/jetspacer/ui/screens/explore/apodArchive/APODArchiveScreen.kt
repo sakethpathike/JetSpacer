@@ -1,5 +1,6 @@
 package com.sakethh.jetspacer.ui.screens.explore.apodArchive
 
+import android.os.Build.VERSION.SDK_INT
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -65,8 +66,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
@@ -171,6 +176,13 @@ fun SharedTransitionScope.APODArchiveScreen(
                     it.url
                 }) {
                     AsyncImage(
+                        imageLoader = ImageLoader.Builder(LocalContext.current).components {
+                                if (SDK_INT >= 28) {
+                                    add(AnimatedImageDecoder.Factory())
+                                } else {
+                                    add(GifDecoder.Factory())
+                                }
+                            }.build(),
                         model = ImageRequest.Builder(context).data(it.url).crossfade(true).build(),
                         modifier = Modifier
                             .sharedElement(

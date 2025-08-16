@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.ui.utils
 
 import android.app.DownloadManager
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.drawable.BitmapDrawable
 import android.os.Environment
 import androidx.compose.foundation.background
@@ -16,8 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.palette.graphics.Palette
-import coil.ImageLoader
-import coil.request.ImageRequest
+import coil3.ImageLoader
+import coil3.asDrawable
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
 
 fun Modifier.iconModifier(colorScheme: ColorScheme, onClick: () -> Unit): Modifier {
     return this
@@ -36,7 +39,7 @@ suspend fun retrievePaletteFromUrl(context: Context, url: String): Palette? {
     val request = ImageRequest.Builder(context).data(url).allowHardware(false).build()
 
     val result = loader.execute(request)
-    val bitmap = (result.drawable as? BitmapDrawable)?.bitmap
+    val bitmap = (result.image?.asDrawable(Resources.getSystem()) as? BitmapDrawable)?.bitmap
     return if (bitmap == null) null else Palette.from(bitmap).generate()
 }
 

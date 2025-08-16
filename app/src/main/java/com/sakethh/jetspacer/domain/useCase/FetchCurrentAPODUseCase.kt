@@ -14,7 +14,7 @@ class FetchCurrentAPODUseCase (private val homeScreenRelatedAPIsRepository: Home
         return flow {
             emit(Response.Loading())
             val httpResponse = homeScreenRelatedAPIsRepository.getAPODDataFromTheAPI()
-            if (httpResponse.status.isSuccess().not()) {
+            if (!httpResponse.status.isSuccess()) {
                 emit(
                     Response.Failure(
                         exceptionMessage = "Network request failed.",

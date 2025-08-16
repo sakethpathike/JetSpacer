@@ -87,7 +87,7 @@ class HomeScreenViewModel(
                             topHeadLinesState.value = topHeadLinesState.value.copy(
                                 isLoading = false,
                                 data = topHeadLinesState.value.data + it.articles.map {
-                                    val palette = retrievePaletteFromUrl(context, it.urlToImage)
+                                    val palette = if(it.urlToImage.endsWith(".gif")) null else retrievePaletteFromUrl(context, it.urlToImage)
                                     Headline(
                                         author = it.author,
                                         content = it.content,

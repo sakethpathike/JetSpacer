@@ -1,6 +1,11 @@
 package com.sakethh.jetspacer.domain
+
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Camera(val abbreviation: String, val name: String)
 
+@Serializable
 enum class Rover(val cameras: List<Camera>) {
     Curiosity(
         listOf(

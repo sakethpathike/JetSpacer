@@ -34,8 +34,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.sakethh.jetspacer.domain.model.rover_latest_images.LatestPhoto
 import com.sakethh.jetspacer.ui.components.LabelValueCard
 import com.sakethh.jetspacer.ui.screens.home.components.ImageActionsRow
@@ -61,16 +62,6 @@ fun SharedTransitionScope.RoverImageDetailsScreen(
                 .padding(start = 15.dp, end = 15.dp, top = 15.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Text(
-                image.rover.name,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(0.25f))
-                    .padding(5.dp)
-            )
-            Spacer(Modifier.height(15.dp))
             AsyncImage(
                 model = ImageRequest.Builder(context).data(image.imgSrc).crossfade(true).build(),
                 modifier = Modifier
@@ -111,6 +102,16 @@ fun SharedTransitionScope.RoverImageDetailsScreen(
                     outerPaddingValues = PaddingValues()
                 )
             }
+            Spacer(Modifier.height(10.dp))
+            Text(
+                image.rover.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(0.25f))
+                    .padding(5.dp)
+            )
             Spacer(modifier = Modifier.navigationBarsPadding())
         }
     }

@@ -79,14 +79,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.sakethh.jetspacer.domain.Rover
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.LabelValueCard
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.theme.Typography
+import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 import kotlinx.coroutines.launch
@@ -384,13 +386,17 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                     })
                 Spacer(Modifier.height(15.dp))
                 LabelValueCard(
-                    title = "Cameras",
-                    value = latestImagesDataState.value.data.latestImages.first().rover.cameras.joinToString(
-                        separator = "\n"
-                    ) {
-                        "• ${it.fullName}"
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                    title = "Cameras", value = rememberSerializableObject {
+                        when (latestImagesDataState.value.roverName) {
+                            Rover.Curiosity.name -> Rover.Curiosity.cameras
+                            Rover.Opportunity.name -> Rover.Opportunity.cameras
+                            else -> Rover.Spirit.cameras
+                        }.joinToString(
+                            separator = "\n"
+                        ) {
+                            "• ${it.name}"
+                        }
+                    }, modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -606,10 +612,12 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
             )
         }, text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                when (latestImagesDataState.value.roverName) {
-                    Rover.Curiosity.name -> Rover.Curiosity.cameras
-                    Rover.Opportunity.name -> Rover.Opportunity.cameras
-                    else -> Rover.Spirit.cameras
+                rememberSerializableObject {
+                    when (latestImagesDataState.value.roverName) {
+                        Rover.Curiosity.name -> Rover.Curiosity.cameras
+                        Rover.Opportunity.name -> Rover.Opportunity.cameras
+                        else -> Rover.Spirit.cameras
+                    }
                 }.forEach {
                     Row(modifier = Modifier
                         .clickable {
@@ -632,7 +640,7 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
     LaunchedEffect(
         lazyStaggeredGridState.canScrollForward
     ) {
-        if (lazyStaggeredGridState.canScrollForward.not() && isDataSwitchedToCameraSpecific.value && cameraAndSolSpecificDataState.value.isLoading.not() && cameraAndSolSpecificDataState.value.error.not() && cameraAndSolSpecificDataState.value.reachedMaxPages.not()) {
+        if (!lazyStaggeredGridState.canScrollForward && isDataSwitchedToCameraSpecific.value && !cameraAndSolSpecificDataState.value.isLoading && !cameraAndSolSpecificDataState.value.error && !cameraAndSolSpecificDataState.value.reachedMaxPages) {
             marsGalleryScreenViewModel.loadImagesBasedOnTheFilter(
                 cameraName = selectedCameraAbbreviation.value.ifBlank { latestImagesDataState.value.data.latestImages.first().rover.cameras.first().name },
                 roverName = latestImagesDataState.value.roverName,
