@@ -1,5 +1,7 @@
 package com.sakethh.jetspacer.ui.screens.explore.marsGallery
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -280,8 +282,8 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                             }, contentDescription = null
                     )
                 }
-                if (latestImagesDataState.value.isLoading || cameraAndSolSpecificDataState.value.isLoading) {
-                    item(span = StaggeredGridItemSpan.FullLine) {
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    AnimatedVisibility(latestImagesDataState.value.isLoading || cameraAndSolSpecificDataState.value.isLoading) {
                         Box(
                             modifier = Modifier
                                 .padding(15.dp)
@@ -304,21 +306,23 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                     }
                 }
                 item(span = StaggeredGridItemSpan.FullLine) {
-                    if (latestImagesDataState.value.isLoading.not() && latestImagesDataState.value.error.not() && cameraAndSolSpecificDataState.value.isLoading.not()) {
+                    AnimatedVisibility(!latestImagesDataState.value.isLoading && !latestImagesDataState.value.error && !cameraAndSolSpecificDataState.value.isLoading) {
                         Column {
                             HorizontalDivider(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(15.dp)
                             )
-                            Text(
-                                if ((isDataSwitchedToCameraSpecific.value && cameraAndSolSpecificDataState.value.data.photos.isNotEmpty()) || (isDataSwitchedToCameraSpecific.value.not() && latestImagesDataState.value.data.latestImages.isNotEmpty())) "That's all the data found." else "Found nothing, change the filters and try again.",
-                                style = MaterialTheme.typography.titleSmall,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
-                            )
+                            AnimatedContent(targetState = if ((isDataSwitchedToCameraSpecific.value && cameraAndSolSpecificDataState.value.data.photos.isNotEmpty()) || (isDataSwitchedToCameraSpecific.value.not() && latestImagesDataState.value.data.latestImages.isNotEmpty())) "That's all the data found." else "Found nothing, change the filters and try again.") {
+                                Text(
+                                    text = it,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+                                )
+                            }
                         }
                     }
                     Spacer(Modifier.height(200.dp))

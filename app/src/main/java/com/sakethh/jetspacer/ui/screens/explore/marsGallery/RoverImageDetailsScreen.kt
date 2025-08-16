@@ -5,6 +5,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -85,7 +86,7 @@ fun SharedTransitionScope.RoverImageDetailsScreen(
                 hdDownloadDesc = null,
                 paddingValues = PaddingValues(top = 10.dp)
             )
-            Row(Modifier.padding(top = 10.dp)) {
+            Row(Modifier.padding(top = 10.dp).horizontalScroll(rememberScrollState())) {
                 LabelValueCard(
                     title = "Sol",
                     value = image.sol.toString(),
