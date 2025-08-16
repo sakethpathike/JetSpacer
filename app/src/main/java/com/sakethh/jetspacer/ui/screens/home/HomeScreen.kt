@@ -134,7 +134,13 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
     var currentDistanceToEarthFromTheEPIC by rememberSaveable {
         mutableStateOf("")
     }
-    var currentDistanceToSunFromEPIC by rememberSaveable {
+    var currentDistanceToSunToEarth by rememberSaveable {
+        mutableStateOf("")
+    }
+    var currentDistanceToMoonFromEarth by rememberSaveable {
+        mutableStateOf("")
+    }
+    var currentDistanceBetweenSunAndEpic by rememberSaveable {
         mutableStateOf("")
     }
     val localClipboardManager = LocalClipboardManager.current
@@ -157,16 +163,26 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
         } catch (_: Exception) {
             ""
         }
-        currentDistanceToSunFromEPIC = try {
-            epicDataState.data[horizontalPager.currentPage].distanceToSunFromEPIC.toString()
+        currentDistanceToSunToEarth = try {
+            epicDataState.data[horizontalPager.currentPage].distanceBetweenSunAndEarth.toString()
         } catch (_: Exception) {
             ""
-        }
+        }+" km"
         currentDistanceToEarthFromTheEPIC = try {
             epicDataState.data[horizontalPager.currentPage].distanceToEarthFromTheEPIC.toString()
         } catch (_: Exception) {
             ""
-        }
+        }+" km"
+        currentDistanceToMoonFromEarth = try {
+            epicDataState.data[horizontalPager.currentPage].distanceBetweenEarthAndMoon.toString()
+        } catch (_: Exception) {
+            ""
+        }+" km"
+        currentDistanceBetweenSunAndEpic = try {
+            epicDataState.data[horizontalPager.currentPage].distanceBetweenSunAndEpic.toString()
+        } catch (_: Exception) {
+            ""
+        }+" km"
     }
     Box {
         Box(
@@ -301,7 +317,7 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                         )
                     }
                     Spacer(Modifier.height(10.dp))
-                    Row {
+                    Row(Modifier.horizontalScroll(rememberScrollState())) {
                         LabelValueCard(
                             outerPaddingValues = PaddingValues(start = 10.dp),
                             title = "Earth-Epic Distance",
@@ -309,9 +325,20 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                         )
                         LabelValueCard(
                             outerPaddingValues = PaddingValues(start = 10.dp),
-                            title = "Sun-Epic Distance",
-                            value = currentDistanceToSunFromEPIC
+                            title = "Epic-Sun Distance",
+                            value = currentDistanceBetweenSunAndEpic
                         )
+                        LabelValueCard(
+                            outerPaddingValues = PaddingValues(start = 10.dp),
+                            title = "Sun-Earth Distance",
+                            value = currentDistanceToSunToEarth
+                        )
+                        LabelValueCard(
+                            outerPaddingValues = PaddingValues(start = 10.dp),
+                            title = "Earth-Moon Distance",
+                            value = currentDistanceToMoonFromEarth
+                        )
+                        Spacer(Modifier.width(10.dp))
                     }
                     ImageActionsRow(
                         openInBrowserURL = epicDataState.data[horizontalPager.currentPage].imageURL,

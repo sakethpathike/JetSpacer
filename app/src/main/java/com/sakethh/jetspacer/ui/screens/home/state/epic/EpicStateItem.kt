@@ -6,7 +6,7 @@ data class EpicStateItem(
     val date: String,
     val timeWhenImageWasCaptured: String,
     val distanceToEarthFromTheEPIC: Long,
-    val distanceToSunFromEPIC: Long,
-    val distanceBetweenEarthToMoon: Long,
-    val distanceBetweenSunAndEarth: Long = distanceToSunFromEPIC + distanceToEarthFromTheEPIC
+    val distanceBetweenSunAndEarth: Long,
+    val distanceBetweenEarthAndMoon: Long,
+    val distanceBetweenSunAndEpic: Long
 )
