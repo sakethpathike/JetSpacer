@@ -16,7 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.sakethh.jetspacer.ui.LocalNavController
-import com.sakethh.jetspacer.ui.navigation.BottomNavigationBar
+import com.sakethh.jetspacer.ui.navigation.HyleBottomNavBar
 import com.sakethh.jetspacer.ui.navigation.HyleNavHost
 import com.sakethh.jetspacer.ui.theme.HyleTheme
 import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
             HyleTheme {
                 CompositionLocalProvider(LocalNavController provides navController) {
                     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
-                        BottomNavigationBar()
+                        HyleBottomNavBar()
                     }, snackbarHost = {
                         SnackbarHost(hostState = snackBarHostState)
                     }) {
