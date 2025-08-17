@@ -7,6 +7,10 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Environment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +18,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.palette.graphics.Palette
@@ -61,3 +66,12 @@ fun downloadImage(context: Context, imgURL: String, fileName: String, descriptio
     val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
     downloadManager.enqueue(downloadRequest)
 }
+
+
+// keeps the nav bar (what's it actually called?) transparent while still applying padding on top, end, bottom;
+// kinda a hacky workaround, but there doesn't seem to be any clear documentation on how to handle this properly
+fun Modifier.addEdgeToEdgeScaffoldPadding(paddingValues: PaddingValues) = this.padding(
+    top = paddingValues.calculateTopPadding(), start = paddingValues.calculateStartPadding(
+        LayoutDirection.Ltr
+    ), end = paddingValues.calculateEndPadding(LayoutDirection.Rtl)
+).consumeWindowInsets(paddingValues)

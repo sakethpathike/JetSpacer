@@ -93,6 +93,7 @@ import com.sakethh.jetspacer.ui.components.LabelValueCard
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.theme.Typography
+import com.sakethh.jetspacer.ui.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
 import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
@@ -238,8 +239,8 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
     }) {
         Box(
             modifier = Modifier
+                .addEdgeToEdgeScaffoldPadding(it)
                 .fillMaxSize()
-                .padding(it)
         ) {
             LazyVerticalStaggeredGrid(
                 modifier = Modifier

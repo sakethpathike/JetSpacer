@@ -153,7 +153,9 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
     val colorScheme = MaterialTheme.colorScheme
     val lazyColumnState = rememberLazyListState()
     val localDensity = LocalDensity.current
-    val apodImageURL = apodDataState.apod.first.url.trim()
+    val apodImageURL = rememberSaveable(apodDataState.apod.first.url) {
+        apodDataState.apod.first.url.trim()
+    }
     var apodDownloadBtnClicked by rememberSaveable {
         mutableStateOf(false)
     }
@@ -427,7 +429,7 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                                         }
                                     }
                                     .build(),
-                                model = ImageRequest.Builder(context).data("https://static.scientificamerican.com/sciam/assets/Image/2019/spinningblackhole.gif").crossfade(true).build(),
+                                model = ImageRequest.Builder(context).data(apodImageURL).crossfade(true).build(),
                                 contentDescription = null,
                                 modifier = commonModifier
                                     .fillMaxWidth()

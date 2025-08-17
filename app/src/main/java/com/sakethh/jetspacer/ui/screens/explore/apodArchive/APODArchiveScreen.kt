@@ -76,6 +76,7 @@ import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
+import com.sakethh.jetspacer.ui.utils.addEdgeToEdgeScaffoldPadding
 import com.sakethh.jetspacer.ui.utils.customMutableRememberSavable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -151,7 +152,7 @@ fun SharedTransitionScope.APODArchiveScreen(
         })
     }) {
         Box(modifier = Modifier
-            .padding(it)
+            .addEdgeToEdgeScaffoldPadding(it)
             .fillMaxSize()
             .pointerInput(Unit) {
                 detectTransformGestures { _, _, zoom, _ ->
