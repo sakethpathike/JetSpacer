@@ -319,7 +319,7 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                     Spacer(Modifier.height(10.dp))
                     Row(Modifier.horizontalScroll(rememberScrollState())) {
                         LabelValueCard(
-                            outerPaddingValues = PaddingValues(start = 10.dp),
+                            outerPaddingValues = PaddingValues(start = 15.dp),
                             title = "Earth-Epic Distance",
                             value = currentDistanceToEarthFromTheEPIC
                         )

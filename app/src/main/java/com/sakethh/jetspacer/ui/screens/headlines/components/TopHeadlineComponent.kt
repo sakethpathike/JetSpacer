@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -59,147 +58,140 @@ fun SharedTransitionScope.TopHeadlineComponent(
     val localClipboardManager = LocalClipboardManager.current
     val localUriHandler = LocalUriHandler.current
     val colorScheme = MaterialTheme.colorScheme
-    Column(
-        modifier = Modifier
-            .then(
-                if (colors.isNotEmpty()) Modifier.background(
-                    alpha = 0.115f,
-                    brush = Brush.radialGradient(
-                        colors = colors
-                    ),
-                ) else Modifier
-            )
-            .pulsateEffect()
-            .clickable(onClick = {
-                onItemClick()
-            }, interactionSource = remember {
-                MutableInteractionSource()
-            }, indication = null)
-            .padding(top = 7.5.dp)
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(top = 7.5.dp, start = 15.dp, end = 15.dp)
-    ) {
-        if (article.urlToImage.isNotEmpty()) {
-            AsyncImage(
-                model = ImageRequest.Builder(context).data(article.urlToImage).crossfade(true)
-                    .build(), contentDescription = null, modifier = Modifier
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .then(
+                    if (colors.isNotEmpty()) Modifier.background(
+                        alpha = 0.115f,
+                        brush = Brush.radialGradient(
+                            colors = colors
+                        ),
+                    ) else Modifier
+                )
+                .pulsateEffect()
+                .clickable(onClick = {
+                    onItemClick()
+                }, interactionSource = remember {
+                    MutableInteractionSource()
+                }, indication = null)
+                .padding(top = 7.5.dp)
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(top = 7.5.dp, start = 15.dp, end = 15.dp)
+        ) {
+            if (article.urlToImage.isNotEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context).data(article.urlToImage).crossfade(true)
+                        .build(), contentDescription = null, modifier = Modifier
+                        .sharedElement(
+                            sharedContentState = rememberSharedContentState(key = "HEADLINE_IMG_${article.url}"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .clip(
+                            RoundedCornerShape(15.dp)
+                        )
+                        .border(
+                            1.5.dp, LocalContentColor.current.copy(0.25f), RoundedCornerShape(15.dp)
+                        ), contentScale = ContentScale.Crop
+                )
+            }
+            Text(
+                modifier = Modifier
                     .sharedElement(
-                        sharedContentState = rememberSharedContentState(key = "HEADLINE_IMG_${article.url}"),
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_SOURCE_${article.url}"),
                         animatedVisibilityScope = animatedVisibilityScope
                     )
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .clip(
-                        RoundedCornerShape(15.dp)
+                    .padding(top = 10.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(0.1f),
+                        shape = RoundedCornerShape(5.dp)
                     )
-                    .border(
-                        1.5.dp, LocalContentColor.current.copy(0.25f), RoundedCornerShape(15.dp)
-                    ), contentScale = ContentScale.Crop
+                    .padding(5.dp),
+                text = article.source.name,
+                style = MaterialTheme.typography.titleLarge,
+                maxLines = 1,
+                textAlign = TextAlign.Start,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 12.sp
+            )
+            Text(
+                text = article.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontSize = 18.sp,
+                modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_TITLE_${article.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .padding(top = 8.dp),
+                maxLines = 4,
+                lineHeight = 22.sp,
+                textAlign = TextAlign.Start,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_DESC_${article.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .padding(top = 5.dp),
+                text = article.description,
+                style = MaterialTheme.typography.titleSmall,
+                textAlign = TextAlign.Start,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 12.sp,
+                maxLines = 2
             )
         }
-        Text(
-            modifier = Modifier
-                .sharedElement(
-                    sharedContentState = rememberSharedContentState(key = "HEADLINE_SOURCE_${article.url}"),
-                    animatedVisibilityScope = animatedVisibilityScope
-                )
-                .padding(top = 10.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primary.copy(0.1f),
-                    shape = RoundedCornerShape(5.dp)
-                )
-                .padding(5.dp),
-            text = article.source.name,
-            style = MaterialTheme.typography.titleLarge,
-            maxLines = 1,
-            textAlign = TextAlign.Start,
-            overflow = TextOverflow.Ellipsis,
-            fontSize = 12.sp
-        )
-        Text(
-            text = article.title,
-            style = MaterialTheme.typography.titleMedium,
-            fontSize = 18.sp,
-            modifier = Modifier
-                .sharedElement(
-                    sharedContentState = rememberSharedContentState(key = "HEADLINE_TITLE_${article.url}"),
-                    animatedVisibilityScope = animatedVisibilityScope
-                )
-                .padding(top = 8.dp),
-            maxLines = 4,
-            lineHeight = 22.sp,
-            textAlign = TextAlign.Start,
-            overflow = TextOverflow.Ellipsis
-        )
-        Text(
-            modifier = Modifier
-                .sharedElement(
-                    sharedContentState = rememberSharedContentState(key = "HEADLINE_DESC_${article.url}"),
-                    animatedVisibilityScope = animatedVisibilityScope
-                )
-                .padding(top = 5.dp),
-            text = article.description,
-            style = MaterialTheme.typography.titleSmall,
-            textAlign = TextAlign.Start,
-            overflow = TextOverflow.Ellipsis,
-            fontSize = 12.sp,
-            maxLines = 2
-        )
         Row(
             modifier = Modifier
-                .padding(top = 10.dp, bottom = 10.dp)
+                .padding(10.dp)
                 .fillMaxWidth()
                 .wrapContentHeight(), verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .sharedElement(
-                                sharedContentState = rememberSharedContentState(key = "HEADLINE_OIB_${article.url}"),
-                                animatedVisibilityScope = animatedVisibilityScope
-                            )
-                            .iconModifier(colorScheme) {
-                                localUriHandler.openUri(article.url)
-                            }
-                            .pulsateEffect(0.75f),
-                        imageVector = Icons.Outlined.OpenInBrowser,
-                        contentDescription = null)
-                    Icon(
-                        modifier = Modifier
-                            .sharedElement(
-                                sharedContentState = rememberSharedContentState(key = "HEADLINE_CL_${article.url}"),
-                                animatedVisibilityScope = animatedVisibilityScope
-                            )
-                            .iconModifier(colorScheme) {
-                                localClipboardManager.setText(AnnotatedString(article.url))
-                            }
-                            .pulsateEffect(0.75f),
-                        imageVector = Icons.Outlined.ContentCopy,
-                        contentDescription = null)
-                    Icon(
-                        modifier = Modifier
-                            .sharedElement(
-                                sharedContentState = rememberSharedContentState(key = "HEADLINE_SHARE_${article.url}"),
-                                animatedVisibilityScope = animatedVisibilityScope
-                            )
-                            .iconModifier(colorScheme) {
-                                val intent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    putExtra(Intent.EXTRA_TEXT, article.url)
-                                    type = "text/plain"
-                                }
-                                val shareIntent = Intent.createChooser(intent, null)
-                                context.startActivity(shareIntent)
-                            }
-                            .pulsateEffect(0.75f),
-                        imageVector = Icons.Outlined.Share,
-                        contentDescription = null)
-                }
-            }
+            Icon(
+                modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_CL_${article.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .pulsateEffect(0.85f)
+                    .iconModifier(colorScheme) {
+                        localClipboardManager.setText(AnnotatedString(article.url))
+                    }, imageVector = Icons.Outlined.ContentCopy, contentDescription = null
+            )
+            Icon(
+                modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_SHARE_${article.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .pulsateEffect(0.85f)
+                    .iconModifier(colorScheme) {
+                        val intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, article.url)
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(intent, null)
+                        context.startActivity(shareIntent)
+                    }, imageVector = Icons.Outlined.Share, contentDescription = null
+            )
+            Icon(
+                modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "HEADLINE_OIB_${article.url}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .pulsateEffect(0.85f)
+                    .iconModifier(colorScheme) {
+                        localUriHandler.openUri(article.url)
+                    }, imageVector = Icons.Outlined.OpenInBrowser, contentDescription = null
+            )
         }
     }
 }
