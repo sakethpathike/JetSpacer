@@ -8,16 +8,25 @@ import com.sakethh.jetspacer.ui.screens.home.state.epic.EpicStateItem
 import com.sakethh.jetspacer.ui.utils.extractBodyFlow
 import io.ktor.client.call.body
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlin.math.pow
 import kotlin.math.roundToLong
 import kotlin.math.sqrt
 
 class FetchEPICDataUseCase(private val nasaRepository: NasaRepository) {
     suspend operator fun invoke(): Flow<Response<List<EpicStateItem>>> {
+        val date: String? = when (val availableDates = nasaRepository.fetchEpicAvailableDates()) {
+            is Response.Success -> availableDates.data.body<List<AllEPICDTOItem>>().first().date
+            else -> null
+        }
+        if (date == null) {
+            return flow {
+                emit(Response.Failure.clientFailure())
+            }
+        }
         return extractBodyFlow(
-            httpResponse = nasaRepository.fetchEpicImages(
-                date = nasaRepository.fetchEpicAvailableDates().body<List<AllEPICDTOItem>>()
-                    .first().date
+            httpResult = nasaRepository.fetchEpicImages(
+                date = date
             )
         ) { httpResponse ->
             mutableListOf<EpicStateItem>().apply {

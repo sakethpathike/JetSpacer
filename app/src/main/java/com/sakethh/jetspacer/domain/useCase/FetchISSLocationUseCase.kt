@@ -11,7 +11,7 @@ import java.util.Date
 
 class FetchISSLocationUseCase(private val issInfoRepo: ISSInfoRepo) {
     suspend operator fun invoke(): Flow<Response<ISSLocationState>> {
-        return extractBodyFlow(httpResponse = issInfoRepo.getISSLocation()) { httpResponse ->
+        return extractBodyFlow(httpResult = issInfoRepo.getISSLocation()) { httpResponse ->
             val originalData = httpResponse.body<ISSLocationDTO>()
             ISSLocationState(
                 latitude = originalData.issPosition.latitude,

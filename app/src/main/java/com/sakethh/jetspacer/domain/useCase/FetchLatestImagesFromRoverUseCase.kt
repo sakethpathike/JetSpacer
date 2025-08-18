@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 class FetchLatestImagesFromRoverUseCase(private val nasaRepository: NasaRepository) {
     suspend operator fun invoke(roverName: String): Flow<Response<RoverLatestImagesDTO>> =
-        extractBodyFlow(httpResponse = nasaRepository.fetchLatestRoverImages(roverName)) { httpResponse ->
+        extractBodyFlow(httpResult = nasaRepository.fetchLatestRoverImages(roverName)) { httpResponse ->
             httpResponse.body()
         }
 }

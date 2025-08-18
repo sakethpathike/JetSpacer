@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 class FetchAPODArchiveUseCase(private val nasaRepository: NasaRepository) {
     suspend operator fun invoke(startDate: String, endDate: String): Flow<Response<List<APODDTO>>> =
         extractBodyFlow(
-            httpResponse = nasaRepository.fetchApodArchive(
+            httpResult = nasaRepository.fetchApodArchive(
                 startDate, endDate
             )
         ) { httpResponse ->

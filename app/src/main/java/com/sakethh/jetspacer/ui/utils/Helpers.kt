@@ -27,6 +27,8 @@ import coil3.asDrawable
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import com.sakethh.jetspacer.domain.Response
+import com.sakethh.jetspacer.domain.onFailure
+import com.sakethh.jetspacer.domain.onSuccess
 import com.sakethh.jetspacer.ui.utils.UIChannel.Type
 import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.CoroutineScope
@@ -86,22 +88,35 @@ fun Modifier.addEdgeToEdgeScaffoldPadding(paddingValues: PaddingValues) = this
     .consumeWindowInsets(paddingValues)
 
 
+inline fun withHttpResponse(init: () -> HttpResponse): Response<HttpResponse> {
+    return try {
+        val httpResponse = init()
+        Response.Success(httpResponse)
+    } catch (e: Exception) {
+        Response.Failure.clientFailure(e.message ?: "")
+    }
+}
+
 inline fun <reified T> extractBodyFlow(
-    httpResponse: HttpResponse, crossinline init: suspend (httpResponse: HttpResponse) -> T
+    httpResult: Response<HttpResponse>, crossinline init: suspend (httpResponse: HttpResponse) -> T
 ): Flow<Response<T>> {
     return flow<Response<T>> {
         emit(Response.Loading())
-        if (httpResponse.status.value != 200) {
-            emit(
-                Response.Failure(
-                    statusCode = httpResponse.status.value,
-                    statusDescription = httpResponse.status.description,
-                    exceptionMessage = ""
+        httpResult.onSuccess { httpResponse ->
+            if (httpResponse.status.value != 200) {
+                emit(
+                    Response.Failure(
+                        statusCode = httpResponse.status.value,
+                        statusDescription = httpResponse.status.description,
+                        exceptionMessage = ""
+                    )
                 )
-            )
-            return@flow
+                return@onSuccess
+            }
+            emit(Response.Success(init(httpResponse)))
+        }.onFailure {
+            throw Exception(it.exceptionMessage)
         }
-        emit(Response.Success(init(httpResponse)))
     }.catch {
         emit(
             Response.Failure(

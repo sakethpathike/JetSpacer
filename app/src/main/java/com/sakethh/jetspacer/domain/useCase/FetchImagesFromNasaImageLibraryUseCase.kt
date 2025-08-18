@@ -13,7 +13,7 @@ class FetchImagesFromNasaImageLibraryUseCase(private val nasaRepository: NasaRep
         query: String, page: Int
     ): Flow<Response<List<NASAImageLibrarySearchDTOFlatten>>> {
         return extractBodyFlow(
-            httpResponse = nasaRepository.searchImageLibrary(
+            httpResult = nasaRepository.searchImageLibrary(
                 query, page
             )
         ) { httpResponse ->

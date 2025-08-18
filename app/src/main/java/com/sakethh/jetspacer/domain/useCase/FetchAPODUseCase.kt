@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 class FetchAPODUseCase (private val nasaRepository: NasaRepository){
     suspend operator fun invoke(): Flow<Response<APODDTO>> {
-        return extractBodyFlow(httpResponse = nasaRepository.fetchApod()) { httpResponse ->
+        return extractBodyFlow(httpResult = nasaRepository.fetchApod()) { httpResponse ->
             httpResponse.body()
         }
     }

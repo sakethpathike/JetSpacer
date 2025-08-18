@@ -11,7 +11,7 @@ class FetchRoverImagesBasedOnTheFilterUseCase(private val nasaRepository: NasaRe
     suspend operator fun invoke(
         roverName: String, cameraName: String, sol: Int, page: Int
     ): Flow<Response<CameraAndSolSpecificDTO>> = extractBodyFlow(
-        httpResponse = nasaRepository.fetchRoverImages(
+        httpResult = nasaRepository.fetchRoverImages(
             roverName, cameraName, sol, page
         )
     ) { httpResponse ->
