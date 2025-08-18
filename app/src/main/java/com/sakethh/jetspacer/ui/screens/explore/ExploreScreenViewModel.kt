@@ -7,10 +7,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
 import com.sakethh.jetspacer.core.common.utils.logger
 import com.sakethh.jetspacer.domain.Response
 import com.sakethh.jetspacer.domain.useCase.FetchISSLocationUseCase
 import com.sakethh.jetspacer.domain.useCase.FetchImagesFromNasaImageLibraryUseCase
+import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.screens.explore.search.state.SearchResultState
 import com.sakethh.jetspacer.ui.screens.home.HomeScreenViewModel
 import com.sakethh.jetspacer.ui.utils.UIChannel
@@ -32,6 +35,7 @@ import kotlinx.coroutines.launch
 
 @Suppress("OPT_IN_USAGE")
 class ExploreScreenViewModel(
+    navController: NavController,
     context: Context,
     private val fetchImagesFromNasaImageLibraryUseCase: FetchImagesFromNasaImageLibraryUseCase,
     private val fetchISSLocationUseCase: FetchISSLocationUseCase
@@ -69,6 +73,17 @@ class ExploreScreenViewModel(
 
     init {
         viewModelScope.launch {
+            navController.currentBackStackEntryFlow.collectLatest {
+                if (it.destination.hasRoute(HyleNavigation.Root.Explore::class)) {
+                    trackISSLocation()
+                    logger("trackISSLocation()")
+                } else {
+                    logger("stopTrackingISSLocation()")
+                    stopTrackingISSLocation()
+                }
+            }
+        }
+        viewModelScope.launch {
             retrievePaletteFromUrl(
                 context = context,
                 url = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg/435px-Curiosity_Self-Portrait_at_%27Big_Sky%27_Drilling_Site.jpg"
@@ -103,7 +118,12 @@ class ExploreScreenViewModel(
         }.debounce(1500).onEach { query ->
             loadSearchResults(context, flowOf(query))
         }.launchIn(viewModelScope)
+    }
 
+    private fun stopTrackingISSLocation() = issLocationJob?.cancel()
+
+    private fun trackISSLocation() {
+        issLocationJob?.cancel()
         issLocationJob = viewModelScope.launch {
             while (isActive) {
                 logger("retrieving issLocation")

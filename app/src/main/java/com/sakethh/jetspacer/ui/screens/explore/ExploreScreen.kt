@@ -83,6 +83,7 @@ fun ExploreScreen() {
     val exploreScreenViewModel: ExploreScreenViewModel = viewModel(factory = viewModelFactory {
         initializer {
             ExploreScreenViewModel(
+                navController = navController,
                 context = localContext,
                 fetchISSLocationUseCase = FetchISSLocationUseCase(
                     ISSInfoRepoImpl(Network.ktorClient)
