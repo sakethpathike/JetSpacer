@@ -2,6 +2,7 @@ package com.sakethh.jetspacer.ui.screens.explore
 
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
@@ -20,14 +21,19 @@ import com.sakethh.jetspacer.ui.utils.UIChannel
 import com.sakethh.jetspacer.ui.utils.generateColorPaletteList
 import com.sakethh.jetspacer.ui.utils.pushUIEvent
 import com.sakethh.jetspacer.ui.utils.retrievePaletteFromUrl
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
@@ -174,18 +180,29 @@ class ExploreScreenViewModel(
 
                         is Response.Success -> {
                             searchResultsState.value = searchResultsState.value.copy(
-                                isLoading = false, error = false, data = nasaSearchData.data.map {
-                                    it to run {
-                                        val palette = retrievePaletteFromUrl(
-                                            context = context, url = it.imageUrl
-                                        )
-                                        if (palette == null) {
-                                            emptyList()
-                                        } else {
-                                            generateColorPaletteList(palette)
-                                        }
+                                isLoading = false,
+                                error = false,
+                                data = nasaSearchData.data,
+                                colors = mutableStateMapOf()
+                            )
+
+                            // this runs 16 retrievals in parallel at a time by default
+                            // > Default concurrency limit that is used by flattenMerge and flatMapMerge operators. It is 16 by default and can be changed on JVM using DEFAULT_CONCURRENCY_PROPERTY_NAME property.
+                            nasaSearchData.data.indices.asFlow().flatMapMerge { index ->
+                                flow {
+                                    val palette = retrievePaletteFromUrl(
+                                        context = context, url = nasaSearchData.data[index].imageUrl
+                                    )
+                                    val colors = if (palette == null) {
+                                        emptyList()
+                                    } else {
+                                        generateColorPaletteList(palette)
                                     }
-                                })
+                                    emit(index to colors)
+                                }
+                            }.flowOn(Dispatchers.IO).collect { (index, colors) ->
+                                searchResultsState.value.colors[index] = colors
+                            }
                         }
                     }
                 }.launchIn(this)

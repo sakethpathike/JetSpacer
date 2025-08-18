@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -38,6 +38,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,7 +57,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
-
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -191,14 +191,16 @@ fun ExploreScreen() {
                         }
                     }
                 }
-                items(searchResultsState.value.data) {
+                itemsIndexed(searchResultsState.value.data) { index, item ->
                     SearchResultComponent(
-                        nasaImageLibrarySearchDTOFlatten = it.first,
-                        palette = it.second,
+                        nasaImageLibrarySearchDTOFlatten = item,
+                        palette = remember(searchResultsState.value.colors[index]) {
+                            searchResultsState.value.colors[index] ?: emptyList()
+                        },
                         onItemClick = {
                             navController.navigate(
                                 HyleNavigation.Explore.SearchResultScreen(
-                                    Json.encodeToString(it)
+                                    Json.encodeToString(item)
                                 )
                             )
                         })

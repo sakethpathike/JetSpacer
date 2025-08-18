@@ -30,7 +30,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -428,8 +428,7 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                             Modifier
                         }.animateContentSize()) {
                             AsyncImage(
-                                imageLoader = ImageLoader.Builder(LocalContext.current)
-                                .components {
+                                imageLoader = ImageLoader.Builder(LocalContext.current).components {
                                     if (SDK_INT >= 28) {
                                         add(AnimatedImageDecoder.Factory())
                                     } else {
@@ -448,7 +447,8 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                                         LocalContentColor.current.copy(0.25f),
                                         RoundedCornerShape(15.dp)
                                     ),
-                                contentScale = ContentScale.Crop)
+                                contentScale = ContentScale.Crop
+                            )
 
                             if (apodDataState.apod.first.date.trim().isNotBlank()) {
                                 Spacer(Modifier.height(15.dp))
@@ -565,7 +565,7 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                 }
                 return@LazyColumn
             }
-            items(items = topHeadlinesState.data) { (headline, colors) ->
+            itemsIndexed(items = topHeadlinesState.data) { index, headline ->
                 TopHeadlineComponent(
                     article = Article(
                         author = headline.author,
@@ -577,7 +577,9 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                         url = headline.url,
                         urlToImage = headline.urlToImage
                     ),
-                    colors = colors,
+                    colors = remember(topHeadlinesState.colors[index]) {
+                        topHeadlinesState.colors[index] ?: emptyList()
+                    },
                     onItemClick = {
                         navController.navigate(
                             HyleNavigation.Headlines.TopHeadlineDetailScreen(

@@ -2,14 +2,12 @@ package com.sakethh.jetspacer.ui.screens.home
 
 import android.content.Context
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sakethh.jetspacer.domain.Response
-import com.sakethh.jetspacer.domain.model.headlines.Article
 import com.sakethh.jetspacer.domain.onFailure
 import com.sakethh.jetspacer.domain.onLoading
 import com.sakethh.jetspacer.domain.onSuccess
@@ -23,8 +21,13 @@ import com.sakethh.jetspacer.ui.screens.home.state.epic.EPICState
 import com.sakethh.jetspacer.ui.utils.UIChannel
 import com.sakethh.jetspacer.ui.utils.pushUIEvent
 import com.sakethh.jetspacer.ui.utils.retrievePaletteFromUrl
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -36,12 +39,10 @@ class HomeScreenViewModel(
     fetchEPICDataUseCase: FetchEPICDataUseCase
 ) : ViewModel() {
 
-    private val headlines = mutableStateListOf<Pair<Article, List<Color>>>()
-
     val topHeadLinesState = mutableStateOf(
         HeadlinesState(
             isLoading = true,
-            data = headlines,
+            data = emptyList(),
             error = false,
             reachedMaxHeadlines = false,
             statusCode = 0,
@@ -59,30 +60,46 @@ class HomeScreenViewModel(
     private var newsAPIJob: Job? = null
     fun retrievePaginatedTopHeadlines(context: Context) {
         newsAPIJob?.cancel()
-
+        topHeadLinesState.value = topHeadLinesState.value.copy(
+            isLoading = true, error = false, reachedMaxHeadlines = false
+        )
         viewModelScope.launch {
             newsAPIJob = headlinesRepository.getTopHeadLines(pageSize = 10, page = ++currentPage)
                 .cancellable().onEach {
-                    it.onLoading {
-                        topHeadLinesState.value =
-                            topHeadLinesState.value.copy(isLoading = true, error = false)
-                    }.onFailure {
+                    it.onFailure {
                         topHeadLinesState.value = topHeadLinesState.value.copy(
                             isLoading = false,
                             error = true,
                             statusCode = it.statusCode,
-                            statusDescription = it.statusDescription
+                            statusDescription = it.statusDescription,
+                            reachedMaxHeadlines = false
                         )
                         pushUIEvent(UIChannel.Type.ShowSnackbar(it.exceptionMessage))
                     }.onSuccess {
+                        val newArticles = it.articles
+
+                        if (newArticles.isEmpty()) {
+                            topHeadLinesState.value = topHeadLinesState.value.copy(
+                                isLoading = false, reachedMaxHeadlines = true, error = false
+                            )
+                            return@onSuccess
+                        }
+
+                        val existingArticlesCount = topHeadLinesState.value.data.size
+
                         topHeadLinesState.value = topHeadLinesState.value.copy(
                             isLoading = false,
-                            data = topHeadLinesState.value.data + it.articles.map {
+                            data = topHeadLinesState.value.data + newArticles,
+                            error = false,
+                        )
+
+                        newArticles.indices.asFlow().flatMapMerge { index ->
+                            flow {
                                 val palette =
-                                    if (it.urlToImage.endsWith(".gif")) null else retrievePaletteFromUrl(
-                                        context, it.urlToImage
+                                    if (newArticles[index].urlToImage.endsWith(".gif")) null else retrievePaletteFromUrl(
+                                        context, newArticles[index].urlToImage
                                     )
-                                it to if (palette == null) {
+                                val colors = if (palette == null) {
                                     emptyList()
                                 } else {
                                     buildList {
@@ -93,10 +110,11 @@ class HomeScreenViewModel(
                                         add(Color.Transparent)
                                     }
                                 }
-                            },
-                            error = false,
-                            reachedMaxHeadlines = it.articles.isEmpty()
-                        )
+                                emit(index + existingArticlesCount to colors)
+                            }
+                        }.flowOn(Dispatchers.IO).collect { (index, colors) ->
+                            topHeadLinesState.value.colors[index] = colors
+                        }
                     }
                 }.launchIn(viewModelScope)
         }
