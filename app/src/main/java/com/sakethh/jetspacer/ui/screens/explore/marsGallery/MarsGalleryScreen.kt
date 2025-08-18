@@ -83,20 +83,26 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.sakethh.jetspacer.core.common.Network
+import com.sakethh.jetspacer.data.repository.NasaRepositoryImpl
 import com.sakethh.jetspacer.domain.Rover
+import com.sakethh.jetspacer.domain.useCase.FetchLatestImagesFromRoverUseCase
+import com.sakethh.jetspacer.domain.useCase.FetchRoverImagesBasedOnTheFilterUseCase
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.InfoCard
 import com.sakethh.jetspacer.ui.components.LabelValueCard
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.theme.Typography
+import com.sakethh.jetspacer.ui.utils.UIChannel
 import com.sakethh.jetspacer.ui.utils.addEdgeToEdgeScaffoldPadding
+import com.sakethh.jetspacer.ui.utils.pushUIEvent
 import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
-import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
-import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -111,7 +117,19 @@ import java.util.Locale
 @Composable
 fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVisibilityScope) {
     val navController = LocalNavController.current
-    val marsGalleryScreenViewModel: MarsGalleryScreenViewModel = viewModel()
+    val marsGalleryScreenViewModel: MarsGalleryScreenViewModel =
+        viewModel(factory = viewModelFactory {
+            initializer {
+                MarsGalleryScreenViewModel(
+                    fetchLatestImagesFromRoverUseCase = FetchLatestImagesFromRoverUseCase(
+                        NasaRepositoryImpl(Network.ktorClient)
+                    ),
+                    fetchRoverImagesBasedOnTheFilterUseCase = FetchRoverImagesBasedOnTheFilterUseCase(
+                        NasaRepositoryImpl(Network.ktorClient)
+                    )
+                )
+            }
+        })
     val latestImagesDataState = marsGalleryScreenViewModel.latestImagesState
     val cameraAndSolSpecificDataState = marsGalleryScreenViewModel.cameraAndSolSpecificState
     val context = LocalContext.current
@@ -609,11 +627,8 @@ fun SharedTransitionScope.MarsGalleryScreen(animatedVisibilityScope: AnimatedVis
                                 isFilterBtmSheetExpanded.value = false
                             }
                         } else {
-                            UiChannel.pushUiEvent(
-                                UIEvent.ShowSnackbar(errorMessage = "sol value cannot be greater than ${latestImagesDataState.value.data.latestImages.first().rover.maxSol}"),
-                                coroutineScope
-                            )
                             coroutineScope.launch {
+                                pushUIEvent(UIChannel.Type.ShowSnackbar(errorMessage = "sol value cannot be greater than ${latestImagesDataState.value.data.latestImages.first().rover.maxSol}"))
                                 filterBtmSheetState.hide()
                             }.invokeOnCompletion {
                                 isFilterBtmSheetExpanded.value =

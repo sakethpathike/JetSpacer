@@ -17,9 +17,6 @@ sealed interface HyleNavigation {
         data object Explore : Root
 
         @Serializable
-        data object Collections : Root
-
-        @Serializable
         data object Settings : Root
 
     }

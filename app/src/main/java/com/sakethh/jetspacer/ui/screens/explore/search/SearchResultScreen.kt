@@ -42,15 +42,15 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.sakethh.jetspacer.domain.model.NASAImageLibrarySearchModifiedDTO
-import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
+import com.sakethh.jetspacer.domain.model.NASAImageLibrarySearchDTOFlatten
+import com.sakethh.jetspacer.ui.screens.home.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import kotlinx.serialization.json.Json
 
 @Composable
 fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
     val searchResult = rememberSerializableObject {
-        Json.decodeFromString<NASAImageLibrarySearchModifiedDTO>(
+        Json.decodeFromString<NASAImageLibrarySearchDTOFlatten>(
             encodedNasaImageLibrarySearchModifiedDTO
         )
     }

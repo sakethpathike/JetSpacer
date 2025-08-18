@@ -3,24 +3,26 @@ package com.sakethh.jetspacer.ui.screens.explore.apodArchive
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sakethh.jetspacer.common.utils.logger
+import com.sakethh.jetspacer.core.common.utils.logger
 import com.sakethh.jetspacer.domain.Response
-import com.sakethh.jetspacer.domain.useCase.FetchAPODArchiveDataUseCase
-import com.sakethh.jetspacer.domain.useCase.FetchCurrentAPODUseCase
+import com.sakethh.jetspacer.domain.repository.NasaRepository
+import com.sakethh.jetspacer.domain.useCase.FetchAPODArchiveUseCase
+import com.sakethh.jetspacer.domain.useCase.FetchAPODUseCase
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
-import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
-import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
+import com.sakethh.jetspacer.ui.utils.UIChannel
+import com.sakethh.jetspacer.ui.utils.pushUIEvent
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
 class APODArchiveScreenViewModel(
-    private val fetchApodArchiveDataUseCase: FetchAPODArchiveDataUseCase = FetchAPODArchiveDataUseCase(),
-    fetchCurrentAPODUseCase: FetchCurrentAPODUseCase = FetchCurrentAPODUseCase()
-) :
-    ViewModel() {
+    private val fetchApodArchiveDataUseCase: FetchAPODArchiveUseCase,
+    fetchAPODUseCase: FetchAPODUseCase
+) : ViewModel() {
     val apodArchiveState = mutableStateOf(
         APODArchiveScreenState(
             data = emptyList(),
@@ -39,34 +41,33 @@ class APODArchiveScreenViewModel(
     var apodStartDate = ""
 
     init {
-        fetchCurrentAPODUseCase().onEach {
-            when (val apodData = it) {
-                is Response.Failure -> {
-                    apodArchiveState.value = apodArchiveState.value.copy(
-                        isLoading = false,
-                        error = true,
-                        statusCode = apodData.statusCode,
-                        statusDescription = apodData.statusDescription
-                    )
-                    UiChannel.pushUiEvent(
-                        uiEvent = UIEvent.ShowSnackbar(apodData.exceptionMessage),
-                        coroutineScope = this.viewModelScope
-                    )
-                }
+        viewModelScope.launch {
+            fetchAPODUseCase().collectLatest {
+                when (val apodData = it) {
+                    is Response.Failure -> {
+                        apodArchiveState.value = apodArchiveState.value.copy(
+                            isLoading = false,
+                            error = true,
+                            statusCode = apodData.statusCode,
+                            statusDescription = apodData.statusDescription
+                        )
+                        pushUIEvent(UIChannel.Type.ShowSnackbar(apodData.exceptionMessage))
+                    }
 
-                is Response.Loading -> {
-                    apodArchiveState.value = apodArchiveState.value.copy(isLoading = true)
-                }
+                    is Response.Loading -> {
+                        apodArchiveState.value = apodArchiveState.value.copy(isLoading = true)
+                    }
 
-                is Response.Success -> {
-                    apodData.data.date?.let {
-                        apodStartDate = it
-                        startDate = it
-                        retrieveNextBatchOfAPODArchive()
+                    is Response.Success -> {
+                        apodData.data.date?.let {
+                            apodStartDate = it
+                            startDate = it
+                            retrieveNextBatchOfAPODArchive()
+                        }
                     }
                 }
             }
-        }.launchIn(viewModelScope)
+        }
     }
 
     fun resetAPODArchiveStateAndReloadAgain() {
@@ -77,53 +78,49 @@ class APODArchiveScreenViewModel(
     }
 
     fun retrieveAPODDataBetweenSpecificDates(
-        apodStartDate: String,
-        apodEndDate: String,
-        erasePreviousData: Boolean = false
+        apodStartDate: String, apodEndDate: String, erasePreviousData: Boolean = false
     ) {
         if (erasePreviousData) {
             apodArchiveState.value = apodArchiveState.value.copy(data = emptyList())
         }
 
-        fetchApodArchiveDataUseCase(apodStartDate, apodEndDate).cancellable().onEach {
-            when (val apodData = it) {
-                is Response.Failure -> {
-                    apodArchiveState.value =
-                        apodArchiveState.value.copy(
+        viewModelScope.launch {
+            fetchApodArchiveDataUseCase(apodStartDate, apodEndDate).cancellable().onEach {
+                when (val apodData = it) {
+                    is Response.Failure -> {
+                        apodArchiveState.value = apodArchiveState.value.copy(
                             isLoading = false,
                             error = true,
                             statusCode = apodData.statusCode,
                             statusDescription = apodData.statusDescription
                         )
-                    UiChannel.pushUiEvent(
-                        uiEvent = UIEvent.ShowSnackbar(apodData.exceptionMessage),
-                        coroutineScope = this.viewModelScope
-                    )
-                }
+                        pushUIEvent(UIChannel.Type.ShowSnackbar(apodData.exceptionMessage))
+                    }
 
-                is Response.Loading -> {
-                    apodArchiveState.value =
-                        apodArchiveState.value.copy(isLoading = true, error = false)
-                }
+                    is Response.Loading -> {
+                        apodArchiveState.value =
+                            apodArchiveState.value.copy(isLoading = true, error = false)
+                    }
 
-                is Response.Success -> {
-                    apodArchiveState.value = apodArchiveState.value.copy(
-                        isLoading = false,
-                        error = false,
-                        data = apodArchiveState.value.data + apodData.data.map {
-                            ModifiedAPODDTO(
-                                copyright = it.copyright ?: "",
-                                date = it.date ?: "",
-                                explanation = it.explanation ?: "",
-                                hdUrl = it.hdUrl ?: "",
-                                mediaType = it.mediaType ?: "",
-                                title = it.title ?: "",
-                                url = it.url ?: ""
-                            )
-                        })
+                    is Response.Success -> {
+                        apodArchiveState.value = apodArchiveState.value.copy(
+                            isLoading = false,
+                            error = false,
+                            data = apodArchiveState.value.data + apodData.data.map {
+                                ModifiedAPODDTO(
+                                    copyright = it.copyright ?: "",
+                                    date = it.date ?: "",
+                                    explanation = it.explanation ?: "",
+                                    hdUrl = it.hdUrl ?: "",
+                                    mediaType = it.mediaType ?: "",
+                                    title = it.title ?: "",
+                                    url = it.url ?: ""
+                                )
+                            })
+                    }
                 }
-            }
-        }.launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
+        }
     }
 
     fun retrieveNextBatchOfAPODArchive() {

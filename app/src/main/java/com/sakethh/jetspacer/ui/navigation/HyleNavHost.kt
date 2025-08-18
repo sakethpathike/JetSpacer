@@ -8,16 +8,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.sakethh.jetspacer.domain.model.rover_latest_images.LatestPhoto
 import com.sakethh.jetspacer.ui.LocalNavController
-import com.sakethh.jetspacer.ui.screens.collection.CollectionsScreen
 import com.sakethh.jetspacer.ui.screens.explore.ExploreScreen
 import com.sakethh.jetspacer.ui.screens.explore.apodArchive.APODArchiveScreen
 import com.sakethh.jetspacer.ui.screens.explore.apodArchive.APODDetailScreen
 import com.sakethh.jetspacer.ui.screens.explore.marsGallery.MarsGalleryScreen
 import com.sakethh.jetspacer.ui.screens.explore.marsGallery.RoverImageDetailsScreen
 import com.sakethh.jetspacer.ui.screens.explore.search.SearchResultScreen
-import com.sakethh.jetspacer.ui.screens.headlines.TopHeadlineDetailScreen
+import com.sakethh.jetspacer.ui.screens.home.HeadlineDetailScreen
 import com.sakethh.jetspacer.ui.screens.home.HomeScreen
-import com.sakethh.jetspacer.ui.screens.home.settings.SettingsScreen
+import com.sakethh.jetspacer.ui.screens.settings.SettingsScreen
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import kotlinx.serialization.json.Json
@@ -39,7 +38,7 @@ fun HyleNavHost() {
                 SettingsScreen()
             }
             composable<HyleNavigation.Headlines.TopHeadlineDetailScreen> { navBackStackEntry ->
-                TopHeadlineDetailScreen(
+                HeadlineDetailScreen(
                     animatedVisibilityScope = this,
                     encodedString = navBackStackEntry.toRoute<HyleNavigation.Headlines.TopHeadlineDetailScreen>().encodedString
                 )
@@ -60,9 +59,6 @@ fun HyleNavHost() {
             }
             composable<HyleNavigation.Latest.Settings> {
                 SettingsScreen()
-            }
-            composable<HyleNavigation.Root.Collections> {
-                CollectionsScreen(navController)
             }
             composable<HyleNavigation.APODArchiveScreen.APODDetailScreen> {
                 val apod =

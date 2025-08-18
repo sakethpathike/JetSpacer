@@ -7,17 +7,16 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sakethh.jetspacer.common.utils.logger
+import com.sakethh.jetspacer.core.common.utils.logger
 import com.sakethh.jetspacer.domain.Response
-import com.sakethh.jetspacer.domain.model.iss.modified.ISSLocationModifiedDTO
 import com.sakethh.jetspacer.domain.useCase.FetchISSLocationUseCase
 import com.sakethh.jetspacer.domain.useCase.FetchImagesFromNasaImageLibraryUseCase
 import com.sakethh.jetspacer.ui.screens.explore.search.state.SearchResultState
 import com.sakethh.jetspacer.ui.screens.home.HomeScreenViewModel
+import com.sakethh.jetspacer.ui.utils.UIChannel
 import com.sakethh.jetspacer.ui.utils.generateColorPaletteList
+import com.sakethh.jetspacer.ui.utils.pushUIEvent
 import com.sakethh.jetspacer.ui.utils.retrievePaletteFromUrl
-import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
-import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -34,8 +33,8 @@ import kotlinx.coroutines.launch
 @Suppress("OPT_IN_USAGE")
 class ExploreScreenViewModel(
     context: Context,
-    private val fetchImagesFromNasaImageLibraryUseCase: FetchImagesFromNasaImageLibraryUseCase = FetchImagesFromNasaImageLibraryUseCase(),
-    private val fetchISSLocationUseCase: FetchISSLocationUseCase = FetchISSLocationUseCase()
+    private val fetchImagesFromNasaImageLibraryUseCase: FetchImagesFromNasaImageLibraryUseCase,
+    private val fetchISSLocationUseCase: FetchISSLocationUseCase
 ) : ViewModel() {
 
     val searchResultsState = mutableStateOf(
@@ -47,7 +46,7 @@ class ExploreScreenViewModel(
     )
 
     val issLocationState = mutableStateOf(
-        ISSLocationModifiedDTO(
+        ISSLocationState(
             latitude = "",
             longitude = "",
             message = "",
@@ -108,20 +107,22 @@ class ExploreScreenViewModel(
         issLocationJob = viewModelScope.launch {
             while (isActive) {
                 logger("retrieving issLocation")
-                when (val issLocationData = fetchISSLocationUseCase()) {
-                    is Response.Success -> {
-                        issLocationState.value = issLocationData.data.copy(error = false)
-                    }
+                fetchISSLocationUseCase().collectLatest {
+                    when (val issLocationResponse = it) {
+                        is Response.Success -> {
+                            issLocationState.value = issLocationResponse.data.copy(error = false)
+                        }
 
-                    is Response.Failure<*> -> {
-                        cancel()
-                        issLocationState.value = issLocationState.value.copy(
-                            error = true,
-                            errorMessage = "${issLocationData.statusCode}\n${issLocationData.statusDescription}"
-                        )
-                    }
+                        is Response.Failure<*> -> {
+                            cancel()
+                            issLocationState.value = issLocationState.value.copy(
+                                error = true,
+                                errorMessage = "${issLocationResponse.statusCode}\n${issLocationResponse.statusDescription}"
+                            )
+                        }
 
-                    is Response.Loading<*> -> {}
+                        is Response.Loading<*> -> {}
+                    }
                 }
                 delay(5000)
             }
@@ -143,10 +144,7 @@ class ExploreScreenViewModel(
                                 statusCode = nasaSearchData.statusCode,
                                 statusDescription = nasaSearchData.statusDescription
                             )
-                            UiChannel.pushUiEvent(
-                                uiEvent = UIEvent.ShowSnackbar(nasaSearchData.exceptionMessage),
-                                coroutineScope = this
-                            )
+                            pushUIEvent(UIChannel.Type.ShowSnackbar(nasaSearchData.exceptionMessage))
                         }
 
                         is Response.Loading -> {

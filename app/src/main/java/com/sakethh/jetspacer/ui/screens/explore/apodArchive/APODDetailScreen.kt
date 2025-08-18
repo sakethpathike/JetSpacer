@@ -39,7 +39,7 @@ import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
+import com.sakethh.jetspacer.ui.screens.home.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.screens.home.components.ImageActionsRow
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 

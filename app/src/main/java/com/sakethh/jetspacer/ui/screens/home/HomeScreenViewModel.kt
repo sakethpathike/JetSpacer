@@ -8,24 +8,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sakethh.jetspacer.HyleApplication
-import com.sakethh.jetspacer.common.Network
-import com.sakethh.jetspacer.data.repository.TopHeadlinesDataImplementation
 import com.sakethh.jetspacer.domain.Response
-import com.sakethh.jetspacer.domain.model.Headline
+import com.sakethh.jetspacer.domain.model.headlines.Article
 import com.sakethh.jetspacer.domain.onFailure
 import com.sakethh.jetspacer.domain.onLoading
 import com.sakethh.jetspacer.domain.onSuccess
-import com.sakethh.jetspacer.domain.repository.TopHeadlinesDataRepository
-import com.sakethh.jetspacer.domain.useCase.FetchCurrentAPODUseCase
-import com.sakethh.jetspacer.domain.useCase.FetchCurrentEPICDataUseCase
-import com.sakethh.jetspacer.ui.screens.headlines.NewsScreenState
+import com.sakethh.jetspacer.domain.repository.HeadlinesRepository
+import com.sakethh.jetspacer.domain.useCase.FetchAPODUseCase
+import com.sakethh.jetspacer.domain.useCase.FetchEPICDataUseCase
+import com.sakethh.jetspacer.ui.screens.home.state.HeadlinesState
 import com.sakethh.jetspacer.ui.screens.home.state.apod.APODState
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
 import com.sakethh.jetspacer.ui.screens.home.state.epic.EPICState
+import com.sakethh.jetspacer.ui.utils.UIChannel
+import com.sakethh.jetspacer.ui.utils.pushUIEvent
 import com.sakethh.jetspacer.ui.utils.retrievePaletteFromUrl
-import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
-import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.launchIn
@@ -34,17 +31,15 @@ import kotlinx.coroutines.launch
 
 class HomeScreenViewModel(
     context: Context,
-    private val topHeadlinesRepository: TopHeadlinesDataRepository = TopHeadlinesDataImplementation(
-        Network.ktorClient, topHeadlinesDao = HyleApplication.getLocalDb().topHeadlinesDao
-    ),
-    fetchCurrentAPODUseCase: FetchCurrentAPODUseCase = FetchCurrentAPODUseCase(),
-    fetchCurrentEPICDataUseCase: FetchCurrentEPICDataUseCase = FetchCurrentEPICDataUseCase()
+    private val headlinesRepository: HeadlinesRepository,
+    fetchAPODUseCase: FetchAPODUseCase,
+    fetchEPICDataUseCase: FetchEPICDataUseCase
 ) : ViewModel() {
 
-    private val headlines = mutableStateListOf<Pair<Headline, List<Color>>>()
+    private val headlines = mutableStateListOf<Pair<Article, List<Color>>>()
 
     val topHeadLinesState = mutableStateOf(
-        NewsScreenState(
+        HeadlinesState(
             isLoading = true,
             data = headlines,
             error = false,
@@ -66,56 +61,44 @@ class HomeScreenViewModel(
         newsAPIJob?.cancel()
 
         viewModelScope.launch {
-            newsAPIJob =
-                topHeadlinesRepository.getTopHeadLinesFromRemoteAPI(10, ++currentPage).cancellable()
-                    .onEach {
-                        it.onLoading {
-                            topHeadLinesState.value =
-                                topHeadLinesState.value.copy(isLoading = true, error = false)
-                        }.onFailure {
-                            topHeadLinesState.value = topHeadLinesState.value.copy(
-                                isLoading = false,
-                                error = true,
-                                statusCode = it.statusCode,
-                                statusDescription = it.statusDescription
-                            )
-                            UiChannel.pushUiEvent(
-                                uiEvent = UIEvent.ShowSnackbar(it.exceptionMessage),
-                                coroutineScope = viewModelScope
-                            )
-                        }.onSuccess {
-                            topHeadLinesState.value = topHeadLinesState.value.copy(
-                                isLoading = false,
-                                data = topHeadLinesState.value.data + it.articles.map {
-                                    val palette = if(it.urlToImage.endsWith(".gif")) null else retrievePaletteFromUrl(context, it.urlToImage)
-                                    Headline(
-                                        author = it.author,
-                                        content = it.content,
-                                        description = it.description,
-                                        publishedAt = it.publishedAt,
-                                        sourceName = it.source.name,
-                                        title = it.title,
-                                        url = it.url,
-                                        imageUrl = it.urlToImage,
-                                        isBookmarked = false,
-                                        page = 0
-                                    ) to if (palette == null) {
-                                        emptyList()
-                                    } else {
-                                        buildList {
-                                            palette.vibrantSwatch?.rgb?.let { add(Color(it)) }
-                                            palette.lightVibrantSwatch?.rgb?.let { add(Color(it)) }
-                                            palette.mutedSwatch?.rgb?.let { add(Color(it)) }
-                                            palette.darkMutedSwatch?.rgb?.let { add(Color(it)) }
-                                            add(Color.Transparent)
-                                        }
+            newsAPIJob = headlinesRepository.getTopHeadLines(pageSize = 10, page = ++currentPage)
+                .cancellable().onEach {
+                    it.onLoading {
+                        topHeadLinesState.value =
+                            topHeadLinesState.value.copy(isLoading = true, error = false)
+                    }.onFailure {
+                        topHeadLinesState.value = topHeadLinesState.value.copy(
+                            isLoading = false,
+                            error = true,
+                            statusCode = it.statusCode,
+                            statusDescription = it.statusDescription
+                        )
+                        pushUIEvent(UIChannel.Type.ShowSnackbar(it.exceptionMessage))
+                    }.onSuccess {
+                        topHeadLinesState.value = topHeadLinesState.value.copy(
+                            isLoading = false,
+                            data = topHeadLinesState.value.data + it.articles.map {
+                                val palette =
+                                    if (it.urlToImage.endsWith(".gif")) null else retrievePaletteFromUrl(
+                                        context, it.urlToImage
+                                    )
+                                it to if (palette == null) {
+                                    emptyList()
+                                } else {
+                                    buildList {
+                                        palette.vibrantSwatch?.rgb?.let { add(Color(it)) }
+                                        palette.lightVibrantSwatch?.rgb?.let { add(Color(it)) }
+                                        palette.mutedSwatch?.rgb?.let { add(Color(it)) }
+                                        palette.darkMutedSwatch?.rgb?.let { add(Color(it)) }
+                                        add(Color.Transparent)
                                     }
-                                },
-                                error = false,
-                                reachedMaxHeadlines = it.articles.isEmpty()
-                            )
-                        }
-                    }.launchIn(viewModelScope)
+                                }
+                            },
+                            error = false,
+                            reachedMaxHeadlines = it.articles.isEmpty()
+                        )
+                    }
+                }.launchIn(viewModelScope)
         }
     }
 
@@ -145,81 +128,79 @@ class HomeScreenViewModel(
 
     init {
         retrievePaginatedTopHeadlines(context)
-        fetchCurrentAPODUseCase().onEach {
-            when (val apodData = it) {
-                is Response.Failure -> {
-                    apodState.value = apodState.value.copy(
-                        isLoading = false,
-                        error = true,
-                        statusCode = apodData.statusCode,
-                        statusDescription = apodData.statusDescription
-                    )
-                    UiChannel.pushUiEvent(
-                        uiEvent = UIEvent.ShowSnackbar(apodData.exceptionMessage),
-                        coroutineScope = this.viewModelScope
-                    )
-                }
+        viewModelScope.launch {
+            fetchAPODUseCase().onEach {
+                when (val apodData = it) {
+                    is Response.Failure -> {
+                        apodState.value = apodState.value.copy(
+                            isLoading = false,
+                            error = true,
+                            statusCode = apodData.statusCode,
+                            statusDescription = apodData.statusDescription
+                        )
+                        pushUIEvent(UIChannel.Type.ShowSnackbar(apodData.exceptionMessage))
+                    }
 
-                is Response.Loading -> {
-                    apodState.value = apodState.value.copy(isLoading = true, error = false)
-                }
+                    is Response.Loading -> {
+                        apodState.value = apodState.value.copy(isLoading = true, error = false)
+                    }
 
-                is Response.Success -> {
-                    currentAPODImgURL = apodData.data.url ?: ""
-                    apodState.value = apodState.value.copy(
-                        isLoading = false, error = false, apod = ModifiedAPODDTO(
-                            copyright = apodData.data.copyright ?: "",
-                            date = apodData.data.date ?: "",
-                            explanation = apodData.data.explanation ?: "",
-                            hdUrl = apodData.data.hdUrl ?: "",
-                            mediaType = apodData.data.mediaType ?: "",
-                            title = apodData.data.title ?: "",
-                            url = apodData.data.url ?: ""
-                        ) to run {
-                            if (apodData.data.url == null) return@run emptyList()
-                            val palette = retrievePaletteFromUrl(context, apodData.data.url)
-                            if (palette == null) {
-                                emptyList()
-                            } else {
-                                buildList {
-                                    add(Color.Transparent)
-                                    add(Color.Transparent)
-                                    add(Color.Transparent)
-                                    palette.vibrantSwatch?.rgb?.let { add(Color(it)) }
-                                    palette.lightVibrantSwatch?.rgb?.let { add(Color(it)) }
-                                    palette.mutedSwatch?.rgb?.let { add(Color(it)) }
-                                    palette.darkMutedSwatch?.rgb?.let { add(Color(it)) }
-                                    add(Color.Transparent)
+                    is Response.Success -> {
+                        currentAPODImgURL = apodData.data.url ?: ""
+                        apodState.value = apodState.value.copy(
+                            isLoading = false, error = false, apod = ModifiedAPODDTO(
+                                copyright = apodData.data.copyright ?: "",
+                                date = apodData.data.date ?: "",
+                                explanation = apodData.data.explanation ?: "",
+                                hdUrl = apodData.data.hdUrl ?: "",
+                                mediaType = apodData.data.mediaType ?: "",
+                                title = apodData.data.title ?: "",
+                                url = apodData.data.url ?: ""
+                            ) to run {
+                                if (apodData.data.url == null) return@run emptyList()
+                                val palette = retrievePaletteFromUrl(context, apodData.data.url)
+                                if (palette == null) {
+                                    emptyList()
+                                } else {
+                                    buildList {
+                                        add(Color.Transparent)
+                                        add(Color.Transparent)
+                                        add(Color.Transparent)
+                                        palette.vibrantSwatch?.rgb?.let { add(Color(it)) }
+                                        palette.lightVibrantSwatch?.rgb?.let { add(Color(it)) }
+                                        palette.mutedSwatch?.rgb?.let { add(Color(it)) }
+                                        palette.darkMutedSwatch?.rgb?.let { add(Color(it)) }
+                                        add(Color.Transparent)
+                                    }
                                 }
-                            }
-                        })
+                            })
+                    }
                 }
-            }
-        }.launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
+        }
 
-        fetchCurrentEPICDataUseCase().onEach {
-            when (val epicData = it) {
-                is Response.Failure -> {
-                    epicState = epicState.copy(
-                        isLoading = false,
-                        error = true,
-                        statusCode = epicData.statusCode,
-                        statusDescription = epicData.statusDescription
-                    )
-                    UiChannel.pushUiEvent(
-                        uiEvent = UIEvent.ShowSnackbar(epicData.exceptionMessage),
-                        coroutineScope = this.viewModelScope
-                    )
-                }
+        viewModelScope.launch {
+            fetchEPICDataUseCase().onEach {
+                when (val epicData = it) {
+                    is Response.Failure -> {
+                        epicState = epicState.copy(
+                            isLoading = false,
+                            error = true,
+                            statusCode = epicData.statusCode,
+                            statusDescription = epicData.statusDescription
+                        )
+                        pushUIEvent(UIChannel.Type.ShowSnackbar(epicData.exceptionMessage))
+                    }
 
-                is Response.Loading -> {
-                    epicState = epicState.copy(isLoading = true)
-                }
+                    is Response.Loading -> {
+                        epicState = epicState.copy(isLoading = true)
+                    }
 
-                is Response.Success -> {
-                    epicState = epicState.copy(isLoading = false, data = epicData.data)
+                    is Response.Success -> {
+                        epicState = epicState.copy(isLoading = false, data = epicData.data)
+                    }
                 }
-            }
-        }.launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
+        }
     }
 }

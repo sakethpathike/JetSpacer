@@ -60,12 +60,17 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.sakethh.jetspacer.core.common.Network
+import com.sakethh.jetspacer.data.repository.ISSInfoRepoImpl
+import com.sakethh.jetspacer.data.repository.NasaRepositoryImpl
+import com.sakethh.jetspacer.domain.useCase.FetchISSLocationUseCase
+import com.sakethh.jetspacer.domain.useCase.FetchImagesFromNasaImageLibraryUseCase
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.InfoCard
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
 import com.sakethh.jetspacer.ui.screens.explore.search.SearchResultComponent
-import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
+import com.sakethh.jetspacer.ui.screens.home.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.screens.home.HomeScreenViewModel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -77,7 +82,15 @@ fun ExploreScreen() {
     val localContext = LocalContext.current
     val exploreScreenViewModel: ExploreScreenViewModel = viewModel(factory = viewModelFactory {
         initializer {
-            ExploreScreenViewModel(context = localContext)
+            ExploreScreenViewModel(
+                context = localContext,
+                fetchISSLocationUseCase = FetchISSLocationUseCase(
+                    ISSInfoRepoImpl(Network.ktorClient)
+                ),
+                fetchImagesFromNasaImageLibraryUseCase = FetchImagesFromNasaImageLibraryUseCase(
+                    NasaRepositoryImpl(Network.ktorClient)
+                ),
+            )
         }
     })
     val searchResultsState = exploreScreenViewModel.searchResultsState
@@ -179,7 +192,7 @@ fun ExploreScreen() {
                 }
                 items(searchResultsState.value.data) {
                     SearchResultComponent(
-                        nasaImageLibrarySearchModifiedDTO = it.first,
+                        nasaImageLibrarySearchDTOFlatten = it.first,
                         palette = it.second,
                         onItemClick = {
                             navController.navigate(

@@ -54,7 +54,6 @@ fun SharedTransitionScope.RoverImageDetailsScreen(
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
     val localClipboardManager = LocalClipboardManager.current
-    val roverImageDetailsBtmSheetViewModel: RoverImageDetailsBtmSheetViewModel = viewModel()
     Box(
         modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart
     ) {

@@ -28,14 +28,14 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.sakethh.jetspacer.domain.model.NASAImageLibrarySearchModifiedDTO
+import com.sakethh.jetspacer.domain.model.NASAImageLibrarySearchDTOFlatten
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SearchResultComponent(
     palette: List<Color>,
-    nasaImageLibrarySearchModifiedDTO: NASAImageLibrarySearchModifiedDTO,
+    nasaImageLibrarySearchDTOFlatten: NASAImageLibrarySearchDTOFlatten,
     onItemClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -57,7 +57,7 @@ fun SearchResultComponent(
             .clickable { onItemClick() }
             .animateContentSize()) {
         AsyncImage(
-            model = ImageRequest.Builder(context).data(nasaImageLibrarySearchModifiedDTO.imageUrl)
+            model = ImageRequest.Builder(context).data(nasaImageLibrarySearchDTOFlatten.imageUrl)
                 .crossfade(true).build(),
             contentDescription = null,
             modifier = Modifier
@@ -75,7 +75,7 @@ fun SearchResultComponent(
             contentScale = ContentScale.Crop
         )
         Text(
-            text = nasaImageLibrarySearchModifiedDTO.title,
+            text = nasaImageLibrarySearchDTOFlatten.title,
             modifier = Modifier.padding(10.dp),
             style = MaterialTheme.typography.titleMedium,
             overflow = TextOverflow.Ellipsis,

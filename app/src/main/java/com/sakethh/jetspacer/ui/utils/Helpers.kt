@@ -26,6 +26,13 @@ import coil3.ImageLoader
 import coil3.asDrawable
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
+import com.sakethh.jetspacer.domain.Response
+import com.sakethh.jetspacer.ui.utils.UIChannel.Type
+import io.ktor.client.statement.HttpResponse
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 
 fun Modifier.iconModifier(colorScheme: ColorScheme, onClick: () -> Unit): Modifier {
     return this
@@ -70,8 +77,43 @@ fun downloadImage(context: Context, imgURL: String, fileName: String, descriptio
 
 // keeps the nav bar (what's it actually called?) transparent while still applying padding on top, end, bottom;
 // kinda a hacky workaround, but there doesn't seem to be any clear documentation on how to handle this properly
-fun Modifier.addEdgeToEdgeScaffoldPadding(paddingValues: PaddingValues) = this.padding(
-    top = paddingValues.calculateTopPadding(), start = paddingValues.calculateStartPadding(
-        LayoutDirection.Ltr
-    ), end = paddingValues.calculateEndPadding(LayoutDirection.Rtl)
-).consumeWindowInsets(paddingValues)
+fun Modifier.addEdgeToEdgeScaffoldPadding(paddingValues: PaddingValues) = this
+    .padding(
+        top = paddingValues.calculateTopPadding(), start = paddingValues.calculateStartPadding(
+            LayoutDirection.Ltr
+        ), end = paddingValues.calculateEndPadding(LayoutDirection.Rtl)
+    )
+    .consumeWindowInsets(paddingValues)
+
+
+inline fun <reified T> extractBodyFlow(
+    httpResponse: HttpResponse, crossinline init: suspend (httpResponse: HttpResponse) -> T
+): Flow<Response<T>> {
+    return flow<Response<T>> {
+        emit(Response.Loading())
+        if (httpResponse.status.value != 200) {
+            emit(
+                Response.Failure(
+                    statusCode = httpResponse.status.value,
+                    statusDescription = httpResponse.status.description,
+                    exceptionMessage = ""
+                )
+            )
+            return@flow
+        }
+        emit(Response.Success(init(httpResponse)))
+    }.catch {
+        emit(
+            Response.Failure(
+                statusCode = -1,
+                statusDescription = it.message
+                    ?: "Something went wrong, but the error didn't say what.",
+                exceptionMessage = it.message.toString()
+            )
+        )
+    }
+}
+
+fun CoroutineScope.pushUIEvent(type: Type) {
+    UIChannel.push(type, this)
+}

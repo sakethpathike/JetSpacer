@@ -19,8 +19,7 @@ import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.navigation.HyleBottomNavBar
 import com.sakethh.jetspacer.ui.navigation.HyleNavHost
 import com.sakethh.jetspacer.ui.theme.HyleTheme
-import com.sakethh.jetspacer.ui.utils.uiEvent.UIEvent
-import com.sakethh.jetspacer.ui.utils.uiEvent.UiChannel
+import com.sakethh.jetspacer.ui.utils.UIChannel
 import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : ComponentActivity() {
@@ -47,10 +46,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
             LaunchedEffect(Unit) {
-                UiChannel.uiEvent.collectLatest {
+                UIChannel.readChannel.collectLatest {
                     when (it) {
-                        UIEvent.Nothing -> Unit
-                        is UIEvent.ShowSnackbar -> {
+                        UIChannel.Type.Nothing -> Unit
+                        is UIChannel.Type.ShowSnackbar -> {
                             snackBarHostState.currentSnackbarData?.dismiss()
                             snackBarHostState.showSnackbar(message = it.errorMessage)
                         }

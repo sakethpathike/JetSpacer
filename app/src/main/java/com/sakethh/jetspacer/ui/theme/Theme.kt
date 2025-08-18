@@ -9,7 +9,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import com.sakethh.jetspacer.ui.GlobalSettings
+import com.sakethh.jetspacer.ui.AppPreferences
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -204,22 +204,22 @@ fun HyleTheme(
 ) {
     val context = LocalContext.current
     val colorScheme = when {
-        GlobalSettings.isDynamicThemingEnabled.value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (GlobalSettings.isThemingSetToDefault.value) {
+        AppPreferences.isDynamicThemingEnabled.value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (AppPreferences.isThemingSetToDefault.value) {
                 if (useDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(
                     context
                 )
             } else {
-                if (GlobalSettings.isDarkModeEnabled.value) dynamicDarkColorScheme(
+                if (AppPreferences.isDarkModeEnabled.value) dynamicDarkColorScheme(
                     context
                 ) else dynamicLightColorScheme(context)
             }
         }
 
-        else -> if (GlobalSettings.isThemingSetToDefault.value) {
+        else -> if (AppPreferences.isThemingSetToDefault.value) {
             if (useDarkTheme) darkScheme else lightScheme
         } else {
-            if (GlobalSettings.isDarkModeEnabled.value) darkScheme else lightScheme
+            if (AppPreferences.isDarkModeEnabled.value) darkScheme else lightScheme
         }
     }
     MaterialTheme(

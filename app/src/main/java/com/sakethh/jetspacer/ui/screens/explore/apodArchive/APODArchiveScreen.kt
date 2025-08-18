@@ -66,12 +66,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.sakethh.jetspacer.core.common.Network
+import com.sakethh.jetspacer.data.repository.NasaRepositoryImpl
+import com.sakethh.jetspacer.domain.useCase.FetchAPODArchiveUseCase
+import com.sakethh.jetspacer.domain.useCase.FetchAPODUseCase
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
@@ -97,7 +103,14 @@ fun SharedTransitionScope.APODArchiveScreen(
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val navController = LocalNavController.current
-    val apodArchiveScreenViewModel: APODArchiveScreenViewModel = viewModel()
+    val apodArchiveScreenViewModel: APODArchiveScreenViewModel = viewModel(factory = viewModelFactory {
+        initializer {
+            APODArchiveScreenViewModel(
+                fetchApodArchiveDataUseCase = FetchAPODArchiveUseCase(NasaRepositoryImpl(Network.ktorClient)),
+                fetchAPODUseCase = FetchAPODUseCase(NasaRepositoryImpl(Network.ktorClient))
+            )
+        }
+    })
     val apodArchiveState = apodArchiveScreenViewModel.apodArchiveState.value
     val context = LocalContext.current
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()

@@ -87,17 +87,20 @@ import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.sakethh.jetspacer.common.utils.logger
-import com.sakethh.jetspacer.domain.model.article.Article
-import com.sakethh.jetspacer.domain.model.article.Source
+import com.sakethh.jetspacer.core.common.Network
+import com.sakethh.jetspacer.data.repository.HeadlinesRepoImpl
+import com.sakethh.jetspacer.data.repository.NasaRepositoryImpl
+import com.sakethh.jetspacer.domain.model.headlines.Article
+import com.sakethh.jetspacer.domain.model.headlines.Source
+import com.sakethh.jetspacer.domain.useCase.FetchAPODUseCase
+import com.sakethh.jetspacer.domain.useCase.FetchEPICDataUseCase
 import com.sakethh.jetspacer.ui.LocalNavController
 import com.sakethh.jetspacer.ui.components.Label
 import com.sakethh.jetspacer.ui.components.LabelValueCard
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 import com.sakethh.jetspacer.ui.navigation.HyleNavigation
-import com.sakethh.jetspacer.ui.screens.headlines.HeadlineDetailComponent
-import com.sakethh.jetspacer.ui.screens.headlines.components.TopHeadlineComponent
 import com.sakethh.jetspacer.ui.screens.home.components.ImageActionsRow
+import com.sakethh.jetspacer.ui.screens.home.components.TopHeadlineComponent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -112,7 +115,12 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
     val context = LocalContext.current
     val homeScreenViewModel: HomeScreenViewModel = viewModel(factory = viewModelFactory {
         initializer {
-            HomeScreenViewModel(context)
+            HomeScreenViewModel(
+                context,
+                headlinesRepository = HeadlinesRepoImpl(Network.ktorClient),
+                fetchAPODUseCase = FetchAPODUseCase(NasaRepositoryImpl(Network.ktorClient)),
+                fetchEPICDataUseCase = FetchEPICDataUseCase(NasaRepositoryImpl(Network.ktorClient))
+            )
         }
     })
     val apodDataState = homeScreenViewModel.apodState.value
@@ -169,22 +177,22 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
             epicDataState.data[horizontalPager.currentPage].distanceBetweenSunAndEarth.toString()
         } catch (_: Exception) {
             ""
-        }+" km"
+        } + " km"
         currentDistanceToEarthFromTheEPIC = try {
             epicDataState.data[horizontalPager.currentPage].distanceToEarthFromTheEPIC.toString()
         } catch (_: Exception) {
             ""
-        }+" km"
+        } + " km"
         currentDistanceToMoonFromEarth = try {
             epicDataState.data[horizontalPager.currentPage].distanceBetweenEarthAndMoon.toString()
         } catch (_: Exception) {
             ""
-        }+" km"
+        } + " km"
         currentDistanceBetweenSunAndEpic = try {
             epicDataState.data[horizontalPager.currentPage].distanceBetweenSunAndEpic.toString()
         } catch (_: Exception) {
             ""
-        }+" km"
+        } + " km"
     }
     Box {
         Box(
@@ -421,15 +429,15 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                         }.animateContentSize()) {
                             AsyncImage(
                                 imageLoader = ImageLoader.Builder(LocalContext.current)
-                                    .components {
-                                        if (SDK_INT >= 28) {
-                                            add(AnimatedImageDecoder.Factory())
-                                        } else {
-                                            add(GifDecoder.Factory())
-                                        }
+                                .components {
+                                    if (SDK_INT >= 28) {
+                                        add(AnimatedImageDecoder.Factory())
+                                    } else {
+                                        add(GifDecoder.Factory())
                                     }
-                                    .build(),
-                                model = ImageRequest.Builder(context).data(apodImageURL).crossfade(true).build(),
+                                }.build(),
+                                model = ImageRequest.Builder(context).data(apodImageURL)
+                                    .crossfade(true).build(),
                                 contentDescription = null,
                                 modifier = commonModifier
                                     .fillMaxWidth()
@@ -564,10 +572,10 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                         content = headline.content,
                         description = headline.description,
                         publishedAt = headline.publishedAt,
-                        source = Source(id = "", name = headline.sourceName),
+                        source = Source(id = "", name = headline.source.name),
                         title = headline.title,
                         url = headline.url,
-                        urlToImage = headline.imageUrl
+                        urlToImage = headline.urlToImage
                     ),
                     colors = colors,
                     onItemClick = {
