@@ -10,6 +10,10 @@
 
 JetSpacer pulls data from multiple NASA APIs and wraps it all in a minimal UI using Kotlin and Jetpack Compose.
 
+[<img src="https://shields.rbtlog.dev/simple/com.sakethh.jetspacer" alt="RB shield">](https://shields.rbtlog.dev/com.sakethh.jetspacer)
+
+[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get JetSpacer on IzzyOnDroid" height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.sakethh.jetspacer)
+
 ### Features of `v2.0.0`
 - Custom pagination for `APOD Archive`, `Mars Gallery`, and `Headlines`.
 - Search APOD, Mars Rover Photos, and NASA Image Library.
