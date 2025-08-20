@@ -1,6 +1,9 @@
 package com.sakethh.jetspacer.ui.screens.explore
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
@@ -75,9 +78,11 @@ import com.sakethh.jetspacer.ui.screens.home.HomeScreenViewModel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalSharedTransitionApi::class
+)
 @Composable
-fun ExploreScreen() {
+fun SharedTransitionScope.ExploreScreen(animatedVisibilityScope: AnimatedVisibilityScope) {
     val navController: NavController = LocalNavController.current
     val localContext = LocalContext.current
     val exploreScreenViewModel: ExploreScreenViewModel = viewModel(factory = viewModelFactory {
@@ -193,7 +198,8 @@ fun ExploreScreen() {
                 }
                 itemsIndexed(searchResultsState.value.data) { index, item ->
                     SearchResultComponent(
-                        nasaImageLibrarySearchDTOFlatten = item,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        searchResult = item,
                         palette = remember(searchResultsState.value.colors[index]) {
                             searchResultsState.value.colors[index] ?: emptyList()
                         },

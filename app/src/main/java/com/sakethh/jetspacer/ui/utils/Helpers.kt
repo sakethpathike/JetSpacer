@@ -31,6 +31,7 @@ import com.sakethh.jetspacer.domain.onFailure
 import com.sakethh.jetspacer.domain.onSuccess
 import com.sakethh.jetspacer.ui.utils.UIChannel.Type
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -115,7 +116,13 @@ inline fun <reified T> extractBodyFlow(
             }
             emit(Response.Success(init(httpResponse)))
         }.onFailure {
-            throw Exception(it.exceptionMessage)
+            emit(
+                Response.Failure(
+                    statusCode = -1,
+                    statusDescription = it.statusDescription,
+                    exceptionMessage = it.exceptionMessage
+                )
+            )
         }
     }.catch {
         emit(

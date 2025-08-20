@@ -1,6 +1,9 @@
 package com.sakethh.jetspacer.ui.screens.explore.search
 
 import android.content.Intent
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,13 +50,12 @@ import com.sakethh.jetspacer.ui.screens.home.HeadlineDetailComponent
 import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import kotlinx.serialization.json.Json
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
-    val searchResult = rememberSerializableObject {
-        Json.decodeFromString<NASAImageLibrarySearchDTOFlatten>(
-            encodedNasaImageLibrarySearchModifiedDTO
-        )
-    }
+fun SharedTransitionScope.SearchResultScreen(
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    searchResult:NASAImageLibrarySearchDTOFlatten
+) {
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
     val localClipboardManager = LocalClipboardManager.current
@@ -69,10 +71,12 @@ fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
         ) {
             Spacer(Modifier.height(50.dp))
             AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(searchResult.imageUrl)
-                    .crossfade(true).build(),
-                modifier = Modifier
+                model = ImageRequest.Builder(context).data(searchResult.imageUrl).crossfade(true)
+                    .build(), modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "SEARCH_IMG_${searchResult.imageUrl}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
                     .wrapContentHeight()
                     .padding(top = 15.dp, bottom = 15.dp)
                     .clip(RoundedCornerShape(15.dp))
@@ -85,6 +89,10 @@ fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 16.sp,
                 modifier = Modifier
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "SEARCH_TITLE_${searchResult.imageUrl}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
                     .fillMaxWidth()
             )
             if (searchResult.photographer.isNotBlank()) {
@@ -149,8 +157,7 @@ fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
                 }) {
                     Icon(Icons.Outlined.Share, null)
                 }
-            }
-            /*Spacer(Modifier.height(5.dp))
+            }/*Spacer(Modifier.height(5.dp))
             FilledTonalButton(
                 onClick = {}, modifier = Modifier
                     .fillMaxWidth()
@@ -162,8 +169,7 @@ fun SearchResultScreen(encodedNasaImageLibrarySearchModifiedDTO: String) {
                 )
                 Spacer(Modifier.width(5.dp))
                 Text("Share via Instagram Stories", style = MaterialTheme.typography.titleSmall)
-            }*/
-            /*FilledTonalButton(
+            }*//*FilledTonalButton(
                 onClick = {}, modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()

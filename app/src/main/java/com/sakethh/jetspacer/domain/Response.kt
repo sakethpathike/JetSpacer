@@ -26,7 +26,7 @@ suspend fun <T> Response<T>.onSuccess(init: suspend (T) -> Unit): Response<T> {
     return this
 }
 
-fun <T> Response<T>.onFailure(init: (Response.Failure<T>) -> Unit): Response<T> {
+suspend fun <T> Response<T>.onFailure(init: suspend (Response.Failure<T>) -> Unit): Response<T> {
     if (this is Response.Failure) {
         init(this)
     }

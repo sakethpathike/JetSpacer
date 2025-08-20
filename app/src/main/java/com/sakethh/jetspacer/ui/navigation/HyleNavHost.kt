@@ -16,8 +16,8 @@ import com.sakethh.jetspacer.ui.screens.explore.marsGallery.RoverImageDetailsScr
 import com.sakethh.jetspacer.ui.screens.explore.search.SearchResultScreen
 import com.sakethh.jetspacer.ui.screens.home.HeadlineDetailScreen
 import com.sakethh.jetspacer.ui.screens.home.HomeScreen
-import com.sakethh.jetspacer.ui.screens.settings.SettingsScreen
 import com.sakethh.jetspacer.ui.screens.home.state.apod.ModifiedAPODDTO
+import com.sakethh.jetspacer.ui.screens.settings.SettingsScreen
 import com.sakethh.jetspacer.ui.utils.rememberSerializableObject
 import kotlinx.serialization.json.Json
 
@@ -44,11 +44,12 @@ fun HyleNavHost() {
                 )
             }
             composable<HyleNavigation.Root.Explore> {
-                ExploreScreen()
+                ExploreScreen(animatedVisibilityScope = this)
             }
             composable<HyleNavigation.Explore.SearchResultScreen> {
                 SearchResultScreen(
-                    it.toRoute<HyleNavigation.Explore.SearchResultScreen>().encodedString
+                    animatedVisibilityScope = this,
+                    searchResult = Json.decodeFromString(it.toRoute<HyleNavigation.Explore.SearchResultScreen>().encodedString)
                 )
             }
             composable<HyleNavigation.Explore.APODArchiveScreen> {

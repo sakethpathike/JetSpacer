@@ -2,10 +2,12 @@ package com.sakethh.jetspacer.ui.screens.home
 
 import android.os.Build.VERSION.SDK_INT
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -49,15 +51,12 @@ import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,10 +67,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -125,11 +121,6 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
     })
     val apodDataState = homeScreenViewModel.apodState.value
     val epicDataState = homeScreenViewModel.epicState
-    val isAPODBtmSheetVisible = rememberSaveable {
-        mutableStateOf(false)
-    }
-    val apodBtmSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val coroutineScope = rememberCoroutineScope()
     val horizontalPager = rememberPagerState {
         epicDataState.data.size
     }
@@ -151,21 +142,11 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
     var currentDistanceBetweenSunAndEpic by rememberSaveable {
         mutableStateOf("")
     }
-    val localClipboardManager = LocalClipboardManager.current
-    val localUriHandler = LocalUriHandler.current
-
-    val sliderValue = rememberSaveable {
-        mutableFloatStateOf(0f)
-    }
     val topHeadlinesState by homeScreenViewModel.topHeadLinesState
     val colorScheme = MaterialTheme.colorScheme
     val lazyColumnState = rememberLazyListState()
-    val localDensity = LocalDensity.current
     val apodImageURL = rememberSaveable(apodDataState.apod.first.url) {
         apodDataState.apod.first.url.trim()
-    }
-    var apodDownloadBtnClicked by rememberSaveable {
-        mutableStateOf(false)
     }
     LaunchedEffect(epicDataState.data, horizontalPager.currentPage) {
         currentEPICCapturedTime = try {
@@ -244,7 +225,7 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                 Spacer(Modifier.height(15.dp))
             }
             item {
-                if (epicDataState.isLoading || epicDataState.error) {
+                AnimatedVisibility(visible = epicDataState.isLoading || epicDataState.error) {
                     Box(
                         modifier = commonModifier
                             .fillMaxWidth()
@@ -253,14 +234,22 @@ fun SharedTransitionScope.HomeScreen(animatedVisibilityScope: AnimatedVisibility
                             .background(MaterialTheme.colorScheme.primary.copy(0.25f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (epicDataState.error) {
-                            Text(
-                                text = "${epicDataState.statusCode}\n${epicDataState.statusDescription}",
-                                style = MaterialTheme.typography.titleSmall,
-                                textAlign = TextAlign.Center
-                            )
-                        } else {
-                            ContainedLoadingIndicator()
+                        AnimatedContent(
+                            modifier = Modifier.animateContentSize(animationSpec = tween()),
+                            targetState = epicDataState.error,
+                            transitionSpec = {
+                                fadeIn() togetherWith fadeOut()
+                            }) {
+                            if (it) {
+                                Text(
+                                    text = "${epicDataState.statusCode}\n${epicDataState.statusDescription}",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    textAlign = TextAlign.Center,
+                                    modifier = commonModifier
+                                )
+                            } else {
+                                ContainedLoadingIndicator()
+                            }
                         }
                     }
                 }

@@ -1,5 +1,8 @@
 package com.sakethh.jetspacer.ui.screens.explore.search
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,11 +34,12 @@ import coil3.request.crossfade
 import com.sakethh.jetspacer.domain.model.NASAImageLibrarySearchDTOFlatten
 import com.sakethh.jetspacer.ui.components.pulsateEffect
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun SearchResultComponent(
+fun SharedTransitionScope.SearchResultComponent(
     palette: List<Color>,
-    nasaImageLibrarySearchDTOFlatten: NASAImageLibrarySearchDTOFlatten,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    searchResult: NASAImageLibrarySearchDTOFlatten,
     onItemClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -57,10 +61,14 @@ fun SearchResultComponent(
             .clickable { onItemClick() }
             .animateContentSize()) {
         AsyncImage(
-            model = ImageRequest.Builder(context).data(nasaImageLibrarySearchDTOFlatten.imageUrl)
+            model = ImageRequest.Builder(context).data(searchResult.imageUrl)
                 .crossfade(true).build(),
             contentDescription = null,
             modifier = Modifier
+                .sharedElement(
+                    sharedContentState = rememberSharedContentState(key = "SEARCH_IMG_${searchResult.imageUrl}"),
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(bottomEnd = 15.dp, bottomStart = 15.dp))
                 .border(
@@ -75,8 +83,12 @@ fun SearchResultComponent(
             contentScale = ContentScale.Crop
         )
         Text(
-            text = nasaImageLibrarySearchDTOFlatten.title,
-            modifier = Modifier.padding(10.dp),
+            text = searchResult.title,
+            modifier = Modifier
+                .sharedElement(
+                    sharedContentState = rememberSharedContentState(key = "SEARCH_TITLE_${searchResult.imageUrl}"),
+                    animatedVisibilityScope = animatedVisibilityScope
+                ).padding(10.dp),
             style = MaterialTheme.typography.titleMedium,
             overflow = TextOverflow.Ellipsis,
             fontSize = 15.sp

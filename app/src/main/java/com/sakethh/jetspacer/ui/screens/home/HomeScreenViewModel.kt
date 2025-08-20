@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sakethh.jetspacer.core.common.utils.logger
 import com.sakethh.jetspacer.domain.Response
 import com.sakethh.jetspacer.domain.onFailure
 import com.sakethh.jetspacer.domain.onLoading
